@@ -202,7 +202,50 @@
     #table-seguimiento th,
     #table-seguimiento td { text-align: center !important; vertical-align: middle !important; }
 
-    /* ══ LOGIN ══ */
+    /* ── KPI cards nuevas con barra progreso ── */
+    .kpi-card {
+      background: var(--glass); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+      border: 1px solid var(--glass-border); border-radius: var(--radius);
+      box-shadow: var(--glass-shadow); padding: 20px 22px;
+      position: relative; overflow: hidden; transition: var(--transition);
+    }
+    .kpi-card:hover { transform: translateY(-3px); box-shadow: 0 14px 40px rgba(100,110,140,0.18); }
+    .kpi-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      border-radius: var(--radius) var(--radius) 0 0;
+    }
+    .kpi-card.kc-blue::before   { background: linear-gradient(90deg, #4f80ff, #7ba3ff); }
+    .kpi-card.kc-amber::before  { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+    .kpi-card.kc-teal::before   { background: linear-gradient(90deg, #0d9488, #2dd4bf); }
+    .kpi-card.kc-rose::before   { background: linear-gradient(90deg, #e11d48, #f87171); }
+    .kpi-card.kc-violet::before { background: linear-gradient(90deg, #7c3aed, #a78bfa); }
+
+    .kpi-icon {
+      width: 38px; height: 38px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 17px; margin-bottom: 12px;
+    }
+    .kc-blue   .kpi-icon { background: rgba(79,128,255,0.12);  color: #4f80ff; }
+    .kc-amber  .kpi-icon { background: rgba(251,191,36,0.12);  color: #b45309; }
+    .kc-teal   .kpi-icon { background: rgba(45,212,191,0.12);  color: #0d9488; }
+    .kc-rose   .kpi-icon { background: rgba(248,113,113,0.12); color: #be123c; }
+    .kc-violet .kpi-icon { background: rgba(167,139,250,0.12); color: #7c3aed; }
+
+    .kpi-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .6px; color: var(--text-light); margin-bottom: 4px; }
+    .kpi-value { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 700; color: var(--text-dark); line-height: 1.1; }
+    .kpi-sub   { font-size: 12px; color: var(--text-light); margin-top: 5px; }
+    .kpi-ref   { font-size: 12px; color: var(--text-mid); margin-top: 3px; font-weight: 500; }
+
+    .kpi-bar-bg { height: 5px; border-radius: 20px; background: rgba(200,205,220,0.35); margin-top: 12px; overflow: hidden; }
+    .kpi-bar-fill { height: 100%; border-radius: 20px; transition: width 1s cubic-bezier(.4,0,.2,1); }
+    .kc-blue   .kpi-bar-fill { background: linear-gradient(90deg,#4f80ff,#7ba3ff); }
+    .kc-amber  .kpi-bar-fill { background: linear-gradient(90deg,#f59e0b,#fbbf24); }
+    .kc-teal   .kpi-bar-fill { background: linear-gradient(90deg,#0d9488,#2dd4bf); }
+    .kc-rose   .kpi-bar-fill { background: linear-gradient(90deg,#e11d48,#f87171); }
+    .kc-violet .kpi-bar-fill { background: linear-gradient(90deg,#7c3aed,#a78bfa); }
+
+    .stats-row-5 { display: grid; grid-template-columns: repeat(5,1fr); gap: 14px; margin-bottom: 24px; }
+    @media (max-width: 1200px) { .stats-row-5 { grid-template-columns: repeat(3,1fr); } }
     #screen-login {
       position: fixed; inset: 0; z-index: 5000;
       background: var(--bg); display: flex; align-items: center; justify-content: center;
@@ -376,12 +419,15 @@
         <div style="font-size:13px;color:var(--text-light);margin-top:3px;">Resumen general · <span id="dash-mes"></span></div>
       </div>
       <div class="topbar-actions">
+        <select class="form-select" id="dash-filtro-mes" onchange="actualizarDashboard()" style="min-width:160px;">
+          <option value="">— Mes —</option>
+        </select>
         <button class="btn btn-glass" onclick="mostrarDebug()" style="font-size:12px;">🔍 Debug</button>
-        <button class="btn btn-primary" onclick="abrirModalNuevaLinea()"><i class="fa-solid fa-plus"></i> Nueva línea</button>
+        <button class="btn btn-primary" onclick="abrirModalNuevaLinea()">+ Nueva línea</button>
       </div>
     </div>
 
-    <!-- Panel debug — oculto por defecto -->
+    <!-- Panel debug -->
     <div id="debug-panel" style="display:none;margin-bottom:20px;">
       <div class="card" style="background:rgba(15,15,25,0.90);backdrop-filter:blur(12px);border:1px solid rgba(79,128,255,0.4);">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
@@ -391,12 +437,12 @@
         <pre id="debug-output" style="color:#86efac;font-size:11px;line-height:1.6;overflow-x:auto;white-space:pre-wrap;max-height:320px;overflow-y:auto;margin:0;"></pre>
       </div>
     </div>
-    <div class="stats-row">
-      <div class="stat-card blue"><div class="stat-icon"><i class="fa-solid fa-dollar-sign"></i></div><div class="stat-label">Facturado este mes</div><div class="stat-value" id="kpi-mes">$0</div><div class="stat-sub">Líneas facturadas del mes</div></div>
-      <div class="stat-card teal"><div class="stat-icon"><i class="fa-solid fa-building-user"></i></div><div class="stat-label">Clientes activos</div><div class="stat-value" id="kpi-clientes">0</div><div class="stat-sub">Registrados en el sistema</div></div>
-      <div class="stat-card amber"><div class="stat-icon"><i class="fa-solid fa-location-dot"></i></div><div class="stat-label">Sitios activos</div><div class="stat-value" id="kpi-sitios">0</div><div class="stat-sub">En seguimiento</div></div>
-      <div class="stat-card rose"><div class="stat-icon"><i class="fa-solid fa-clock-rotate-left"></i></div><div class="stat-label">Pendiente de facturar</div><div class="stat-value" id="kpi-pendiente">$0</div><div class="stat-sub">Proyectado sin factura</div></div>
+
+    <!-- KPI Cards — 4 cards liquid glass con color -->
+    <div class="stats-row" id="dash-kpi-row">
+      <!-- generadas dinámicamente por actualizarDashboard() -->
     </div>
+
     <div class="grid-3">
       <div class="card">
         <div class="card-header"><div><div class="card-title">Facturación mensual</div><div class="card-sub">Evolución anual</div></div></div>
@@ -580,21 +626,7 @@
       </div>
     </div>
 
-    <!-- Pills de estado — liquid glass con color -->
-    <div style="display:flex;gap:10px;margin-bottom:20px;align-items:center;flex-wrap:wrap;">
-      <div style="display:flex;align-items:center;gap:0;background:rgba(79,128,255,0.18);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);padding:9px 22px;border-radius:30px;border:1px solid rgba(79,128,255,0.35);font-size:13px;font-weight:600;color:#3a6bf0;letter-spacing:0.1px;">
-        Proyectado
-      </div>
-      <div style="color:var(--text-light);font-size:14px;font-weight:300;">→</div>
-      <div style="display:flex;align-items:center;gap:0;background:rgba(251,191,36,0.18);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);padding:9px 22px;border-radius:30px;border:1px solid rgba(251,191,36,0.4);font-size:13px;font-weight:600;color:#b45309;letter-spacing:0.1px;">
-        Solicitado
-      </div>
-      <div style="color:var(--text-light);font-size:14px;font-weight:300;">→</div>
-      <div style="display:flex;align-items:center;gap:0;background:rgba(45,212,191,0.18);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);padding:9px 22px;border-radius:30px;border:1px solid rgba(45,212,191,0.4);font-size:13px;font-weight:600;color:#0d9488;letter-spacing:0.1px;">
-        Facturado
-      </div>
-    </div>
-
+    <!-- Pills eliminados por pedido del usuario -->
     <div class="card">
       <div class="card-header" style="flex-wrap:wrap;gap:12px;">
         <div class="card-title">Líneas de facturación</div>
@@ -646,12 +678,14 @@
         <div class="page-title">Panel <span>General</span></div>
         <div style="font-size:13px;color:var(--text-light);margin-top:3px;">Estadísticas y cumplimiento de objetivos</div>
       </div>
+      <div class="topbar-actions">
+        <select class="form-select" id="panel-filtro-mes" onchange="actualizarPanel()" style="min-width:160px;">
+          <option value="">— Mes —</option>
+        </select>
+      </div>
     </div>
-    <div class="stats-row">
-      <div class="stat-card blue"><div class="stat-icon"><i class="fa-solid fa-chart-line"></i></div><div class="stat-label">Total Facturado</div><div class="stat-value" id="panel-total">$0</div><div class="stat-sub">Líneas en estado Facturado</div></div>
-      <div class="stat-card amber"><div class="stat-icon"><i class="fa-solid fa-hourglass-half"></i></div><div class="stat-label">Proyectado</div><div class="stat-value" id="panel-proyectado">$0</div><div class="stat-sub">Pendiente de facturar</div></div>
-      <div class="stat-card teal"><div class="stat-icon"><i class="fa-solid fa-paper-plane"></i></div><div class="stat-label">Solicitado</div><div class="stat-value" id="panel-solicitado">$0</div><div class="stat-sub">En proceso de emisión</div></div>
-      <div class="stat-card rose"><div class="stat-icon"><i class="fa-solid fa-list-check"></i></div><div class="stat-label">Total líneas</div><div class="stat-value" id="panel-lineas">0</div><div class="stat-sub">Registradas en el sistema</div></div>
+    <div class="stats-row" id="panel-kpi-row">
+      <!-- generadas dinámicamente -->
     </div>
     <div class="grid-2">
       <div class="card">
@@ -903,7 +937,7 @@
 // ═══════════════════════════════════════════════════════
 //  CONFIGURACIÓN — pegá tu URL de Apps Script aquí
 // ═══════════════════════════════════════════════════════
-const API_URL = 'https://script.google.com/macros/s/AKfycbw47PQh8tyrQQP-jrz5C7-GBAz9mqHJ2BdxzSEtCzxr2dk99IX32InEIFK7IUWTZu8M/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbw3xETXAYurcO4bMdPA47W3oUuHIKU_rp2rLHFym4Yu13-k0kIvx1rQs4p0iAlT13vC/exec';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API — todas las llamadas al backend
@@ -1638,24 +1672,111 @@ function actualizarBadge() {
   document.getElementById('badge-seg').textContent = lineas.filter(l => l.estado !== 'Facturado').length;
 }
 
+/* ══ HELPERS FILTRO MES ══ */
+function getMesesDisponibles() {
+  // Extrae meses únicos de las líneas, ordenados cronológicamente
+  const set = [...new Set(lineas.map(l => l.mes).filter(Boolean))].sort();
+  return set;
+}
+
+function poblarFiltroMes(selectId) {
+  const sel = document.getElementById(selectId);
+  if (!sel) return;
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">— Todos los meses —</option>';
+  getMesesDisponibles().forEach(m => {
+    sel.innerHTML += `<option value="${m}">${mesLabel(m)}</option>`;
+  });
+  // Restaurar selección previa si sigue disponible
+  if (prev && [...sel.options].some(o => o.value === prev)) sel.value = prev;
+  else if (!prev && getMesesDisponibles().length > 0) {
+    // Por defecto seleccionar el mes más reciente
+    sel.value = getMesesDisponibles().slice(-1)[0];
+  }
+}
+
+function filtrarLineasPorMes(filtroMesId) {
+  const mes = document.getElementById(filtroMesId)?.value || '';
+  return mes ? lineas.filter(l => l.mes === mes) : lineas;
+}
+
+function kpiCard(tipo, icon, label, value, sub, ref, pct) {
+  const pctW = Math.min(100, Math.max(0, pct || 0));
+  return `<div class="kpi-card kc-${tipo}">
+    <div class="kpi-icon">${icon}</div>
+    <div class="kpi-label">${label}</div>
+    <div class="kpi-value">${value}</div>
+    <div class="kpi-sub">${sub}</div>
+    ${ref ? `<div class="kpi-ref">${ref}</div>` : ''}
+    <div class="kpi-bar-bg"><div class="kpi-bar-fill" style="width:${pctW}%"></div></div>
+  </div>`;
+}
+
 /* ══ DASHBOARD ══ */
 function actualizarDashboard() {
   const hoy = new Date();
   const nombresMes = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
   document.getElementById('dash-mes').textContent = nombresMes[hoy.getMonth()] + ' ' + hoy.getFullYear();
-  const mesAct = hoy.getFullYear() + '-' + String(hoy.getMonth()+1).padStart(2,'0');
-  const facMes = lineas.filter(l => l.estado==='Facturado' && l.mes===mesAct).reduce((a,l)=>a+l.monto,0);
-  document.getElementById('kpi-mes').textContent       = fmt(facMes);
-  document.getElementById('kpi-clientes').textContent  = clientes.length;
-  document.getElementById('kpi-sitios').textContent    = sitios.length;
-  document.getElementById('kpi-pendiente').textContent = fmt(lineas.filter(l=>l.estado==='Proyectado').reduce((a,l)=>a+l.monto,0));
 
-  // Recientes
+  poblarFiltroMes('dash-filtro-mes');
+  const lf = filtrarLineasPorMes('dash-filtro-mes'); // líneas filtradas
+
+  const facturadas  = lf.filter(l => l.estado === 'Facturado');
+  const proyectadas = lf.filter(l => l.estado === 'Proyectado');
+  const solicitadas = lf.filter(l => l.estado === 'Solicitado');
+
+  const totalFac  = facturadas.reduce((a,l)=>a+l.monto, 0);
+  const totalProy = proyectadas.reduce((a,l)=>a+l.monto, 0);
+  const totalSol  = solicitadas.reduce((a,l)=>a+l.monto, 0);
+  const totalTodo = lf.reduce((a,l)=>a+l.monto, 0);
+
+  // % proyectados que ya fueron solicitados o facturados
+  const proyOrig     = lf.filter(l => l.estado !== 'Proyectado');
+  const pctPSol      = totalTodo > 0 ? Math.round((totalSol + totalFac) / totalTodo * 100) : 0;
+  // % solicitados que ya fueron facturados
+  const pctSFac      = (totalSol + totalFac) > 0 ? Math.round(totalFac / (totalSol + totalFac) * 100) : 0;
+  // pct sitios
+  const pctSitios    = sitios.length > 0 ? Math.round(lf.map(l=>l.sitioId).filter((v,i,a)=>a.indexOf(v)===i).length / sitios.length * 100) : 0;
+
+  const row = document.getElementById('dash-kpi-row');
+  row.className = 'stats-row-5';
+  row.innerHTML =
+    kpiCard('blue',   '💰', 'Facturación mensual',
+      fmt(totalFac),
+      'Líneas facturadas',
+      `${facturadas.length} línea${facturadas.length!==1?'s':''}`,
+      totalTodo > 0 ? Math.round(totalFac/totalTodo*100) : 0
+    ) +
+    kpiCard('amber',  '📋', 'Proyectados',
+      fmt(totalProy),
+      'Sin iniciar',
+      `${proyectadas.length} línea${proyectadas.length!==1?'s':''}`,
+      totalTodo > 0 ? Math.round(totalProy/totalTodo*100) : 0
+    ) +
+    kpiCard('violet', '📤', 'Solicitados',
+      fmt(totalSol),
+      'En proceso de emisión',
+      `${solicitadas.length} línea${solicitadas.length!==1?'s':''}`,
+      totalTodo > 0 ? Math.round(totalSol/totalTodo*100) : 0
+    ) +
+    kpiCard('teal',   '✅', 'Proyectados → Solicitados',
+      `${fmt(totalSol + totalFac)}`,
+      `de ${fmt(totalTodo)} total`,
+      `${pctPSol}% avanzado`,
+      pctPSol
+    ) +
+    kpiCard('rose',   '🧾', 'Solicitados → Facturados',
+      fmt(totalFac),
+      `de ${fmt(totalSol + totalFac)} solicitado`,
+      `${pctSFac}% facturado`,
+      pctSFac
+    );
+
+  // Recientes — últimas 5 del filtro activo
   const rec = document.getElementById('dash-recientes');
-  if (!lineas.length) { rec.innerHTML = `<div class="empty-state"><span class="es-icon">📄</span><p>Sin registros aún.</p></div>`; }
+  if (!lf.length) { rec.innerHTML = `<div class="empty-state"><span class="es-icon">📄</span><p>Sin registros para este mes.</p></div>`; }
   else {
-    const ult = [...lineas].reverse().slice(0,5);
-    rec.innerHTML = ult.map(l => {
+    rec.innerHTML = [...lf].reverse().slice(0,5).map(l => {
       const cli = getCli(l.clienteId);
       let bc = 'badge-blue';
       if (l.estado==='Solicitado') bc='badge-amber';
@@ -1669,28 +1790,23 @@ function actualizarDashboard() {
     }).join('');
   }
 
-  // Objetivos
+  // Objetivos por cliente (sobre líneas filtradas)
   const obj = document.getElementById('dash-objetivos');
-  if (!clientes.length) { obj.innerHTML = `<div style="text-align:center;padding:30px 0;color:var(--text-light);font-size:13px;">Cargá clientes para ver objetivos</div>`; }
+  if (!clientes.length) { obj.innerHTML = `<div style="text-align:center;padding:30px 0;color:var(--text-light);font-size:13px;">Sin clientes</div>`; }
   else {
-    const maxV = Math.max(...clientes.map(c => lineas.filter(l=>l.estado==='Facturado'&&l.clienteId===c.id).reduce((a,l)=>a+l.monto,0)), 1);
+    const maxV = Math.max(...clientes.map(c => facturadas.filter(l=>l.clienteId===c.id).reduce((a,l)=>a+l.monto,0)), 1);
     obj.innerHTML = clientes.map(c => {
-      const val = lineas.filter(l=>l.estado==='Facturado'&&l.clienteId===c.id).reduce((a,l)=>a+l.monto,0);
-      const pct = Math.round(val/maxV*100);
+      const val = facturadas.filter(l=>l.clienteId===c.id).reduce((a,l)=>a+l.monto,0);
       return `<div class="objetivo-item">
-        <div class="obj-header">
-          <span class="obj-name">${dot(c.color)} ${c.id}</span>
-          <span class="obj-pct" style="color:${c.color}">${fmt(val)}</span>
-        </div>
-        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${pct}%;background:${c.color};"></div></div>
+        <div class="obj-header"><span class="obj-name">${dot(c.color)} ${c.id}</span><span class="obj-pct" style="color:${c.color}">${fmt(val)}</span></div>
+        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${Math.round(val/maxV*100)}%;background:${c.color};"></div></div>
       </div>`;
     }).join('');
   }
 
-  // Donut dashboard
-  actualizarDonut1();
+  actualizarDonut1(lf);
 
-  // Line chart
+  // Line chart — siempre muestra el año completo
   const dataLine = meses.map((_,i) => {
     const key = hoy.getFullYear() + '-' + String(i+1).padStart(2,'0');
     return lineas.filter(l=>l.estado==='Facturado'&&l.mes===key).reduce((a,l)=>a+l.monto,0);
@@ -1699,8 +1815,9 @@ function actualizarDashboard() {
   chartLineInst.update();
 }
 
-function actualizarDonut1() {
-  const facturadas = lineas.filter(l => l.estado === 'Facturado');
+function actualizarDonut1(lineasFiltradas) {
+  const lf = lineasFiltradas || lineas;
+  const facturadas = lf.filter(l => l.estado === 'Facturado');
   if (!facturadas.length || !clientes.length) {
     chartDonut1Inst.data.datasets[0].data = [1];
     chartDonut1Inst.data.datasets[0].backgroundColor = ['rgba(200,205,220,0.35)'];
@@ -1724,14 +1841,29 @@ function actualizarDonut1() {
 
 /* ══ PANEL ══ */
 function actualizarPanel() {
-  const facturadas  = lineas.filter(l=>l.estado==='Facturado');
-  const solicitadas = lineas.filter(l=>l.estado==='Solicitado');
-  const proyectadas = lineas.filter(l=>l.estado==='Proyectado');
-  document.getElementById('panel-total').textContent      = fmt(facturadas.reduce((a,l)=>a+l.monto,0));
-  document.getElementById('panel-proyectado').textContent = fmt(proyectadas.reduce((a,l)=>a+l.monto,0));
-  document.getElementById('panel-solicitado').textContent = fmt(solicitadas.reduce((a,l)=>a+l.monto,0));
-  document.getElementById('panel-lineas').textContent     = lineas.length;
-  document.getElementById('donut2-total').textContent     = lineas.length;
+  poblarFiltroMes('panel-filtro-mes');
+  const lf = filtrarLineasPorMes('panel-filtro-mes');
+
+  const facturadas  = lf.filter(l=>l.estado==='Facturado');
+  const solicitadas = lf.filter(l=>l.estado==='Solicitado');
+  const proyectadas = lf.filter(l=>l.estado==='Proyectado');
+  const totalTodo   = lf.reduce((a,l)=>a+l.monto,0);
+  const totalFac    = facturadas.reduce((a,l)=>a+l.monto,0);
+  const totalSol    = solicitadas.reduce((a,l)=>a+l.monto,0);
+  const totalProy   = proyectadas.reduce((a,l)=>a+l.monto,0);
+  const pctSFac     = (totalSol+totalFac) > 0 ? Math.round(totalFac/(totalSol+totalFac)*100) : 0;
+  const pctPSol     = totalTodo > 0 ? Math.round((totalSol+totalFac)/totalTodo*100) : 0;
+
+  const row = document.getElementById('panel-kpi-row');
+  row.className = 'stats-row-5';
+  row.innerHTML =
+    kpiCard('blue',   '💰', 'Total facturado',   fmt(totalFac),  `${facturadas.length} líneas`,  null, totalTodo>0?Math.round(totalFac/totalTodo*100):0) +
+    kpiCard('amber',  '📋', 'Proyectado',         fmt(totalProy), `${proyectadas.length} líneas`, null, totalTodo>0?Math.round(totalProy/totalTodo*100):0) +
+    kpiCard('violet', '📤', 'Solicitado',          fmt(totalSol),  `${solicitadas.length} líneas`, null, totalTodo>0?Math.round(totalSol/totalTodo*100):0) +
+    kpiCard('teal',   '✅', 'Proy. → Solicitados', fmt(totalSol+totalFac), `de ${fmt(totalTodo)}`, `${pctPSol}% avanzado`, pctPSol) +
+    kpiCard('rose',   '🧾', 'Sol. → Facturados',   fmt(totalFac),  `de ${fmt(totalSol+totalFac)}`,`${pctSFac}% facturado`, pctSFac);
+
+  document.getElementById('donut2-total').textContent = lf.length;
   document.getElementById('leg-fact').textContent  = facturadas.length;
   document.getElementById('leg-sol').textContent   = solicitadas.length;
   document.getElementById('leg-proy').textContent  = proyectadas.length;
@@ -1739,23 +1871,19 @@ function actualizarPanel() {
   chartDonut2Inst.update();
 
   const hoy = new Date();
-  const dataBar = meses.map((_,i) => {
+  chartBarInst.data.datasets[0].data = meses.map((_,i) => {
     const key = hoy.getFullYear() + '-' + String(i+1).padStart(2,'0');
-    return facturadas.filter(l=>l.mes===key).reduce((a,l)=>a+l.monto,0);
+    return lineas.filter(l=>l.estado==='Facturado'&&l.mes===key).reduce((a,l)=>a+l.monto,0);
   });
-  chartBarInst.data.datasets[0].data = dataBar;
   chartBarInst.update();
 
   const panelBars = document.getElementById('panel-clientes-bars');
   if (!clientes.length) { panelBars.innerHTML = `<div style="text-align:center;color:var(--text-light);font-size:13px;padding:20px 0;">Sin clientes</div>`; return; }
-  const maxV = Math.max(...clientes.map(c=>facturadas.filter(l=>l.clienteId===c.id).reduce((a,l)=>a+l.monto,0)),1);
+  const maxV = Math.max(...clientes.map(c=>facturadas.filter(l=>l.clienteId===c.id).reduce((a,l)=>a+l.monto,0)), 1);
   panelBars.innerHTML = clientes.map(c => {
     const val = facturadas.filter(l=>l.clienteId===c.id).reduce((a,l)=>a+l.monto,0);
     return `<div class="objetivo-item">
-      <div class="obj-header">
-        <span class="obj-name">${dot(c.color)} ${c.id}</span>
-        <span class="obj-pct" style="color:${c.color}">${fmt(val)}</span>
-      </div>
+      <div class="obj-header"><span class="obj-name">${dot(c.color)} ${c.id}</span><span class="obj-pct" style="color:${c.color}">${fmt(val)}</span></div>
       <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${Math.round(val/maxV*100)}%;background:${c.color};"></div></div>
     </div>`;
   }).join('');
