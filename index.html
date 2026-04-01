@@ -380,7 +380,7 @@
       <div class="form-row" style="grid-template-columns:1fr 1fr 2fr;">
         <div class="form-group">
           <label class="form-label">N° de PO</label>
-          <input class="form-input" id="sit-po-nro" placeholder="Ej: PO-2025-001" />
+          <input class="form-input" id="sit-po-nro" placeholder="Ej: PO-2025-001" oninput="this.style.borderColor='';this.style.boxShadow='';" />
         </div>
         <div class="form-group">
           <label class="form-label">Total PO ($) *</label>
@@ -442,12 +442,6 @@
         <div style="font-size:13px;color:var(--text-light);margin-top:3px;">Estado de cada línea — el proceso avanza por etapas</div>
       </div>
       <div class="topbar-actions">
-        <select class="form-select" style="width:190px;" onchange="filtrarSeguimientoEstado(this.value)">
-          <option value="">Todos los estados</option>
-          <option value="Proyectado">Proyectado</option>
-          <option value="Solicitado">Solicitado</option>
-          <option value="Facturado">Facturado</option>
-        </select>
         <button class="btn btn-primary" onclick="abrirModalNuevaLinea()">+ Nueva línea</button>
       </div>
     </div>
@@ -468,9 +462,23 @@
     </div>
 
     <div class="card">
-      <div class="card-header">
+      <div class="card-header" style="flex-wrap:wrap;gap:12px;">
         <div class="card-title">Líneas de facturación</div>
-        <input class="form-input" style="width:200px;" placeholder="Buscar..." oninput="filtrarSeguimiento(this.value)" />
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <input class="form-input" style="width:160px;" placeholder="Buscar..." oninput="aplicarFiltrosSeg()" id="seg-filtro-texto" />
+          <select class="form-select" style="width:160px;" id="seg-filtro-cliente" onchange="aplicarFiltrosSeg()">
+            <option value="">Todos los clientes</option>
+          </select>
+          <select class="form-select" style="width:160px;" id="seg-filtro-sitio" onchange="aplicarFiltrosSeg()">
+            <option value="">Todos los sitios</option>
+          </select>
+          <select class="form-select" style="width:160px;" id="seg-filtro-estado" onchange="aplicarFiltrosSeg()">
+            <option value="">Todos los estados</option>
+            <option value="Proyectado">Proyectado</option>
+            <option value="Solicitado">Solicitado</option>
+            <option value="Facturado">Facturado</option>
+          </select>
+        </div>
       </div>
       <div class="table-wrap">
         <table>
@@ -530,47 +538,154 @@
 
 </main>
 
-<!-- MODAL — Nueva línea -->
-<div class="modal-overlay" id="modal-nueva-linea">
-  <div class="modal">
-    <div class="modal-title">Nueva línea de facturación</div>
+<!-- MODAL — Nueva línea (full screen) -->
+<div class="modal-overlay" id="modal-nueva-linea" style="align-items:center;padding:20px;">
+  <div class="modal" style="width:100%;max-width:720px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;">
+      <div class="modal-title" style="margin:0;">Nueva línea de facturación</div>
+      <button onclick="cerrarModal()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--text-light);line-height:1;">✕</button>
+    </div>
     <div class="form-row" style="grid-template-columns:1fr 1fr;">
       <div class="form-group">
         <label class="form-label">Sitio *</label>
-        <select class="form-select" id="nl-sitio" onchange="calcularMontoLinea()">
+        <select class="form-select" id="nl-sitio" onchange="onSitioChange()">
           <option value="">— Seleccionar sitio —</option>
         </select>
       </div>
       <div class="form-group">
         <label class="form-label">% a facturar *</label>
         <select class="form-select" id="nl-pct" onchange="calcularMontoLinea()">
-          <option value="100">100%</option><option value="80">80%</option>
-          <option value="70">70%</option><option value="30">30%</option><option value="20">20%</option>
+          <option value="100">100%</option>
         </select>
+        <span id="nl-pct-aviso" style="font-size:11px;color:var(--accent-amber);margin-top:3px;display:none;"></span>
       </div>
     </div>
     <div class="form-row" style="grid-template-columns:1fr 1fr 1fr;">
       <div class="form-group">
         <label class="form-label">N° PO del sitio</label>
-        <input class="form-input" id="nl-po-nro" readonly placeholder="—" style="background:rgba(240,242,248,0.7);" />
+        <input class="form-input" id="nl-po-nro" readonly style="background:rgba(240,242,248,0.7);" />
       </div>
       <div class="form-group">
         <label class="form-label">Mes proyectado *</label>
-        <input class="form-input" type="month" id="nl-mes" />
+        <div style="display:flex;gap:8px;">
+          <select class="form-select" id="nl-mes-mes" style="flex:1.4;">
+            <option value="">Mes</option>
+            <option value="01">Enero</option><option value="02">Febrero</option>
+            <option value="03">Marzo</option><option value="04">Abril</option>
+            <option value="05">Mayo</option><option value="06">Junio</option>
+            <option value="07">Julio</option><option value="08">Agosto</option>
+            <option value="09">Septiembre</option><option value="10">Octubre</option>
+            <option value="11">Noviembre</option><option value="12">Diciembre</option>
+          </select>
+          <input class="form-input" id="nl-mes-anio" type="number" min="2020" max="2040" value="2026" style="flex:1;min-width:0;" />
+        </div>
       </div>
       <div class="form-group">
         <label class="form-label">Monto calculado</label>
-        <input class="form-input" id="nl-monto" readonly placeholder="Seleccioná sitio y %" style="font-weight:600;" />
+        <input class="form-input" id="nl-monto" readonly placeholder="—" style="font-weight:700;background:rgba(240,242,248,0.7);" />
       </div>
+    </div>
+    <div id="nl-po-info" style="display:none;background:rgba(79,128,255,0.07);border:1px solid rgba(79,128,255,0.2);border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:16px;font-size:13px;color:var(--text-mid);">
+      <strong style="color:var(--accent-blue);">PO ya facturada parcialmente</strong><br>
+      <span id="nl-po-detalle"></span>
     </div>
     <div class="modal-footer">
       <button class="btn btn-glass" onclick="cerrarModal()">Cancelar</button>
-      <button class="btn btn-primary" onclick="guardarNuevaLinea()"><i class="fa-solid fa-floppy-disk"></i> Guardar línea</button>
+      <button class="btn btn-primary" onclick="guardarNuevaLinea()">Guardar línea</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL — Solicitud -->
+<!-- MODAL — Confirmación guardar sitio -->
+<div class="modal-overlay" id="modal-confirmar-sitio">
+  <div class="modal" style="max-width:480px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <div class="modal-title" style="margin:0;">Confirmar nuevo sitio</div>
+      <button onclick="cerrarModal()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--text-light);line-height:1;">✕</button>
+    </div>
+    <div style="font-size:13px;color:var(--text-mid);margin-bottom:18px;">Vas a agregar el siguiente sitio:</div>
+    <div id="confirmar-sitio-detalle" style="background:rgba(79,128,255,0.06);border:1px solid rgba(79,128,255,0.18);border-radius:var(--radius-sm);padding:16px 20px;margin-bottom:22px;"></div>
+    <div class="modal-footer">
+      <button class="btn" style="background:rgba(248,113,113,0.12);color:#b91c1c;border:1px solid rgba(248,113,113,0.3);font-size:22px;width:50px;height:50px;padding:0;justify-content:center;border-radius:50%;" onclick="cerrarModal()" title="Cancelar">✕</button>
+      <button class="btn" style="background:rgba(45,212,191,0.15);color:#0d9488;border:1px solid rgba(45,212,191,0.35);font-size:22px;width:50px;height:50px;padding:0;justify-content:center;border-radius:50%;" onclick="confirmarGuardarSitio()" title="Confirmar">✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL — Editar sitio -->
+<div class="modal-overlay" id="modal-editar-sitio">
+  <div class="modal" style="max-width:640px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <div class="modal-title" style="margin:0;">Editar sitio</div>
+      <button onclick="cerrarModal()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--text-light);line-height:1;">✕</button>
+    </div>
+    <input type="hidden" id="edit-sit-original-id" />
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">ID Sitio</label>
+        <input class="form-input" id="edit-sit-id" style="background:rgba(240,242,248,0.7);" readonly />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Provincia *</label>
+        <select class="form-select" id="edit-sit-localidad">
+          <option value="">— Seleccionar —</option>
+          <option>Buenos Aires</option><option>CABA</option><option>Catamarca</option>
+          <option>Chaco</option><option>Chubut</option><option>Córdoba</option>
+          <option>Corrientes</option><option>Entre Ríos</option><option>Formosa</option>
+          <option>Jujuy</option><option>La Pampa</option><option>La Rioja</option>
+          <option>Mendoza</option><option>Misiones</option><option>Neuquén</option>
+          <option>Río Negro</option><option>Salta</option><option>San Juan</option>
+          <option>San Luis</option><option>Santa Cruz</option><option>Santa Fe</option>
+          <option>Santiago del Estero</option><option>Tierra del Fuego</option><option>Tucumán</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Cliente *</label>
+        <select class="form-select" id="edit-sit-cliente"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Concepto *</label>
+        <select class="form-select" id="edit-sit-concepto">
+          <option value="Básico">Básico</option>
+          <option value="Adicional">Adicional</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row" style="grid-template-columns:1fr 1fr 2fr;">
+      <div class="form-group">
+        <label class="form-label">N° de PO</label>
+        <input class="form-input" id="edit-sit-po-nro" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Total PO ($)</label>
+        <input class="form-input" id="edit-sit-po" type="number" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Observación</label>
+        <input class="form-input" id="edit-sit-obs" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-glass" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarEdicionSitio()">Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL — PO duplicada -->
+<div class="modal-overlay" id="modal-po-duplicada">
+  <div class="modal" style="max-width:420px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <div class="modal-title" style="margin:0;color:var(--accent-rose);">⚠ PO ya registrada</div>
+      <button onclick="cerrarModalPoDuplicada()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--text-light);line-height:1;">✕</button>
+    </div>
+    <div style="font-size:13px;color:var(--text-mid);margin-bottom:14px;">Este número de PO ya existe en el sistema:</div>
+    <div id="po-dup-detalle" style="background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.25);border-radius:var(--radius-sm);padding:14px 18px;margin-bottom:18px;font-size:13px;"></div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="cerrarModalPoDuplicada()">Entendido, cambiar PO</button>
+    </div>
+  </div>
+</div>
 <div class="modal-overlay" id="modal-solicitud">
   <div class="modal">
     <div class="modal-title">Marcar solicitud de factura</div>
@@ -855,6 +970,8 @@ async function eliminarCliente(id) {
 }
 
 /* ══ SITIOS ══ */
+let _sitioTemp = null; // guarda datos pendientes de confirmación
+
 function toggleFormSitio() {
   const f = document.getElementById('form-sitio');
   f.style.display = f.style.display === 'none' ? 'block' : 'none';
@@ -870,18 +987,60 @@ function poblarSelect(id) {
   if (prev) sel.value = prev;
 }
 
-async function guardarSitio() {
+function guardarSitio() {
   const id    = document.getElementById('sit-id').value.trim();
   const loc   = document.getElementById('sit-localidad').value;
   const cid   = document.getElementById('sit-cliente').value;
   const con   = document.getElementById('sit-concepto').value;
   const poNro = document.getElementById('sit-po-nro').value.trim();
-  const po    = parseFloat(document.getElementById('sit-po').value)||0;
+  const po    = parseFloat(document.getElementById('sit-po').value) || 0;
   const obs   = document.getElementById('sit-obs').value.trim();
+
   if (!id)  return alert('Ingresá un ID de sitio.');
   if (!loc) return alert('Seleccioná una provincia.');
   if (!cid) return alert('Seleccioná un cliente.');
   if (sitios.find(s => s.id === id)) return alert('Ya existe ese ID de sitio.');
+
+  // Validar PO duplicada
+  if (poNro) {
+    const dup = sitios.find(s => s.poNro && s.poNro.trim() === poNro);
+    if (dup) {
+      // Mostrar modal PO duplicada
+      document.getElementById('po-dup-detalle').innerHTML =
+        `<b>ID Sitio:</b> ${dup.id}<br>
+         <b>Cliente:</b> ${dup.clienteId}<br>
+         <b>Provincia:</b> ${dup.localidad}<br>
+         <b>Concepto:</b> ${dup.concepto}<br>
+         <b>Total PO:</b> ${dup.po ? fmt(dup.po) : '—'}<br>
+         <b>Observación:</b> ${dup.obs || '—'}`;
+      document.getElementById('modal-po-duplicada').classList.add('open');
+      // Marcar campo PO en rojo
+      document.getElementById('sit-po-nro').style.borderColor = 'var(--accent-rose)';
+      document.getElementById('sit-po-nro').style.boxShadow = '0 0 0 3px rgba(248,113,113,0.15)';
+      return;
+    }
+  }
+
+  // Guardar temporalmente y mostrar confirmación
+  _sitioTemp = { id, loc, cid, con, poNro, po, obs };
+  const cli = getCli(cid);
+  document.getElementById('confirmar-sitio-detalle').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;">
+      <div><span style="font-size:11px;color:var(--text-light);text-transform:uppercase;letter-spacing:.5px;">ID Sitio</span><div style="font-weight:700;font-size:15px;margin-top:2px;">${id}</div></div>
+      <div><span style="font-size:11px;color:var(--text-light);text-transform:uppercase;letter-spacing:.5px;">Cliente</span><div style="display:flex;align-items:center;gap:7px;margin-top:2px;font-weight:600;">${cli?dot(cli.color):''}${cid}</div></div>
+      <div><span style="font-size:11px;color:var(--text-light);text-transform:uppercase;letter-spacing:.5px;">Provincia</span><div style="margin-top:2px;">${loc}</div></div>
+      <div><span style="font-size:11px;color:var(--text-light);text-transform:uppercase;letter-spacing:.5px;">Concepto</span><div style="margin-top:2px;">${con}</div></div>
+      <div><span style="font-size:11px;color:var(--text-light);text-transform:uppercase;letter-spacing:.5px;">N° PO</span><div style="margin-top:2px;">${poNro || '—'}</div></div>
+      <div><span style="font-size:11px;color:var(--text-light);text-transform:uppercase;letter-spacing:.5px;">Total PO</span><div style="font-weight:700;color:var(--accent-blue);margin-top:2px;">${po ? fmt(po) : '—'}</div></div>
+      ${obs ? `<div style="grid-column:1/-1;"><span style="font-size:11px;color:var(--text-light);text-transform:uppercase;letter-spacing:.5px;">Observación</span><div style="margin-top:2px;">${obs}</div></div>` : ''}
+    </div>`;
+  document.getElementById('modal-confirmar-sitio').classList.add('open');
+}
+
+async function confirmarGuardarSitio() {
+  if (!_sitioTemp) return;
+  const { id, loc, cid, con, poNro, po, obs } = _sitioTemp;
+  cerrarModal();
   setLoading(true);
   try {
     await apiPost('INSERT', 'SITIOS', {
@@ -897,13 +1056,63 @@ async function guardarSitio() {
     renderSitios(); renderClientes(); actualizarDashboard();
     toast('Sitio guardado ✓');
   } catch(e) { toast('Error: ' + e.message, 'err'); }
+  finally { setLoading(false); _sitioTemp = null; }
+}
+
+function cerrarModalPoDuplicada() {
+  document.getElementById('modal-po-duplicada').classList.remove('open');
+  // Dejar campo marcado en rojo para guiar al usuario
+}
+
+function abrirEditarSitio(sitioId) {
+  const s = getSit(sitioId);
+  if (!s) return;
+  document.getElementById('edit-sit-original-id').value = s.id;
+  document.getElementById('edit-sit-id').value         = s.id;
+  document.getElementById('edit-sit-localidad').value  = s.localidad;
+  document.getElementById('edit-sit-concepto').value   = s.concepto;
+  document.getElementById('edit-sit-po-nro').value     = s.poNro || '';
+  document.getElementById('edit-sit-po').value         = s.po || '';
+  document.getElementById('edit-sit-obs').value        = s.obs || '';
+  // Poblar select clientes
+  const sel = document.getElementById('edit-sit-cliente');
+  sel.innerHTML = '<option value="">— Seleccionar —</option>';
+  clientes.forEach(c => sel.innerHTML += `<option value="${c.id}">${c.id}</option>`);
+  sel.value = s.clienteId;
+  document.getElementById('modal-editar-sitio').classList.add('open');
+}
+
+async function guardarEdicionSitio() {
+  const origId = document.getElementById('edit-sit-original-id').value;
+  const loc    = document.getElementById('edit-sit-localidad').value;
+  const cid    = document.getElementById('edit-sit-cliente').value;
+  const con    = document.getElementById('edit-sit-concepto').value;
+  const poNro  = document.getElementById('edit-sit-po-nro').value.trim();
+  const po     = parseFloat(document.getElementById('edit-sit-po').value) || 0;
+  const obs    = document.getElementById('edit-sit-obs').value.trim();
+  if (!loc) return alert('Seleccioná una provincia.');
+  if (!cid) return alert('Seleccioná un cliente.');
+  // Validar PO duplicada en otro sitio
+  if (poNro) {
+    const dup = sitios.find(s => s.id !== origId && s.poNro && s.poNro.trim() === poNro);
+    if (dup) return alert(`PO "${poNro}" ya existe en el sitio ${dup.id}`);
+  }
+  setLoading(true);
+  try {
+    await apiPost('UPDATE', 'SITIOS', {
+      LOCALIDAD: loc, CLIENTE_ID: cid, CONCEPTO: con,
+      PO_NRO: poNro, PO_TOTAL: po, OBSERVACION: obs
+    }, origId);
+    const s = getSit(origId);
+    if (s) { s.localidad = loc; s.clienteId = cid; s.concepto = con; s.poNro = poNro; s.po = po; s.obs = obs; }
+    cerrarModal(); renderSitios(); renderClientes(); actualizarDashboard();
+    toast('Sitio actualizado ✓');
+  } catch(e) { toast('Error: ' + e.message, 'err'); }
   finally { setLoading(false); }
 }
 
 function renderSitios(filtro = '', filtros = null) {
   const tbody = document.getElementById('tabla-sitios');
-
-  // Poblar select filtro clientes con los clientes actuales
   const selCli = document.getElementById('sit-filtro-cliente');
   if (selCli) {
     const prev = selCli.value;
@@ -911,7 +1120,6 @@ function renderSitios(filtro = '', filtros = null) {
     clientes.forEach(c => selCli.innerHTML += `<option value="${c.id}">${c.id}</option>`);
     if (prev) selCli.value = prev;
   }
-
   let lista = [...sitios];
   if (filtros) {
     if (filtros.texto)    lista = lista.filter(s => s.id.toLowerCase().includes(filtros.texto) || s.localidad.toLowerCase().includes(filtros.texto) || s.clienteId.toLowerCase().includes(filtros.texto));
@@ -925,7 +1133,6 @@ function renderSitios(filtro = '', filtros = null) {
       s.clienteId.toLowerCase().includes(filtro.toLowerCase())
     );
   }
-
   if (!lista.length) { tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><span class="es-icon">📍</span><p>Sin sitios que coincidan con los filtros.</p></div></td></tr>`; return; }
   tbody.innerHTML = lista.map(s => {
     const cli = getCli(s.clienteId);
@@ -938,7 +1145,10 @@ function renderSitios(filtro = '', filtros = null) {
       <td style="font-size:12px;color:var(--text-mid);">${s.poNro||'—'}</td>
       <td style="font-weight:600;">${s.po ? fmt(s.po) : '—'}</td>
       <td style="color:var(--text-mid);font-size:12px;">${s.obs||'—'}</td>
-      <td><button class="btn btn-rose btn-sm" onclick="eliminarSitio('${s.id}')"><i class="fa-solid fa-trash"></i></button></td>
+      <td style="display:flex;gap:6px;">
+        <button class="btn btn-glass btn-sm" onclick="abrirEditarSitio('${s.id}')" title="Editar">✏️</button>
+        <button class="btn btn-rose btn-sm" onclick="eliminarSitio('${s.id}')" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
+      </td>
     </tr>`;
   }).join('');
 }
@@ -963,35 +1173,92 @@ async function eliminarSitio(id) {
 }
 
 /* ══ SEGUIMIENTO ══ */
-let filtroTextoSeg = '', filtroEstadoSeg = '';
+let filtroTextoSeg = '', filtroEstadoSeg = '', filtroClienteSeg = '', filtroSitioSeg = '';
+
+function aplicarFiltrosSeg() {
+  filtroTextoSeg   = (document.getElementById('seg-filtro-texto')?.value   || '').toLowerCase();
+  filtroClienteSeg = document.getElementById('seg-filtro-cliente')?.value  || '';
+  filtroSitioSeg   = document.getElementById('seg-filtro-sitio')?.value    || '';
+  filtroEstadoSeg  = document.getElementById('seg-filtro-estado')?.value   || '';
+  renderSeguimiento();
+}
+function filtrarSeguimiento(v) { filtroTextoSeg = v; renderSeguimiento(); }
+function filtrarSeguimientoEstado(v) { filtroEstadoSeg = v; renderSeguimiento(); }
 
 function abrirModalNuevaLinea() {
   const sel = document.getElementById('nl-sitio');
   sel.innerHTML = '<option value="">— Seleccionar sitio —</option>';
   sitios.forEach(s => {
-    const cli = getCli(s.clienteId);
     sel.innerHTML += `<option value="${s.id}">${s.id} · ${s.clienteId} (${s.localidad})</option>`;
   });
-  document.getElementById('nl-pct').value = '100';
-  document.getElementById('nl-mes').value = '';
-  document.getElementById('nl-monto').value = '';
-  document.getElementById('nl-po-nro').value = '';
+  document.getElementById('nl-pct').innerHTML = '<option value="100">100%</option>';
+  document.getElementById('nl-mes-mes').value  = '';
+  document.getElementById('nl-mes-anio').value = '2026';
+  document.getElementById('nl-monto').value    = '';
+  document.getElementById('nl-po-nro').value   = '';
+  document.getElementById('nl-po-info').style.display = 'none';
+  document.getElementById('nl-pct-aviso').style.display = 'none';
   document.getElementById('modal-nueva-linea').classList.add('open');
+}
+
+function onSitioChange() {
+  const sit = getSit(document.getElementById('nl-sitio').value);
+  document.getElementById('nl-po-nro').value = (sit && sit.poNro) ? sit.poNro : '—';
+
+  if (!sit) {
+    document.getElementById('nl-pct').innerHTML = '<option value="100">100%</option>';
+    document.getElementById('nl-po-info').style.display = 'none';
+    document.getElementById('nl-pct-aviso').style.display = 'none';
+    document.getElementById('nl-monto').value = '';
+    return;
+  }
+
+  // Calcular % ya usado en lineas activas de este sitio
+  const pctUsado = lineas
+    .filter(l => l.sitioId === sit.id)
+    .reduce((a, l) => a + l.pct, 0);
+  const pctDisp = 100 - pctUsado;
+
+  const opciones = [100, 80, 70, 30, 20].filter(p => p <= pctDisp);
+  const sel = document.getElementById('nl-pct');
+  sel.innerHTML = '';
+  if (opciones.length === 0) {
+    sel.innerHTML = '<option value="">Sin % disponible</option>';
+    document.getElementById('nl-pct-aviso').textContent = 'Este sitio ya tiene el 100% asignado.';
+    document.getElementById('nl-pct-aviso').style.display = 'block';
+  } else {
+    opciones.forEach(p => sel.innerHTML += `<option value="${p}">${p}%</option>`);
+    if (pctUsado > 0) {
+      document.getElementById('nl-pct-aviso').textContent = `Usado: ${pctUsado}% — Disponible: ${pctDisp}%`;
+      document.getElementById('nl-pct-aviso').style.display = 'block';
+      // Mostrar info de lo ya cargado
+      const lineasSitio = lineas.filter(l => l.sitioId === sit.id);
+      document.getElementById('nl-po-detalle').innerHTML =
+        lineasSitio.map(l => `${l.pct}% → ${fmt(l.monto)} (${mesLabel(l.mes)}) — <b>${l.estado}</b>`).join('<br>');
+      document.getElementById('nl-po-info').style.display = 'block';
+    } else {
+      document.getElementById('nl-pct-aviso').style.display = 'none';
+      document.getElementById('nl-po-info').style.display = 'none';
+    }
+  }
+  calcularMontoLinea();
 }
 
 function calcularMontoLinea() {
   const sit = getSit(document.getElementById('nl-sitio').value);
-  const pct = parseInt(document.getElementById('nl-pct').value)||0;
-  document.getElementById('nl-po-nro').value = (sit && sit.poNro) ? sit.poNro : '—';
-  document.getElementById('nl-monto').value = (sit && sit.po) ? fmt(sit.po * pct / 100) : '';
+  const pct = parseInt(document.getElementById('nl-pct').value) || 0;
+  document.getElementById('nl-monto').value = (sit && sit.po && pct) ? fmt(sit.po * pct / 100) : '';
 }
 
 async function guardarNuevaLinea() {
   const sitId = document.getElementById('nl-sitio').value;
   const pct   = parseInt(document.getElementById('nl-pct').value);
-  const mes   = document.getElementById('nl-mes').value;
-  if (!sitId) return alert('Seleccioná un sitio.');
-  if (!mes)   return alert('Seleccioná el mes proyectado.');
+  const mesM  = document.getElementById('nl-mes-mes').value;
+  const mesA  = document.getElementById('nl-mes-anio').value;
+  if (!sitId)    return alert('Seleccioná un sitio.');
+  if (!pct)      return alert('Seleccioná el porcentaje.');
+  if (!mesM || !mesA) return alert('Seleccioná mes y año.');
+  const mes   = `${mesA}-${mesM}`;
   const sit   = getSit(sitId);
   const monto = (sit && sit.po) ? sit.po * pct / 100 : 0;
   const id    = nuevoId('FAC');
@@ -1010,20 +1277,37 @@ async function guardarNuevaLinea() {
 }
 
 function renderSeguimiento() {
+  // Poblar selects de filtro
+  const selCli = document.getElementById('seg-filtro-cliente');
+  if (selCli) {
+    const prev = selCli.value;
+    selCli.innerHTML = '<option value="">Todos los clientes</option>';
+    clientes.forEach(c => selCli.innerHTML += `<option value="${c.id}">${c.id}</option>`);
+    if (prev) selCli.value = prev;
+  }
+  const selSit = document.getElementById('seg-filtro-sitio');
+  if (selSit) {
+    const prev = selSit.value;
+    selSit.innerHTML = '<option value="">Todos los sitios</option>';
+    sitios.forEach(s => selSit.innerHTML += `<option value="${s.id}">${s.id}</option>`);
+    if (prev) selSit.value = prev;
+  }
+
   const tbody = document.getElementById('tabla-seguimiento');
   let lista = [...lineas];
-  if (filtroTextoSeg) lista = lista.filter(l =>
-    l.sitioId.toLowerCase().includes(filtroTextoSeg.toLowerCase()) ||
-    l.clienteId.toLowerCase().includes(filtroTextoSeg.toLowerCase())
-  );
-  if (filtroEstadoSeg) lista = lista.filter(l => l.estado === filtroEstadoSeg);
+  if (filtroTextoSeg)   lista = lista.filter(l => l.sitioId.toLowerCase().includes(filtroTextoSeg) || l.clienteId.toLowerCase().includes(filtroTextoSeg));
+  if (filtroClienteSeg) lista = lista.filter(l => l.clienteId === filtroClienteSeg);
+  if (filtroSitioSeg)   lista = lista.filter(l => l.sitioId   === filtroSitioSeg);
+  if (filtroEstadoSeg)  lista = lista.filter(l => l.estado    === filtroEstadoSeg);
 
   if (!lista.length) { tbody.innerHTML = `<tr><td colspan="10"><div class="empty-state"><span class="es-icon">🧾</span><p>Sin líneas registradas.</p></div></td></tr>`; return; }
 
+  const tc = 'text-align:center;vertical-align:middle;';
   tbody.innerHTML = lista.map(l => {
     const cli = getCli(l.clienteId);
-    const clienteCell = cli ? `<span style="display:flex;align-items:center;gap:6px;">${dot(cli.color)}${l.clienteId}</span>` : l.clienteId;
-
+    const clienteCell = cli
+      ? `<span style="display:flex;align-items:center;justify-content:center;gap:6px;">${dot(cli.color)}${l.clienteId}</span>`
+      : l.clienteId;
     let badgeCls = 'badge-blue', accion = '';
     if (l.estado === 'Proyectado') {
       accion = `<button class="btn btn-amber btn-sm" onclick="abrirModalSolicitud('${l.id}')">Solicitar</button>`;
@@ -1032,25 +1316,22 @@ function renderSeguimiento() {
       accion = `<button class="btn btn-teal btn-sm" onclick="abrirModalFactura('${l.id}')">Facturar</button>`;
     } else if (l.estado === 'Facturado') {
       badgeCls = 'badge-green';
-      accion = `<span style="color:var(--accent-teal);font-size:12px;font-weight:600;"><i class="fa-solid fa-circle-check"></i> Completo</span>`;
+      accion = `<span style="color:var(--accent-teal);font-size:12px;font-weight:600;">✓ Completo</span>`;
     }
-
     return `<tr>
-      <td>${clienteCell}</td>
-      <td style="font-weight:600;">${l.sitioId}</td>
-      <td><span class="badge badge-blue">${l.pct}%</span></td>
-      <td style="font-weight:600;">${l.monto ? fmt(l.monto) : '—'}</td>
-      <td>${mesLabel(l.mes)}</td>
-      <td>${fechaCorta(l.fechaSolicitud)}</td>
-      <td>${fechaCorta(l.fechaFactura)}</td>
-      <td style="font-size:12px;color:var(--text-mid);">${l.nroFactura||'—'}</td>
-      <td><span class="badge ${badgeCls}">${l.estado}</span></td>
-      <td>${accion}</td>
+      <td style="${tc}">${clienteCell}</td>
+      <td style="${tc}font-weight:600;">${l.sitioId}</td>
+      <td style="${tc}"><span class="badge badge-blue">${l.pct}%</span></td>
+      <td style="${tc}font-weight:600;">${l.monto ? fmt(l.monto) : '—'}</td>
+      <td style="${tc}">${mesLabel(l.mes)}</td>
+      <td style="${tc}">${fechaCorta(l.fechaSolicitud)}</td>
+      <td style="${tc}">${fechaCorta(l.fechaFactura)}</td>
+      <td style="${tc}font-size:12px;color:var(--text-mid);">${l.nroFactura||'—'}</td>
+      <td style="${tc}"><span class="badge ${badgeCls}">${l.estado}</span></td>
+      <td style="${tc}">${accion}</td>
     </tr>`;
   }).join('');
 }
-function filtrarSeguimiento(v) { filtroTextoSeg = v; renderSeguimiento(); }
-function filtrarSeguimientoEstado(v) { filtroEstadoSeg = v; renderSeguimiento(); }
 
 /* Modales solicitud / factura */
 function abrirModalSolicitud(lineaId) {
