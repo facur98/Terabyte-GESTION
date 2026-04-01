@@ -180,10 +180,9 @@
     .view.active > *:nth-child(3) { animation-delay: 0.10s; }
     .view.active > *:nth-child(4) { animation-delay: 0.15s; }
 
-    /* Tooltip estado seguimiento en fila sitios */
-    .sit-row { position: relative; }
+    /* Tooltip seguimiento en sitios — solo JS lo muestra/oculta */
     .sit-tooltip {
-      display: none; position: fixed;
+      position: fixed; display: none;
       background: rgba(18,20,38,0.96); backdrop-filter: blur(14px);
       border: 1px solid rgba(79,128,255,0.3); border-radius: 12px;
       padding: 12px 16px; min-width: 220px;
@@ -191,16 +190,17 @@
       box-shadow: 0 10px 30px rgba(0,0,0,0.3); pointer-events: none;
       line-height: 1.9;
     }
-    .sit-row:hover .sit-tooltip { display: block; }
 
-    /* Filtros sitios ancho completo */
-    .sit-filtros-wrap { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-    .sit-filtros-wrap select.form-select { flex: 1; min-width: 140px; }
-    .sit-filtros-wrap input.form-input  { flex: 1; min-width: 130px; }
+    /* Filtros sitios — flex wrap sin width fijo */
+    .sit-filtros-wrap {
+      display: flex; gap: 8px; align-items: center; flex-wrap: wrap; flex: 1;
+    }
+    .sit-filtros-wrap .form-select,
+    .sit-filtros-wrap .form-input { flex: 1; min-width: 130px; width: auto !important; }
 
-    /* Centrado tabla seguimiento */
-    #tabla-seguimiento th { text-align: center; }
-    #tabla-seguimiento td { text-align: center; vertical-align: middle; }
+    /* Centrado tabla seguimiento — apunta a la tabla por id */
+    #table-seguimiento th,
+    #table-seguimiento td { text-align: center !important; vertical-align: middle !important; }
   </style>
 </head>
 <body>
@@ -503,12 +503,19 @@
         </div>
       </div>
       <div class="table-wrap">
-        <table>
+        <table id="table-seguimiento">
           <thead>
             <tr>
-              <th>Cliente</th><th>Sitio</th><th>%</th><th>Monto</th>
-              <th>Mes proy.</th><th>F. Solicitud</th><th>F. Facturación</th>
-              <th>N° Factura</th><th>Estado</th><th>Acción</th>
+              <th style="text-align:center;">Cliente</th>
+              <th style="text-align:center;">Sitio</th>
+              <th style="text-align:center;">%</th>
+              <th style="text-align:center;">Monto</th>
+              <th style="text-align:center;">Mes proy.</th>
+              <th style="text-align:center;">F. Solicitud</th>
+              <th style="text-align:center;">F. Facturación</th>
+              <th style="text-align:center;">N° Factura</th>
+              <th style="text-align:center;">Estado</th>
+              <th style="text-align:center;">Acción</th>
             </tr>
           </thead>
           <tbody id="tabla-seguimiento">
@@ -758,6 +765,9 @@
     </div>
   </div>
 </div>
+
+<!-- Tooltip global para sitios -->
+<div id="sit-global-tooltip" class="sit-tooltip"></div>
 
 <script>
 // ═══════════════════════════════════════════════════════
@@ -1189,38 +1199,21 @@ function renderSitios(filtro = '', filtros = null) {
   tbody.innerHTML = lista.map(s => {
     const cli = getCli(s.clienteId);
     const cb  = s.concepto === 'Básico' ? 'badge-blue' : 'badge-violet';
-
-    // Construir tooltip de seguimiento
-    const lineasSitio = lineas.filter(l => l.sitioId === s.id);
-    let tooltipHtml = '';
-    if (lineasSitio.length === 0) {
-      tooltipHtml = '<span style="color:#94a3b8;">Sin líneas en seguimiento</span>';
-    } else {
-      tooltipHtml = lineasSitio.map(l => {
-        let color = '#60a5fa';
-        if (l.estado === 'Solicitado') color = '#fbbf24';
-        if (l.estado === 'Facturado')  color = '#34d399';
-        return `<span style="color:${color};font-weight:700;">${l.pct}%</span> <span style="color:#94a3b8;">${l.estado}</span> — <span style="color:#e2e8f0;">${mesLabel(l.mes)}</span>`;
-      }).join('<br>');
-    }
-
-    return `<tr class="sit-row" onmouseenter="posTooltip(event,'tip-${s.id}')" onmouseleave="">
-      <td style="font-weight:600;">${s.id}
-        <div class="sit-tooltip" id="tip-${s.id}">
-          <div style="color:#7eb8ff;font-weight:700;margin-bottom:6px;font-size:11px;text-transform:uppercase;letter-spacing:.5px;">Estado seguimiento</div>
-          ${tooltipHtml}
-        </div>
-      </td>
+    return `<tr
+      onmouseenter="showSitTooltip(event,'${s.id}')"
+      onmousemove="moveSitTooltip(event)"
+      onmouseleave="hideSitTooltip()">
+      <td style="font-weight:600;cursor:default;">${s.id}</td>
       <td>${s.localidad}</td>
-      <td style="display:flex;align-items:center;gap:6px;">${cli?dot(cli.color):''}${s.clienteId}</td>
+      <td><span style="display:flex;align-items:center;justify-content:center;gap:6px;">${cli?dot(cli.color):''}${s.clienteId}</span></td>
       <td><span class="badge ${cb}">${s.concepto}</span></td>
       <td style="font-size:12px;color:var(--text-mid);">${s.poNro||'—'}</td>
       <td style="font-weight:600;">${s.po ? fmt(s.po) : '—'}</td>
       <td style="color:var(--text-mid);font-size:12px;">${s.obs||'—'}</td>
-      <td style="display:flex;gap:6px;">
+      <td><span style="display:flex;align-items:center;justify-content:center;gap:6px;">
         <button class="btn btn-glass btn-sm" onclick="abrirEditarSitio('${s.id}')" title="Editar">✏️</button>
         <button class="btn btn-rose btn-sm" onclick="eliminarSitio('${s.id}')" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
-      </td>
+      </span></td>
     </tr>`;
   }).join('');
 }
@@ -1616,24 +1609,48 @@ const chartDonut2Inst = new Chart(document.getElementById('chartDonut2'), {
   options: { responsive: true, maintainAspectRatio: false, cutout: '72%', plugins: { legend: { display: false } } }
 });
 
-/* ══ TOOLTIP SITIOS ══ */
-function posTooltip(event, id) {
-  const tip = document.getElementById(id);
-  if (!tip) return;
-  const x = event.clientX, y = event.clientY;
-  tip.style.left = (x + 14) + 'px';
-  tip.style.top  = (y - 10) + 'px';
+/* ══ TOOLTIP SITIOS — div global ══ */
+const _tip = () => document.getElementById('sit-global-tooltip');
+
+function showSitTooltip(event, sitioId) {
+  const s = getSit(sitioId);
+  if (!s) return;
+  const lineasSitio = lineas.filter(l => l.sitioId === sitioId);
+  let html = `<div style="color:#7eb8ff;font-weight:700;margin-bottom:7px;font-size:11px;text-transform:uppercase;letter-spacing:.6px;">📍 ${sitioId} — Seguimiento</div>`;
+  if (!lineasSitio.length) {
+    html += `<span style="color:#94a3b8;">Sin líneas en seguimiento</span>`;
+  } else {
+    html += lineasSitio.map(l => {
+      let color = '#60a5fa';
+      if (l.estado === 'Solicitado') color = '#fbbf24';
+      if (l.estado === 'Facturado')  color = '#34d399';
+      return `<span style="color:${color};font-weight:700;">${l.pct}%</span>`
+           + `<span style="color:#94a3b8;"> ${l.estado}</span>`
+           + `<span style="color:#cbd5e1;"> — ${mesLabel(l.mes)}</span>`
+           + `<span style="color:#64748b;"> · ${fmt(l.monto)}</span>`;
+    }).join('<br>');
+  }
+  const tip = _tip();
+  tip.innerHTML = html;
   tip.style.display = 'block';
-  const hide = () => { tip.style.display = 'none'; document.removeEventListener('mousemove', track); };
-  const track = (e) => {
-    tip.style.left = (e.clientX + 14) + 'px';
-    tip.style.top  = (e.clientY - 10) + 'px';
-    // Ocultar si el mouse sale de la fila
-    const tr = event.currentTarget;
-    if (!tr) { hide(); return; }
-  };
-  document.addEventListener('mousemove', track);
-  event.currentTarget.addEventListener('mouseleave', hide, { once: true });
+  moveSitTooltip(event);
+}
+
+function moveSitTooltip(event) {
+  const tip = _tip();
+  if (!tip || tip.style.display === 'none') return;
+  const x = event.clientX, y = event.clientY;
+  const w = tip.offsetWidth, h = tip.offsetHeight;
+  // Ajustar para que no se salga de pantalla
+  const left = (x + 16 + w > window.innerWidth)  ? x - w - 10 : x + 16;
+  const top  = (y + 10  + h > window.innerHeight) ? y - h - 10 : y + 10;
+  tip.style.left = left + 'px';
+  tip.style.top  = top  + 'px';
+}
+
+function hideSitTooltip() {
+  const tip = _tip();
+  if (tip) tip.style.display = 'none';
 }
 async function mostrarDebug() {
   const panel  = document.getElementById('debug-panel');
