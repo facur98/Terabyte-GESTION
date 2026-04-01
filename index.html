@@ -506,6 +506,7 @@
         <table id="table-seguimiento">
           <thead>
             <tr>
+              <th style="text-align:center;width:32px;"></th>
               <th style="text-align:center;">Cliente</th>
               <th style="text-align:center;">Sitio</th>
               <th style="text-align:center;">%</th>
@@ -721,6 +722,23 @@
     </div>
   </div>
 </div>
+<!-- MODAL — Confirmar eliminar línea seguimiento -->
+<div class="modal-overlay" id="modal-eliminar-linea">
+  <div class="modal" style="max-width:460px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <div class="modal-title" style="margin:0;color:var(--accent-rose);">Eliminar línea</div>
+      <button onclick="cerrarModal()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--text-light);line-height:1;">✕</button>
+    </div>
+    <div style="font-size:13px;color:var(--text-mid);margin-bottom:14px;">Estás por eliminar:</div>
+    <div id="elim-linea-detalle" style="background:rgba(248,113,113,0.07);border:1px solid rgba(248,113,113,0.22);border-radius:var(--radius-sm);padding:16px 20px;margin-bottom:22px;"></div>
+    <input type="hidden" id="elim-linea-id" />
+    <div class="modal-footer">
+      <button class="btn btn-glass" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn" style="background:rgba(248,113,113,0.15);color:#b91c1c;border:1px solid rgba(248,113,113,0.35);font-weight:600;padding:9px 20px;border-radius:var(--radius-sm);cursor:pointer;" onclick="confirmarEliminarLinea()">Sí, eliminar</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modal-solicitud">
   <div class="modal">
     <div class="modal-title">Marcar solicitud de factura</div>
@@ -1365,7 +1383,7 @@ function renderSeguimiento() {
   if (filtroSitioSeg)   lista = lista.filter(l => l.sitioId   === filtroSitioSeg);
   if (filtroEstadoSeg)  lista = lista.filter(l => l.estado    === filtroEstadoSeg);
 
-  if (!lista.length) { tbody.innerHTML = `<tr><td colspan="10"><div class="empty-state"><span class="es-icon">🧾</span><p>Sin líneas registradas.</p></div></td></tr>`; return; }
+  if (!lista.length) { tbody.innerHTML = `<tr><td colspan="11"><div class="empty-state"><span class="es-icon">🧾</span><p>Sin líneas registradas.</p></div></td></tr>`; return; }
 
   const tc = 'text-align:center;vertical-align:middle;';
   tbody.innerHTML = lista.map(l => {
@@ -1384,6 +1402,11 @@ function renderSeguimiento() {
       accion = `<span style="color:var(--accent-teal);font-size:12px;font-weight:600;">✓ Completo</span>`;
     }
     return `<tr>
+      <td style="${tc}">
+        <button onclick="abrirEliminarLinea('${l.id}')" title="Eliminar línea"
+          style="background:none;border:none;cursor:pointer;color:rgba(248,113,113,0.55);font-size:14px;line-height:1;padding:2px 4px;border-radius:50%;transition:color .2s;"
+          onmouseover="this.style.color='#f87171'" onmouseout="this.style.color='rgba(248,113,113,0.55)'">✕</button>
+      </td>
       <td style="${tc}">${clienteCell}</td>
       <td style="${tc}font-weight:600;">${l.sitioId}</td>
       <td style="${tc}"><span class="badge badge-blue">${l.pct}%</span></td>
@@ -1398,7 +1421,52 @@ function renderSeguimiento() {
   }).join('');
 }
 
-/* Modales solicitud / factura */
+/* ── Eliminar línea de seguimiento ── */
+function abrirEliminarLinea(lineaId) {
+  const l = lineas.find(x => x.id === lineaId);
+  if (!l) return;
+  const cli = getCli(l.clienteId);
+  let estadoColor = '#3b5fc0', estadoBg = 'rgba(79,128,255,0.12)';
+  if (l.estado === 'Solicitado') { estadoColor = '#b45309'; estadoBg = 'rgba(251,191,36,0.15)'; }
+  if (l.estado === 'Facturado')  { estadoColor = '#0d9488'; estadoBg = 'rgba(45,212,191,0.15)'; }
+
+  document.getElementById('elim-linea-id').value = lineaId;
+  document.getElementById('elim-linea-detalle').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;font-size:13px;">
+      <div><span style="font-size:11px;color:var(--text-light);text-transform:uppercase;letter-spacing:.4px;">Cliente</span>
+        <div style="display:flex;align-items:center;gap:7px;margin-top:3px;font-weight:600;">${cli?dot(cli.color):''}${l.clienteId}</div>
+      </div>
+      <div><span style="font-size:11px;color:var(--text-light);text-transform:uppercase;letter-spacing:.4px;">Sitio</span>
+        <div style="font-weight:700;font-size:15px;margin-top:3px;">${l.sitioId}</div>
+      </div>
+      <div><span style="font-size:11px;color:var(--text-light);text-transform:uppercase;letter-spacing:.4px;">Porcentaje</span>
+        <div style="margin-top:3px;font-weight:600;">${l.pct}%</div>
+      </div>
+      <div><span style="font-size:11px;color:var(--text-light);text-transform:uppercase;letter-spacing:.4px;">Monto</span>
+        <div style="margin-top:3px;font-weight:700;color:var(--accent-blue);">${fmt(l.monto)}</div>
+      </div>
+      <div><span style="font-size:11px;color:var(--text-light);text-transform:uppercase;letter-spacing:.4px;">Mes proyectado</span>
+        <div style="margin-top:3px;">${mesLabel(l.mes)}</div>
+      </div>
+      <div><span style="font-size:11px;color:var(--text-light);text-transform:uppercase;letter-spacing:.4px;">Estado</span>
+        <div style="margin-top:3px;"><span style="background:${estadoBg};color:${estadoColor};padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;">${l.estado}</span></div>
+      </div>
+    </div>`;
+  document.getElementById('modal-eliminar-linea').classList.add('open');
+}
+
+async function confirmarEliminarLinea() {
+  const lineaId = document.getElementById('elim-linea-id').value;
+  cerrarModal();
+  setLoading(true);
+  try {
+    await apiPost('DELETE', 'FACTURACION', {}, lineaId);
+    lineas = lineas.filter(l => l.id !== lineaId);
+    renderSeguimiento(); actualizarDashboard(); actualizarBadge();
+    toast('Línea eliminada');
+  } catch(e) { toast('Error: ' + e.message, 'err'); }
+  finally { setLoading(false); }
+}
 function abrirModalSolicitud(lineaId) {
   document.getElementById('sol-idx').value = lineaId;
   document.getElementById('sol-fecha').value = '';
