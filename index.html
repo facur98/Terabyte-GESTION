@@ -179,6 +179,28 @@
     .view.active > *:nth-child(2) { animation-delay: 0.05s; }
     .view.active > *:nth-child(3) { animation-delay: 0.10s; }
     .view.active > *:nth-child(4) { animation-delay: 0.15s; }
+
+    /* Tooltip estado seguimiento en fila sitios */
+    .sit-row { position: relative; }
+    .sit-tooltip {
+      display: none; position: fixed;
+      background: rgba(18,20,38,0.96); backdrop-filter: blur(14px);
+      border: 1px solid rgba(79,128,255,0.3); border-radius: 12px;
+      padding: 12px 16px; min-width: 220px;
+      font-size: 12px; color: #e2e8f0; z-index: 9999;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3); pointer-events: none;
+      line-height: 1.9;
+    }
+    .sit-row:hover .sit-tooltip { display: block; }
+
+    /* Filtros sitios ancho completo */
+    .sit-filtros-wrap { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .sit-filtros-wrap select.form-select { flex: 1; min-width: 140px; }
+    .sit-filtros-wrap input.form-input  { flex: 1; min-width: 130px; }
+
+    /* Centrado tabla seguimiento */
+    #tabla-seguimiento th { text-align: center; }
+    #tabla-seguimiento td { text-align: center; vertical-align: middle; }
   </style>
 </head>
 <body>
@@ -400,12 +422,12 @@
     <div class="card">
       <div class="card-header" style="flex-wrap:wrap;gap:12px;">
         <div class="card-title">Sitios registrados</div>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-          <input class="form-input" style="width:170px;" placeholder="Buscar..." id="sit-filtro-texto" oninput="aplicarFiltrosSitios()" />
-          <select class="form-select" style="width:150px;" id="sit-filtro-cliente" onchange="aplicarFiltrosSitios()">
+        <div class="sit-filtros-wrap">
+          <input class="form-input" placeholder="Buscar..." id="sit-filtro-texto" oninput="aplicarFiltrosSitios()" />
+          <select class="form-select" id="sit-filtro-cliente" onchange="aplicarFiltrosSitios()">
             <option value="">Todos los clientes</option>
           </select>
-          <select class="form-select" style="width:160px;" id="sit-filtro-provincia" onchange="aplicarFiltrosSitios()">
+          <select class="form-select" id="sit-filtro-provincia" onchange="aplicarFiltrosSitios()">
             <option value="">Todas las provincias</option>
             <option>Buenos Aires</option><option>CABA</option><option>Catamarca</option>
             <option>Chaco</option><option>Chubut</option><option>Córdoba</option>
@@ -416,7 +438,7 @@
             <option>San Luis</option><option>Santa Cruz</option><option>Santa Fe</option>
             <option>Santiago del Estero</option><option>Tierra del Fuego</option><option>Tucumán</option>
           </select>
-          <select class="form-select" style="width:140px;" id="sit-filtro-concepto" onchange="aplicarFiltrosSitios()">
+          <select class="form-select" id="sit-filtro-concepto" onchange="aplicarFiltrosSitios()">
             <option value="">Todos los conceptos</option>
             <option value="Básico">Básico</option>
             <option value="Adicional">Adicional</option>
@@ -612,12 +634,18 @@
   </div>
 </div>
 
-<!-- MODAL — Editar sitio -->
-<div class="modal-overlay" id="modal-editar-sitio">
-  <div class="modal" style="max-width:640px;">
+<!-- MODAL — Editar sitio (full screen) -->
+<div class="modal-overlay" id="modal-editar-sitio" style="align-items:center;padding:20px;">
+  <div class="modal" style="width:100%;max-width:720px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
       <div class="modal-title" style="margin:0;">Editar sitio</div>
       <button onclick="cerrarModal()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--text-light);line-height:1;">✕</button>
+    </div>
+    <!-- Aviso vínculos -->
+    <div id="edit-sit-vinculos" style="display:none;background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.28);border-radius:var(--radius-sm);padding:14px 18px;margin-bottom:18px;">
+      <div style="font-weight:700;color:var(--accent-rose);font-size:13px;margin-bottom:8px;">⚠ Este sitio tiene líneas de facturación vinculadas</div>
+      <div id="edit-sit-vinculos-detalle" style="font-size:13px;color:var(--text-mid);line-height:1.8;"></div>
+      <div style="margin-top:10px;font-size:12px;color:var(--accent-rose);font-weight:600;">Para modificar este sitio, primero eliminá las líneas vinculadas en Seguimiento.</div>
     </div>
     <input type="hidden" id="edit-sit-original-id" />
     <div class="form-row">
@@ -667,7 +695,7 @@
     </div>
     <div class="modal-footer">
       <button class="btn btn-glass" onclick="cerrarModal()">Cancelar</button>
-      <button class="btn btn-primary" onclick="guardarEdicionSitio()">Guardar cambios</button>
+      <button class="btn btn-primary" id="btn-guardar-edicion-sitio" onclick="guardarEdicionSitio()">Guardar cambios</button>
     </div>
   </div>
 </div>
@@ -1074,11 +1102,35 @@ function abrirEditarSitio(sitioId) {
   document.getElementById('edit-sit-po-nro').value     = s.poNro || '';
   document.getElementById('edit-sit-po').value         = s.po || '';
   document.getElementById('edit-sit-obs').value        = s.obs || '';
-  // Poblar select clientes
   const sel = document.getElementById('edit-sit-cliente');
   sel.innerHTML = '<option value="">— Seleccionar —</option>';
   clientes.forEach(c => sel.innerHTML += `<option value="${c.id}">${c.id}</option>`);
   sel.value = s.clienteId;
+
+  // Detectar líneas vinculadas en seguimiento
+  const vinculadas = lineas.filter(l => l.sitioId === s.id);
+  const avisoEl  = document.getElementById('edit-sit-vinculos');
+  const detEl    = document.getElementById('edit-sit-vinculos-detalle');
+  const btnGuard = document.getElementById('btn-guardar-edicion-sitio');
+
+  if (vinculadas.length > 0) {
+    detEl.innerHTML = vinculadas.map(l => {
+      let badgeColor = '#3b5fc0'; let bg = 'rgba(79,128,255,0.12)';
+      if (l.estado === 'Solicitado') { badgeColor = '#b45309'; bg = 'rgba(251,191,36,0.15)'; }
+      if (l.estado === 'Facturado')  { badgeColor = '#0d9488'; bg = 'rgba(45,212,191,0.15)'; }
+      return `· <b>${l.pct}%</b> — ${mesLabel(l.mes)} — <span style="background:${bg};color:${badgeColor};padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;">${l.estado}</span> — ${fmt(l.monto)}`;
+    }).join('<br>');
+    avisoEl.style.display = 'block';
+    btnGuard.disabled = true;
+    btnGuard.style.opacity = '0.4';
+    btnGuard.style.cursor = 'not-allowed';
+  } else {
+    avisoEl.style.display = 'none';
+    btnGuard.disabled = false;
+    btnGuard.style.opacity = '1';
+    btnGuard.style.cursor = 'pointer';
+  }
+
   document.getElementById('modal-editar-sitio').classList.add('open');
 }
 
@@ -1137,8 +1189,28 @@ function renderSitios(filtro = '', filtros = null) {
   tbody.innerHTML = lista.map(s => {
     const cli = getCli(s.clienteId);
     const cb  = s.concepto === 'Básico' ? 'badge-blue' : 'badge-violet';
-    return `<tr>
-      <td style="font-weight:600;">${s.id}</td>
+
+    // Construir tooltip de seguimiento
+    const lineasSitio = lineas.filter(l => l.sitioId === s.id);
+    let tooltipHtml = '';
+    if (lineasSitio.length === 0) {
+      tooltipHtml = '<span style="color:#94a3b8;">Sin líneas en seguimiento</span>';
+    } else {
+      tooltipHtml = lineasSitio.map(l => {
+        let color = '#60a5fa';
+        if (l.estado === 'Solicitado') color = '#fbbf24';
+        if (l.estado === 'Facturado')  color = '#34d399';
+        return `<span style="color:${color};font-weight:700;">${l.pct}%</span> <span style="color:#94a3b8;">${l.estado}</span> — <span style="color:#e2e8f0;">${mesLabel(l.mes)}</span>`;
+      }).join('<br>');
+    }
+
+    return `<tr class="sit-row" onmouseenter="posTooltip(event,'tip-${s.id}')" onmouseleave="">
+      <td style="font-weight:600;">${s.id}
+        <div class="sit-tooltip" id="tip-${s.id}">
+          <div style="color:#7eb8ff;font-weight:700;margin-bottom:6px;font-size:11px;text-transform:uppercase;letter-spacing:.5px;">Estado seguimiento</div>
+          ${tooltipHtml}
+        </div>
+      </td>
       <td>${s.localidad}</td>
       <td style="display:flex;align-items:center;gap:6px;">${cli?dot(cli.color):''}${s.clienteId}</td>
       <td><span class="badge ${cb}">${s.concepto}</span></td>
@@ -1544,7 +1616,25 @@ const chartDonut2Inst = new Chart(document.getElementById('chartDonut2'), {
   options: { responsive: true, maintainAspectRatio: false, cutout: '72%', plugins: { legend: { display: false } } }
 });
 
-/* ══ DEBUG ══ */
+/* ══ TOOLTIP SITIOS ══ */
+function posTooltip(event, id) {
+  const tip = document.getElementById(id);
+  if (!tip) return;
+  const x = event.clientX, y = event.clientY;
+  tip.style.left = (x + 14) + 'px';
+  tip.style.top  = (y - 10) + 'px';
+  tip.style.display = 'block';
+  const hide = () => { tip.style.display = 'none'; document.removeEventListener('mousemove', track); };
+  const track = (e) => {
+    tip.style.left = (e.clientX + 14) + 'px';
+    tip.style.top  = (e.clientY - 10) + 'px';
+    // Ocultar si el mouse sale de la fila
+    const tr = event.currentTarget;
+    if (!tr) { hide(); return; }
+  };
+  document.addEventListener('mousemove', track);
+  event.currentTarget.addEventListener('mouseleave', hide, { once: true });
+}
 async function mostrarDebug() {
   const panel  = document.getElementById('debug-panel');
   const output = document.getElementById('debug-output');
