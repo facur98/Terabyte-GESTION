@@ -231,7 +231,19 @@
     .kc-rose   .kpi-icon { background: rgba(248,113,113,0.12); color: #be123c; }
     .kc-violet .kpi-icon { background: rgba(167,139,250,0.12); color: #7c3aed; }
 
-    .kpi-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .6px; color: var(--text-light); margin-bottom: 4px; }
+    .kpi-label {
+      font-family: 'Syne', sans-serif;
+      font-size: 13px; font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 10px;
+      line-height: 1.2;
+      letter-spacing: -0.1px;
+    }
+    .kc-blue   .kpi-label { color: #3a6bf0; }
+    .kc-amber  .kpi-label { color: #b45309; }
+    .kc-teal   .kpi-label { color: #0d9488; }
+    .kc-rose   .kpi-label { color: #be123c; }
+    .kc-violet .kpi-label { color: #7c3aed; }
     .kpi-value { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 700; color: var(--text-dark); line-height: 1.1; }
     .kpi-sub   { font-size: 12px; color: var(--text-light); margin-top: 5px; }
     .kpi-ref   { font-size: 12px; color: var(--text-mid); margin-top: 3px; font-weight: 500; }
@@ -721,25 +733,30 @@
       <div class="modal-title" style="margin:0;">Nueva línea de facturación</div>
       <button onclick="cerrarModal()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--text-light);line-height:1;">✕</button>
     </div>
-    <div class="form-row" style="grid-template-columns:1fr 1fr;">
+    <!-- Paso 1: Cliente -->
+    <div class="form-row" style="grid-template-columns:1fr 1fr;margin-bottom:6px;">
+      <div class="form-group">
+        <label class="form-label">Cliente *</label>
+        <select class="form-select" id="nl-cliente" onchange="onClienteChange()">
+          <option value="">— Seleccionar cliente —</option>
+        </select>
+      </div>
       <div class="form-group">
         <label class="form-label">Sitio *</label>
-        <select class="form-select" id="nl-sitio" onchange="onSitioChange()">
-          <option value="">— Seleccionar sitio —</option>
+        <select class="form-select" id="nl-sitio" onchange="onSitioChange()" disabled>
+          <option value="">— Primero elegí cliente —</option>
         </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">% a facturar *</label>
-        <select class="form-select" id="nl-pct" onchange="calcularMontoLinea()">
-          <option value="100">100%</option>
-        </select>
-        <span id="nl-pct-aviso" style="font-size:11px;color:var(--accent-amber);margin-top:3px;display:none;"></span>
+        <span id="nl-sitio-aviso" style="font-size:11px;color:var(--text-light);margin-top:3px;display:none;"></span>
       </div>
     </div>
-    <div class="form-row" style="grid-template-columns:1fr 1fr 1fr;">
+    <!-- Paso 2: % y mes -->
+    <div class="form-row" style="grid-template-columns:1fr 1fr;">
       <div class="form-group">
-        <label class="form-label">N° PO del sitio</label>
-        <input class="form-input" id="nl-po-nro" readonly style="background:rgba(240,242,248,0.7);" />
+        <label class="form-label">% a facturar *</label>
+        <select class="form-select" id="nl-pct" onchange="calcularMontoLinea()" disabled>
+          <option value="">— Primero elegí sitio —</option>
+        </select>
+        <span id="nl-pct-aviso" style="font-size:11px;color:var(--accent-amber);margin-top:3px;display:none;"></span>
       </div>
       <div class="form-group">
         <label class="form-label">Mes proyectado *</label>
@@ -755,6 +772,13 @@
           </select>
           <input class="form-input" id="nl-mes-anio" type="number" min="2020" max="2040" value="2026" style="flex:1;min-width:0;" />
         </div>
+      </div>
+    </div>
+    <!-- Info calculada -->
+    <div class="form-row" style="grid-template-columns:1fr 1fr;">
+      <div class="form-group">
+        <label class="form-label">N° PO del sitio</label>
+        <input class="form-input" id="nl-po-nro" readonly style="background:rgba(240,242,248,0.7);" placeholder="—" />
       </div>
       <div class="form-group">
         <label class="form-label">Monto calculado</label>
@@ -1415,59 +1439,135 @@ function filtrarSeguimiento(v) { filtroTextoSeg = v; renderSeguimiento(); }
 function filtrarSeguimientoEstado(v) { filtroEstadoSeg = v; renderSeguimiento(); }
 
 function abrirModalNuevaLinea() {
-  const sel = document.getElementById('nl-sitio');
-  sel.innerHTML = '<option value="">— Seleccionar sitio —</option>';
-  sitios.forEach(s => {
-    sel.innerHTML += `<option value="${s.id}">${s.id} · ${s.clienteId} (${s.localidad})</option>`;
+  // Poblar clientes
+  const selCli = document.getElementById('nl-cliente');
+  selCli.innerHTML = '<option value="">— Seleccionar cliente —</option>';
+  clientes.forEach(c => {
+    selCli.innerHTML += `<option value="${c.id}">${c.id}</option>`;
   });
-  document.getElementById('nl-pct').innerHTML = '<option value="100">100%</option>';
+
+  // Resetear todo
+  const selSit = document.getElementById('nl-sitio');
+  selSit.innerHTML = '<option value="">— Primero elegí cliente —</option>';
+  selSit.disabled = true;
+  document.getElementById('nl-sitio-aviso').style.display = 'none';
+
+  const selPct = document.getElementById('nl-pct');
+  selPct.innerHTML = '<option value="">— Primero elegí sitio —</option>';
+  selPct.disabled = true;
+
   document.getElementById('nl-mes-mes').value  = '';
   document.getElementById('nl-mes-anio').value = '2026';
   document.getElementById('nl-monto').value    = '';
   document.getElementById('nl-po-nro').value   = '';
-  document.getElementById('nl-po-info').style.display = 'none';
+  document.getElementById('nl-po-info').style.display  = 'none';
   document.getElementById('nl-pct-aviso').style.display = 'none';
   document.getElementById('modal-nueva-linea').classList.add('open');
 }
 
+function onClienteChange() {
+  const clienteId = document.getElementById('nl-cliente').value;
+  const selSit    = document.getElementById('nl-sitio');
+  const avisoCli  = document.getElementById('nl-sitio-aviso');
+  const selPct    = document.getElementById('nl-pct');
+
+  // Resetear sitio y %
+  selSit.innerHTML = '<option value="">— Seleccionar sitio —</option>';
+  selPct.innerHTML = '<option value="">— Primero elegí sitio —</option>';
+  selPct.disabled  = true;
+  document.getElementById('nl-monto').value  = '';
+  document.getElementById('nl-po-nro').value = '';
+  document.getElementById('nl-po-info').style.display   = 'none';
+  document.getElementById('nl-pct-aviso').style.display = 'none';
+
+  if (!clienteId) {
+    selSit.disabled = true;
+    selSit.innerHTML = '<option value="">— Primero elegí cliente —</option>';
+    avisoCli.style.display = 'none';
+    return;
+  }
+
+  // Filtrar sitios del cliente que NO están al 100% ya cargado
+  const sitiosCliente = sitios.filter(s => s.clienteId === clienteId);
+  const sitiosDisponibles = sitiosCliente.filter(s => {
+    const pctUsado = lineas.filter(l => l.sitioId === s.id).reduce((a, l) => a + l.pct, 0);
+    return pctUsado < 100;
+  });
+
+  selSit.disabled = false;
+  if (!sitiosCliente.length) {
+    selSit.innerHTML = '<option value="">Sin sitios para este cliente</option>';
+    avisoCli.textContent = 'Este cliente no tiene sitios registrados.';
+    avisoCli.style.display = 'block';
+    selSit.disabled = true;
+    return;
+  }
+
+  if (!sitiosDisponibles.length) {
+    selSit.innerHTML = '<option value="">Todos los sitios al 100%</option>';
+    avisoCli.textContent = 'Todos los sitios de este cliente tienen el 100% asignado.';
+    avisoCli.style.color = 'var(--accent-rose)';
+    avisoCli.style.display = 'block';
+    selSit.disabled = true;
+    return;
+  }
+
+  sitiosDisponibles.forEach(s => {
+    const pctUsado = lineas.filter(l => l.sitioId === s.id).reduce((a, l) => a + l.pct, 0);
+    const pctDisp  = 100 - pctUsado;
+    const label = pctUsado > 0
+      ? `${s.id} — PO: ${s.poNro || '—'} (${pctDisp}% disponible)`
+      : `${s.id} — PO: ${s.poNro || '—'}`;
+    selSit.innerHTML += `<option value="${s.id}">${label}</option>`;
+  });
+
+  const omitidos = sitiosCliente.length - sitiosDisponibles.length;
+  avisoCli.textContent = omitidos > 0
+    ? `${omitidos} sitio${omitidos!==1?'s':''} ocultado${omitidos!==1?'s':''} por tener 100% asignado`
+    : '';
+  avisoCli.style.color = 'var(--text-light)';
+  avisoCli.style.display = omitidos > 0 ? 'block' : 'none';
+}
+
 function onSitioChange() {
   const sit = getSit(document.getElementById('nl-sitio').value);
+  const selPct = document.getElementById('nl-pct');
+
   document.getElementById('nl-po-nro').value = (sit && sit.poNro) ? sit.poNro : '—';
 
   if (!sit) {
-    document.getElementById('nl-pct').innerHTML = '<option value="100">100%</option>';
-    document.getElementById('nl-po-info').style.display = 'none';
+    selPct.innerHTML = '<option value="">— Primero elegí sitio —</option>';
+    selPct.disabled = true;
+    document.getElementById('nl-po-info').style.display   = 'none';
     document.getElementById('nl-pct-aviso').style.display = 'none';
     document.getElementById('nl-monto').value = '';
     return;
   }
 
-  // Calcular % ya usado en lineas activas de este sitio
-  const pctUsado = lineas
-    .filter(l => l.sitioId === sit.id)
-    .reduce((a, l) => a + l.pct, 0);
-  const pctDisp = 100 - pctUsado;
-
+  const pctUsado = lineas.filter(l => l.sitioId === sit.id).reduce((a, l) => a + l.pct, 0);
+  const pctDisp  = 100 - pctUsado;
   const opciones = [100, 80, 70, 30, 20].filter(p => p <= pctDisp);
-  const sel = document.getElementById('nl-pct');
-  sel.innerHTML = '';
+
+  selPct.innerHTML = '';
+  selPct.disabled  = false;
+
   if (opciones.length === 0) {
-    sel.innerHTML = '<option value="">Sin % disponible</option>';
-    document.getElementById('nl-pct-aviso').textContent = 'Este sitio ya tiene el 100% asignado.';
-    document.getElementById('nl-pct-aviso').style.display = 'block';
+    selPct.innerHTML = '<option value="">Sin % disponible</option>';
+    selPct.disabled  = true;
+    document.getElementById('nl-pct-aviso').textContent     = 'Este sitio ya tiene el 100% asignado.';
+    document.getElementById('nl-pct-aviso').style.display   = 'block';
   } else {
-    opciones.forEach(p => sel.innerHTML += `<option value="${p}">${p}%</option>`);
+    opciones.forEach(p => selPct.innerHTML += `<option value="${p}">${p}%</option>`);
     if (pctUsado > 0) {
-      document.getElementById('nl-pct-aviso').textContent = `Usado: ${pctUsado}% — Disponible: ${pctDisp}%`;
+      document.getElementById('nl-pct-aviso').textContent   = `Usado: ${pctUsado}% — Disponible: ${pctDisp}%`;
       document.getElementById('nl-pct-aviso').style.display = 'block';
-      // Mostrar info de lo ya cargado
       const lineasSitio = lineas.filter(l => l.sitioId === sit.id);
       document.getElementById('nl-po-detalle').innerHTML =
         lineasSitio.map(l => `${l.pct}% → ${fmt(l.monto)} (${mesLabel(l.mes)}) — <b>${l.estado}</b>`).join('<br>');
       document.getElementById('nl-po-info').style.display = 'block';
     } else {
       document.getElementById('nl-pct-aviso').style.display = 'none';
-      document.getElementById('nl-po-info').style.display = 'none';
+      document.getElementById('nl-po-info').style.display   = 'none';
     }
   }
   calcularMontoLinea();
@@ -1700,10 +1800,9 @@ function filtrarLineasPorMes(filtroMesId) {
   return mes ? lineas.filter(l => l.mes === mes) : lineas;
 }
 
-function kpiCard(tipo, icon, label, value, sub, ref, pct) {
+function kpiCard(tipo, label, value, sub, ref, pct) {
   const pctW = Math.min(100, Math.max(0, pct || 0));
   return `<div class="kpi-card kc-${tipo}">
-    <div class="kpi-icon">${icon}</div>
     <div class="kpi-label">${label}</div>
     <div class="kpi-value">${value}</div>
     <div class="kpi-sub">${sub}</div>
@@ -1738,37 +1837,26 @@ function actualizarDashboard() {
   // pct sitios
   const pctSitios    = sitios.length > 0 ? Math.round(lf.map(l=>l.sitioId).filter((v,i,a)=>a.indexOf(v)===i).length / sitios.length * 100) : 0;
 
-  const row = document.getElementById('dash-kpi-row');
   row.className = 'stats-row-5';
   row.innerHTML =
-    kpiCard('blue',   '💰', 'Facturación mensual',
-      fmt(totalFac),
-      'Líneas facturadas',
-      `${facturadas.length} línea${facturadas.length!==1?'s':''}`,
+    kpiCard('blue',   'Facturación mensual',
+      fmt(totalFac), 'Líneas facturadas', `${facturadas.length} línea${facturadas.length!==1?'s':''}`,
       totalTodo > 0 ? Math.round(totalFac/totalTodo*100) : 0
     ) +
-    kpiCard('amber',  '📋', 'Proyectados',
-      fmt(totalProy),
-      'Sin iniciar',
-      `${proyectadas.length} línea${proyectadas.length!==1?'s':''}`,
+    kpiCard('amber',  'Proyectados',
+      fmt(totalProy), 'Sin iniciar', `${proyectadas.length} línea${proyectadas.length!==1?'s':''}`,
       totalTodo > 0 ? Math.round(totalProy/totalTodo*100) : 0
     ) +
-    kpiCard('violet', '📤', 'Solicitados',
-      fmt(totalSol),
-      'En proceso de emisión',
-      `${solicitadas.length} línea${solicitadas.length!==1?'s':''}`,
+    kpiCard('violet', 'Solicitados',
+      fmt(totalSol), 'En proceso de emisión', `${solicitadas.length} línea${solicitadas.length!==1?'s':''}`,
       totalTodo > 0 ? Math.round(totalSol/totalTodo*100) : 0
     ) +
-    kpiCard('teal',   '✅', 'Proyectados → Solicitados',
-      `${fmt(totalSol + totalFac)}`,
-      `de ${fmt(totalTodo)} total`,
-      `${pctPSol}% avanzado`,
+    kpiCard('teal',   'Proyectados → Solicitados',
+      fmt(totalSol + totalFac), `de ${fmt(totalTodo)} total`, `${pctPSol}% avanzado`,
       pctPSol
     ) +
-    kpiCard('rose',   '🧾', 'Solicitados → Facturados',
-      fmt(totalFac),
-      `de ${fmt(totalSol + totalFac)} solicitado`,
-      `${pctSFac}% facturado`,
+    kpiCard('rose',   'Solicitados → Facturados',
+      fmt(totalFac), `de ${fmt(totalSol + totalFac)} solicitado`, `${pctSFac}% facturado`,
       pctSFac
     );
 
@@ -1857,11 +1945,11 @@ function actualizarPanel() {
   const row = document.getElementById('panel-kpi-row');
   row.className = 'stats-row-5';
   row.innerHTML =
-    kpiCard('blue',   '💰', 'Total facturado',   fmt(totalFac),  `${facturadas.length} líneas`,  null, totalTodo>0?Math.round(totalFac/totalTodo*100):0) +
-    kpiCard('amber',  '📋', 'Proyectado',         fmt(totalProy), `${proyectadas.length} líneas`, null, totalTodo>0?Math.round(totalProy/totalTodo*100):0) +
-    kpiCard('violet', '📤', 'Solicitado',          fmt(totalSol),  `${solicitadas.length} líneas`, null, totalTodo>0?Math.round(totalSol/totalTodo*100):0) +
-    kpiCard('teal',   '✅', 'Proy. → Solicitados', fmt(totalSol+totalFac), `de ${fmt(totalTodo)}`, `${pctPSol}% avanzado`, pctPSol) +
-    kpiCard('rose',   '🧾', 'Sol. → Facturados',   fmt(totalFac),  `de ${fmt(totalSol+totalFac)}`,`${pctSFac}% facturado`, pctSFac);
+    kpiCard('blue',   'Total facturado',          fmt(totalFac),  `${facturadas.length} líneas`,  null, totalTodo>0?Math.round(totalFac/totalTodo*100):0) +
+    kpiCard('amber',  'Proyectado',               fmt(totalProy), `${proyectadas.length} líneas`, null, totalTodo>0?Math.round(totalProy/totalTodo*100):0) +
+    kpiCard('violet', 'Solicitado',               fmt(totalSol),  `${solicitadas.length} líneas`, null, totalTodo>0?Math.round(totalSol/totalTodo*100):0) +
+    kpiCard('teal',   'Proyectados → Solicitados', fmt(totalSol+totalFac), `de ${fmt(totalTodo)}`, `${pctPSol}% avanzado`, pctPSol) +
+    kpiCard('rose',   'Solicitados → Facturados',  fmt(totalFac),  `de ${fmt(totalSol+totalFac)}`,`${pctSFac}% facturado`, pctSFac);
 
   document.getElementById('donut2-total').textContent = lf.length;
   document.getElementById('leg-fact').textContent  = facturadas.length;
