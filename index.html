@@ -242,7 +242,19 @@
         <div style="font-size:13px;color:var(--text-light);margin-top:3px;">Resumen general · <span id="dash-mes"></span></div>
       </div>
       <div class="topbar-actions">
+        <button class="btn btn-glass" onclick="mostrarDebug()" style="font-size:12px;">🔍 Debug</button>
         <button class="btn btn-primary" onclick="abrirModalNuevaLinea()"><i class="fa-solid fa-plus"></i> Nueva línea</button>
+      </div>
+    </div>
+
+    <!-- Panel debug — oculto por defecto -->
+    <div id="debug-panel" style="display:none;margin-bottom:20px;">
+      <div class="card" style="background:rgba(15,15,25,0.90);backdrop-filter:blur(12px);border:1px solid rgba(79,128,255,0.4);">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <span style="color:#7eb8ff;font-weight:700;font-size:13px;">🔍 Respuesta cruda del Apps Script</span>
+          <button class="btn btn-glass btn-sm" onclick="document.getElementById('debug-panel').style.display='none'">✕ Cerrar</button>
+        </div>
+        <pre id="debug-output" style="color:#86efac;font-size:11px;line-height:1.6;overflow-x:auto;white-space:pre-wrap;max-height:320px;overflow-y:auto;margin:0;"></pre>
       </div>
     </div>
     <div class="stats-row">
@@ -666,15 +678,26 @@ function setLoading(on) {
 // ═══════════════════════════════════════════════════════
 //  CARGA INICIAL — trae todo de Sheets al arrancar
 // ═══════════════════════════════════════════════════════
+/* ── DATA local (se sincroniza con Sheets) ── */
+let clientes = [], sitios = [], lineas = [];
+
+// Genera un ID único para nuevas filas
+function nuevoId(prefix) {
+  return prefix + '-' + Date.now();
+}
+
 async function cargarTodo() {
   setLoading(true);
   try {
     const data = await apiGet('ALL');
 
+    // Debug temporal — mostrá esto en consola para verificar la respuesta
+    console.log('=== RESPUESTA APPS SCRIPT ===', JSON.stringify(data));
+
     // Helper: lee una clave del objeto ignorando mayúsculas y espacios
     const get = (row, key) => {
       const k = Object.keys(row).find(k => k.trim().toUpperCase() === key.toUpperCase());
-      return k ? (row[k] || '') : '';
+      return k !== undefined ? String(row[k] ?? '') : '';
     };
 
     clientes = (data.clientes || []).map(r => ({
@@ -696,7 +719,7 @@ async function cargarTodo() {
       id:             get(r, 'ID'),
       sitioId:        get(r, 'SITIO_ID'),
       clienteId:      get(r, 'CLIENTE_ID'),
-      pct:            parseInt(get(r, 'PCT'))   || 0,
+      pct:            parseInt(get(r, 'PCT'))     || 0,
       monto:          parseFloat(get(r, 'MONTO')) || 0,
       mes:            get(r, 'MES'),
       fechaSolicitud: get(r, 'FECHA_SOLICITUD'),
@@ -705,29 +728,25 @@ async function cargarTodo() {
       estado:         get(r, 'ESTADO') || 'Proyectado'
     })).filter(l => l.id.trim() !== '');
 
-    // Renderizar todo después de cargar
+    console.log('Clientes parseados:', clientes);
+    console.log('Sitios parseados:', sitios);
+    console.log('Líneas parseadas:', lineas);
+
+    // Renderizar todo
     actualizarDashboard();
     actualizarBadge();
     renderClientes();
     renderSitios();
     renderSeguimiento();
 
-    toast('Datos cargados ✓', 'ok');
+    toast('Datos cargados ✓ (' + clientes.length + ' clientes)', 'ok');
   } catch (err) {
-    toast('Error al cargar datos: ' + err.message, 'err');
-    console.error(err);
+    toast('Error al cargar: ' + err.message, 'err');
+    console.error('ERROR cargarTodo:', err);
   } finally {
     setLoading(false);
   }
 }
-
-// Genera un ID único para nuevas filas
-function nuevoId(prefix) {
-  return prefix + '-' + Date.now();
-}
-
-/* ── DATA local (se sincroniza con Sheets) ── */
-let clientes = [], sitios = [], lineas = [];
 
 /* ── PALETA ── */
 const COLORES = [
@@ -1243,6 +1262,34 @@ const chartDonut2Inst = new Chart(document.getElementById('chartDonut2'), {
   data: { labels: ['Facturadas','Solicitadas','Proyectadas'], datasets: [{ data: [0,0,0], backgroundColor: ['rgba(45,212,191,0.6)','rgba(79,128,255,0.5)','rgba(251,191,36,0.5)'], borderWidth: 0, hoverOffset: 4 }] },
   options: { responsive: true, maintainAspectRatio: false, cutout: '72%', plugins: { legend: { display: false } } }
 });
+
+/* ══ DEBUG ══ */
+async function mostrarDebug() {
+  const panel  = document.getElementById('debug-panel');
+  const output = document.getElementById('debug-output');
+  panel.style.display = 'block';
+  output.textContent = 'Consultando Apps Script...';
+  try {
+    const res  = await fetch(API_URL + '?sheet=ALL');
+    const text = await res.text();
+    // Intentar formatear como JSON
+    try {
+      const json = JSON.parse(text);
+      output.textContent =
+        '=== ok: ' + json.ok + ' ===\n\n' +
+        'CLIENTES (' + (json.clientes||[]).length + ' filas):\n' +
+        JSON.stringify(json.clientes, null, 2) + '\n\n' +
+        'SITIOS (' + (json.sitios||[]).length + ' filas):\n' +
+        JSON.stringify(json.sitios, null, 2) + '\n\n' +
+        'FACTURACION (' + (json.facturacion||[]).length + ' filas):\n' +
+        JSON.stringify(json.facturacion, null, 2);
+    } catch(_) {
+      output.textContent = 'Respuesta NO es JSON válido:\n\n' + text;
+    }
+  } catch(err) {
+    output.textContent = 'ERROR de red: ' + err.message;
+  }
+}
 
 /* Init — carga todo desde Google Sheets */
 cargarTodo();
