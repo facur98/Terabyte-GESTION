@@ -670,37 +670,48 @@ async function cargarTodo() {
   setLoading(true);
   try {
     const data = await apiGet('ALL');
-    // Mapear columnas de Sheets → objetos del frontend
+
+    // Helper: lee una clave del objeto ignorando mayúsculas y espacios
+    const get = (row, key) => {
+      const k = Object.keys(row).find(k => k.trim().toUpperCase() === key.toUpperCase());
+      return k ? (row[k] || '') : '';
+    };
+
     clientes = (data.clientes || []).map(r => ({
-      id:    r.ID    || '',
-      color: r.COLOR || '#4f80ff'
-    })).filter(c => c.id);
+      id:    get(r, 'ID'),
+      color: get(r, 'COLOR') || '#4f80ff'
+    })).filter(c => c.id.trim() !== '');
 
     sitios = (data.sitios || []).map(r => ({
-      id:        r.ID          || '',
-      localidad: r.LOCALIDAD   || '',
-      clienteId: r.CLIENTE_ID  || '',
-      concepto:  r.CONCEPTO    || '',
-      poNro:     r.PO_NRO      || '',
-      po:        parseFloat(r.PO_TOTAL) || 0,
-      obs:       r.OBSERVACION || ''
-    })).filter(s => s.id);
+      id:        get(r, 'ID'),
+      localidad: get(r, 'LOCALIDAD'),
+      clienteId: get(r, 'CLIENTE_ID'),
+      concepto:  get(r, 'CONCEPTO'),
+      poNro:     get(r, 'PO_NRO'),
+      po:        parseFloat(get(r, 'PO_TOTAL')) || 0,
+      obs:       get(r, 'OBSERVACION')
+    })).filter(s => s.id.trim() !== '');
 
     lineas = (data.facturacion || []).map(r => ({
-      id:             r.ID              || '',
-      sitioId:        r.SITIO_ID        || '',
-      clienteId:      r.CLIENTE_ID      || '',
-      pct:            parseInt(r.PCT)   || 0,
-      monto:          parseFloat(r.MONTO) || 0,
-      mes:            r.MES             || '',
-      fechaSolicitud: r.FECHA_SOLICITUD || '',
-      fechaFactura:   r.FECHA_FACTURA   || '',
-      nroFactura:     r.NRO_FACTURA     || '',
-      estado:         r.ESTADO          || 'Proyectado'
-    })).filter(l => l.id);
+      id:             get(r, 'ID'),
+      sitioId:        get(r, 'SITIO_ID'),
+      clienteId:      get(r, 'CLIENTE_ID'),
+      pct:            parseInt(get(r, 'PCT'))   || 0,
+      monto:          parseFloat(get(r, 'MONTO')) || 0,
+      mes:            get(r, 'MES'),
+      fechaSolicitud: get(r, 'FECHA_SOLICITUD'),
+      fechaFactura:   get(r, 'FECHA_FACTURA'),
+      nroFactura:     get(r, 'NRO_FACTURA'),
+      estado:         get(r, 'ESTADO') || 'Proyectado'
+    })).filter(l => l.id.trim() !== '');
 
+    // Renderizar todo después de cargar
     actualizarDashboard();
     actualizarBadge();
+    renderClientes();
+    renderSitios();
+    renderSeguimiento();
+
     toast('Datos cargados ✓', 'ok');
   } catch (err) {
     toast('Error al cargar datos: ' + err.message, 'err');
@@ -752,6 +763,7 @@ function showView(name, el) {
   if (el) el.classList.add('active');
   if (name === 'dashboard')   actualizarDashboard();
   if (name === 'panel')       actualizarPanel();
+  if (name === 'clientes')    renderClientes();
   if (name === 'sitios')      { poblarSelect('sit-cliente'); renderSitios(); }
   if (name === 'seguimiento') renderSeguimiento();
 }
