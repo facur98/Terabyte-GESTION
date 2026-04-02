@@ -611,29 +611,14 @@
     <!-- KPI Cards -->
     <div class="stats-row" id="dash-kpi-row"></div>
 
-    <!-- Gráficos fila 1 -->
+    <!-- Gráficos fila 1 — Evolución anual -->
     <div class="grid-3" style="margin-bottom:20px;">
       <div class="card">
         <div class="card-header"><div><div class="card-title">Evolución anual</div><div class="card-sub">Facturación mensual acumulada</div></div></div>
         <div class="chart-wrap"><canvas id="chartLine"></canvas></div>
       </div>
       <div class="card">
-        <div class="card-header"><div><div class="card-title">Por cliente</div><div class="card-sub">Distribución facturada</div></div></div>
-        <div class="donut-wrap" style="margin-top:8px;">
-          <div class="donut-chart"><canvas id="chartDonut"></canvas><div class="donut-label"><span class="donut-pct" id="donut1-val">—</span><span class="donut-text">Total</span></div></div>
-          <div class="legend-list" id="donut-legend"><div style="color:var(--text-light);font-size:13px;">Sin datos</div></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Gráficos fila 2 -->
-    <div class="grid-2" style="margin-bottom:20px;">
-      <div class="card">
-        <div class="card-header"><div class="card-title">Facturación por mes</div><div class="card-sub">Barras por periodo</div></div>
-        <div class="chart-wrap"><canvas id="chartBar"></canvas></div>
-      </div>
-      <div class="card">
-        <div class="card-header"><div class="card-title">Estado de líneas</div></div>
+        <div class="card-header"><div><div class="card-title">Estado de líneas</div></div></div>
         <div class="donut-wrap" style="margin-top:16px;justify-content:center;">
           <div class="donut-chart"><canvas id="chartDonut2"></canvas><div class="donut-label"><span class="donut-pct" id="donut2-total">0</span><span class="donut-text">líneas</span></div></div>
           <div class="legend-list">
@@ -645,10 +630,20 @@
       </div>
     </div>
 
-    <!-- Fila 3 -->
-    <div class="card">
-      <div class="card-header"><div><div class="card-title">Objetivos por cliente</div><div class="card-sub">Facturado acumulado</div></div></div>
-      <div id="dash-objetivos"><div style="text-align:center;padding:30px 0;color:var(--text-light);font-size:13px;">Sin datos</div></div>
+    <!-- Objetivos por cliente — liquid glass -->
+    <div style="background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid var(--glass-border);border-radius:var(--radius);box-shadow:var(--glass-shadow);padding:28px 32px;position:relative;overflow:hidden;">
+      <!-- Decoración de fondo -->
+      <div style="position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(79,128,255,0.08),transparent 70%);pointer-events:none;"></div>
+      <div style="position:absolute;bottom:-30px;left:-30px;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle,rgba(45,212,191,0.07),transparent 70%);pointer-events:none;"></div>
+      <div class="card-header" style="margin-bottom:24px;">
+        <div>
+          <div class="card-title" style="font-size:16px;">Objetivos por cliente</div>
+          <div class="card-sub">Facturado acumulado en el mes seleccionado</div>
+        </div>
+      </div>
+      <div id="dash-objetivos" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;">
+        <div style="text-align:center;padding:30px 0;color:var(--text-light);font-size:13px;">Sin datos</div>
+      </div>
     </div>
   </div>
 
@@ -892,16 +887,16 @@
     <div class="grid-2">
       <div class="card">
         <div class="card-header"><div class="card-title">Facturación por mes</div></div>
-        <div class="chart-wrap"><canvas id="chartBar"></canvas></div>
+        <div class="chart-wrap"><canvas id="chartBarPanel"></canvas></div>
       </div>
       <div class="card">
         <div class="card-header"><div class="card-title">Estado de líneas</div></div>
         <div class="donut-wrap" style="margin-top:16px;justify-content:center;">
-          <div class="donut-chart"><canvas id="chartDonut2"></canvas><div class="donut-label"><span class="donut-pct" id="donut2-total">0</span><span class="donut-text">líneas</span></div></div>
+          <div class="donut-chart"><canvas id="chartDonut2Panel"></canvas><div class="donut-label"><span class="donut-pct" id="donut2-total-panel">0</span><span class="donut-text">líneas</span></div></div>
           <div class="legend-list">
-            <div class="legend-item"><span class="legend-dot" style="background:var(--accent-teal)"></span> Facturadas <span class="legend-val" id="leg-fact">0</span></div>
-            <div class="legend-item"><span class="legend-dot" style="background:var(--accent-blue)"></span> Solicitadas <span class="legend-val" id="leg-sol">0</span></div>
-            <div class="legend-item"><span class="legend-dot" style="background:var(--accent-amber)"></span> Proyectadas <span class="legend-val" id="leg-proy">0</span></div>
+            <div class="legend-item"><span class="legend-dot" style="background:var(--accent-teal)"></span> Facturadas <span class="legend-val" id="leg-fact-panel">0</span></div>
+            <div class="legend-item"><span class="legend-dot" style="background:var(--accent-blue)"></span> Solicitadas <span class="legend-val" id="leg-sol-panel">0</span></div>
+            <div class="legend-item"><span class="legend-dot" style="background:var(--accent-amber)"></span> Proyectadas <span class="legend-val" id="leg-proy-panel">0</span></div>
           </div>
         </div>
       </div>
@@ -2887,13 +2882,13 @@ function actualizarDashboard() {
   const solicitadas = lf.filter(l => l.estado === 'Solicitado');
 
   const totalFac  = facturadas.reduce((a,l)=>a+l.monto, 0);
-  const totalProy = proyectadas.reduce((a,l)=>a+l.monto, 0);
+  const totalProy = lf.reduce((a,l)=>a+l.monto, 0); // TOTAL del mes sin importar estado
   const totalSol  = solicitadas.reduce((a,l)=>a+l.monto, 0);
   const totalTodo = lf.reduce((a,l)=>a+l.monto, 0);
   const pctPSol   = totalTodo > 0 ? Math.round((totalSol + totalFac) / totalTodo * 100) : 0;
   const pctSFac   = (totalSol + totalFac) > 0 ? Math.round(totalFac / (totalSol + totalFac) * 100) : 0;
 
-  // KPI cards — 4 cards: Facturado, Proyectado, Proy→Sol, Sol→Fac
+  // KPI cards — 4 cards: Facturado, Proyectado total, Proy→Sol, Sol→Fac
   const row = document.getElementById('dash-kpi-row');
   if (!row) return;
   row.className = 'stats-row-4';
@@ -2903,8 +2898,8 @@ function actualizarDashboard() {
       totalTodo > 0 ? Math.round(totalFac/totalTodo*100) : 0
     ) +
     kpiCard('amber', 'Proyectados',
-      fmt(totalProy), 'Sin iniciar', `${proyectadas.length} línea${proyectadas.length!==1?'s':''}`,
-      totalTodo > 0 ? Math.round(totalProy/totalTodo*100) : 0
+      fmt(totalTodo), 'Total del mes', `${lf.length} línea${lf.length!==1?'s':''}`,
+      100
     ) +
     kpiCard('teal',  'Proyectados → Solicitados',
       fmt(totalSol + totalFac), `de ${fmt(totalTodo)} total`, `${pctPSol}% avanzado`, pctPSol
@@ -2917,19 +2912,28 @@ function actualizarDashboard() {
   const obj = document.getElementById('dash-objetivos');
   if (!clientes.length) { obj.innerHTML = `<div style="text-align:center;padding:30px 0;color:var(--text-light);font-size:13px;">Sin clientes</div>`; }
   else {
-    const maxV = Math.max(...clientes.map(c => facturadas.filter(l=>l.clienteId===c.id).reduce((a,l)=>a+l.monto,0)), 1);
+    const maxV = Math.max(...clientes.map(c => lf.filter(l=>l.clienteId===c.id&&l.estado==='Facturado').reduce((a,l)=>a+l.monto,0)), 1);
     obj.innerHTML = clientes.map(c => {
-      const val = facturadas.filter(l=>l.clienteId===c.id).reduce((a,l)=>a+l.monto,0);
-      return `<div class="objetivo-item">
-        <div class="obj-header"><span class="obj-name">${dot(c.color)} ${c.id}</span><span class="obj-pct" style="color:${c.color}">${fmt(val)}</span></div>
-        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${Math.round(val/maxV*100)}%;background:${c.color};"></div></div>
+      const valFac  = lf.filter(l=>l.clienteId===c.id&&l.estado==='Facturado').reduce((a,l)=>a+l.monto,0);
+      const valTodo = lf.filter(l=>l.clienteId===c.id).reduce((a,l)=>a+l.monto,0);
+      const pct     = valTodo > 0 ? Math.round(valFac/valTodo*100) : 0;
+      return `<div style="background:rgba(255,255,255,0.35);border:1px solid rgba(255,255,255,0.7);border-radius:14px;padding:18px 20px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <span style="display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px;">${dot(c.color)}${c.id}</span>
+          <span style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:${c.color};">${fmt(valFac)}</span>
+        </div>
+        <div style="height:6px;background:rgba(200,205,220,0.3);border-radius:20px;overflow:hidden;margin-bottom:8px;">
+          <div style="height:100%;width:${pct}%;background:${c.color};border-radius:20px;transition:.4s ease;"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-light);">
+          <span>${pct}% facturado</span>
+          <span>de ${fmt(valTodo)} total</span>
+        </div>
       </div>`;
     }).join('');
   }
 
-  actualizarDonut1(lf);
-
-  // Line chart — año completo con floor en 0
+  // Line chart — año completo
   const dataLine = meses.map((_,i) => {
     const key = hoy.getFullYear() + '-' + String(i+1).padStart(2,'0');
     return Math.max(0, lineas.filter(l=>l.estado==='Facturado'&&l.mes===key).reduce((a,l)=>a+l.monto,0));
@@ -2937,45 +2941,19 @@ function actualizarDashboard() {
   chartLineInst.data.datasets[0].data = dataLine;
   chartLineInst.update();
 
-  // Bar chart — año completo con floor en 0
-  const dataBar = meses.map((_,i) => {
-    const key = hoy.getFullYear() + '-' + String(i+1).padStart(2,'0');
-    return Math.max(0, lineas.filter(l=>l.estado==='Facturado'&&l.mes===key).reduce((a,l)=>a+l.monto,0));
-  });
-  chartBarInst.data.datasets[0].data = dataBar;
-  chartBarInst.update();
+  actualizarDonut2(lf);
+}
 
-  // Donut2 estado líneas (del filtro activo)
+function actualizarDonut2(lf) {
+  const facturadas  = lf.filter(l => l.estado === 'Facturado');
+  const solicitadas = lf.filter(l => l.estado === 'Solicitado');
+  const proyectadas = lf.filter(l => l.estado === 'Proyectado');
   document.getElementById('donut2-total').textContent = lf.length;
   document.getElementById('leg-fact').textContent = facturadas.length;
   document.getElementById('leg-sol').textContent  = solicitadas.length;
   document.getElementById('leg-proy').textContent = proyectadas.length;
   chartDonut2Inst.data.datasets[0].data = [facturadas.length, solicitadas.length, proyectadas.length];
   chartDonut2Inst.update();
-}
-
-function actualizarDonut1(lineasFiltradas) {
-  const lf = lineasFiltradas || lineas;
-  const facturadas = lf.filter(l => l.estado === 'Facturado');
-  if (!facturadas.length || !clientes.length) {
-    chartDonut1Inst.data.datasets[0].data = [1];
-    chartDonut1Inst.data.datasets[0].backgroundColor = ['rgba(200,205,220,0.35)'];
-    chartDonut1Inst.data.labels = ['Sin datos'];
-    chartDonut1Inst.update();
-    document.getElementById('donut1-val').textContent = '—';
-    document.getElementById('donut-legend').innerHTML = `<div style="color:var(--text-light);font-size:13px;">Sin datos</div>`;
-    return;
-  }
-  const datos = clientes.map(c => ({ id: c.id, color: c.color, val: facturadas.filter(l=>l.clienteId===c.id).reduce((a,l)=>a+l.monto,0) })).filter(d=>d.val>0);
-  const total = datos.reduce((a,d)=>a+d.val,0);
-  chartDonut1Inst.data.labels = datos.map(d=>d.id);
-  chartDonut1Inst.data.datasets[0].data = datos.map(d=>d.val);
-  chartDonut1Inst.data.datasets[0].backgroundColor = datos.map(d=>d.color+'cc');
-  chartDonut1Inst.update();
-  document.getElementById('donut1-val').textContent = fmt(total);
-  document.getElementById('donut-legend').innerHTML = datos.map(d =>
-    `<div class="legend-item"><span class="legend-dot" style="background:${d.color}"></span>${d.id}<span class="legend-val">${fmt(d.val)}</span></div>`
-  ).join('');
 }
 
 /* ══ PANEL ══ */
@@ -3037,17 +3015,8 @@ const chartLineInst = new Chart(document.getElementById('chartLine'), {
   options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false }, border: { display: false } }, y: { grid: { color: 'rgba(200,205,220,0.25)' }, border: { display: false }, ticks: { callback: v => '$' + v } } } }
 });
 
-const chartDonut1Inst = new Chart(document.getElementById('chartDonut'), {
-  type: 'doughnut',
-  data: { labels: ['Sin datos'], datasets: [{ data: [1], backgroundColor: ['rgba(200,205,220,0.35)'], borderWidth: 0, hoverOffset: 0 }] },
-  options: { responsive: true, maintainAspectRatio: false, cutout: '72%', plugins: { legend: { display: false }, tooltip: { enabled: false } } }
-});
-
-const chartBarInst = new Chart(document.getElementById('chartBar'), {
-  type: 'bar',
-  data: { labels: meses, datasets: [{ label: 'Facturado', data: Array(12).fill(0), backgroundColor: 'rgba(79,128,255,0.18)', borderColor: 'rgba(79,128,255,0.7)', borderWidth: 1.5, borderRadius: 6 }] },
-  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false }, border: { display: false } }, y: { grid: { color: 'rgba(200,205,220,0.25)' }, border: { display: false }, ticks: { callback: v => '$' + v } } } }
-});
+const chartDonut1Inst = null; // eliminado
+const chartBarInst = null;   // eliminado
 
 const chartDonut2Inst = new Chart(document.getElementById('chartDonut2'), {
   type: 'doughnut',
