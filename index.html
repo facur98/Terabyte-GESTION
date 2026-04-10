@@ -29,40 +29,52 @@
 
     /* SIDEBAR */
     .sidebar {
-      width: var(--sidebar-w); min-height: 100vh; background: rgba(255,255,255,0.45);
-      backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
-      border-right: 1px solid var(--glass-border); display: flex; flex-direction: column;
+      width: var(--sidebar-w); min-height: 100vh;
+      background: rgba(255,255,255,0.72);
+      backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px);
+      border-right: 1px solid rgba(255,255,255,0.9);
+      display: flex; flex-direction: column;
       position: fixed; left: 0; top: 0; bottom: 0; z-index: 100; padding: 0 0 24px;
+      box-shadow: 2px 0 40px rgba(100,110,140,0.10);
     }
-    .sidebar-brand { display: flex; align-items: center; gap: 12px; padding: 28px 22px 24px; border-bottom: 1px solid rgba(255,255,255,0.6); }
+    .sidebar-brand {
+      display: flex; align-items: center; gap: 11px;
+      padding: 24px 20px 20px;
+      border-bottom: 1px solid rgba(200,205,220,0.25);
+    }
     .logo-placeholder {
-      width: 40px; height: 40px; border-radius: 10px;
+      width: 34px; height: 34px; border-radius: 9px;
       background: linear-gradient(135deg, var(--accent-blue), var(--accent-violet));
       display: flex; align-items: center; justify-content: center;
-      color: #fff; font-family: 'Syne', sans-serif; font-size: 17px; font-weight: 700;
-      flex-shrink: 0; box-shadow: 0 4px 14px rgba(79,128,255,0.35);
+      color: #fff; font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700;
+      flex-shrink: 0; box-shadow: 0 3px 12px rgba(79,128,255,0.35);
     }
-    .brand-name { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; color: var(--text-dark); letter-spacing: -0.3px; }
-    .brand-sub { font-size: 11px; color: var(--text-light); }
-    .sidebar-section { padding: 20px 14px 6px; }
-    .sidebar-section-label { font-size: 10px; font-weight: 600; letter-spacing: 1.2px; color: var(--text-light); text-transform: uppercase; padding: 0 8px; margin-bottom: 6px; }
-    .nav-item { display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: var(--radius-sm); cursor: pointer; color: var(--text-mid); font-size: 13.5px; font-weight: 500; transition: var(--transition); position: relative; text-decoration: none; margin-bottom: 2px; }
-    .nav-item i { width: 18px; text-align: center; font-size: 14px; }
+    .brand-name { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; color: var(--text-dark); letter-spacing: -0.2px; }
+    .brand-sub { font-size: 10.5px; color: var(--text-light); }
+    .sidebar-section { padding: 16px 12px 4px; }
+    .sidebar-section-label {
+      font-size: 9.5px; font-weight: 700; letter-spacing: 1.4px;
+      color: var(--text-light); text-transform: uppercase;
+      padding: 0 8px; margin-bottom: 5px;
+    }
+    .nav-item { display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: var(--radius-sm); cursor: pointer; color: var(--text-mid); font-size: 13px; font-weight: 500; transition: var(--transition); position: relative; text-decoration: none; margin-bottom: 1px; }
+    .nav-item i { width: 18px; text-align: center; font-size: 13px; }
     .nav-item:hover { background: rgba(79,128,255,0.07); color: var(--accent-blue); }
-    .nav-item.active { background: rgba(79,128,255,0.12); color: var(--accent-blue); font-weight: 600; }
-    .nav-item.active::before { content: ''; position: absolute; left: -14px; top: 50%; transform: translateY(-50%); width: 3px; height: 22px; background: var(--accent-blue); border-radius: 0 3px 3px 0; }
+    .nav-item.active { background: rgba(79,128,255,0.10); color: var(--accent-blue); font-weight: 600; }
+    .nav-item.active::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 3px; height: 18px; background: var(--accent-blue); border-radius: 0 3px 3px 0; }
 
     /* ── Menú colapsable ── */
     .nav-group-header {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 10px 12px; border-radius: var(--radius-sm);
-      cursor: pointer; color: var(--text-mid); font-size: 13.5px; font-weight: 600;
-      transition: var(--transition); margin-bottom: 2px;
+      padding: 8px 12px; border-radius: var(--radius-sm);
+      cursor: pointer; color: var(--text-light); font-size: 9.5px; font-weight: 700;
+      letter-spacing: 1.4px; text-transform: uppercase;
+      transition: var(--transition); margin-bottom: 3px;
       user-select: none;
     }
-    .nav-group-header:hover { background: rgba(79,128,255,0.07); color: var(--accent-blue); }
-    .nav-group-header.open { color: var(--accent-blue); }
-    .nav-group-arrow { font-size: 10px; transition: transform 0.25s ease; }
+    .nav-group-header:hover { color: var(--text-mid); }
+    .nav-group-header.open { color: var(--text-mid); }
+    .nav-group-arrow { font-size: 9px; transition: transform 0.25s ease; }
     .nav-group-header.open .nav-group-arrow { transform: rotate(90deg); }
     .nav-subitems {
       overflow: hidden; max-height: 0;
@@ -70,13 +82,20 @@
     }
     .nav-subitems.open { max-height: 400px; }
     .nav-subitem {
-      display: flex; align-items: center; gap: 10px;
-      padding: 8px 12px 8px 26px; border-radius: var(--radius-sm);
+      display: flex; align-items: center; gap: 9px;
+      padding: 9px 12px 9px 18px; border-radius: var(--radius-sm);
       cursor: pointer; color: var(--text-mid); font-size: 13px; font-weight: 500;
       transition: var(--transition); margin-bottom: 1px; text-decoration: none;
     }
+    .nav-subitem::before {
+      content: ''; width: 5px; height: 5px; border-radius: 50%;
+      background: rgba(150,160,190,0.4); flex-shrink: 0;
+      transition: var(--transition);
+    }
     .nav-subitem:hover { background: rgba(79,128,255,0.07); color: var(--accent-blue); }
-    .nav-subitem.active { background: rgba(79,128,255,0.10); color: var(--accent-blue); font-weight: 600; }
+    .nav-subitem:hover::before { background: var(--accent-blue); }
+    .nav-subitem.active { background: rgba(79,128,255,0.09); color: var(--accent-blue); font-weight: 600; }
+    .nav-subitem.active::before { background: var(--accent-blue); box-shadow: 0 0 5px rgba(79,128,255,0.5); }
 
     /* ── Fila facturado 100% — verde liquid glass ── */
     tr.row-facturado-100 td {
@@ -84,13 +103,13 @@
     }
     tr.row-facturado-100 { border-left: 3px solid rgba(45,212,191,0.5); }
     .nav-badge { margin-left: auto; font-size: 10px; font-weight: 700; background: var(--accent-blue); color: #fff; padding: 2px 7px; border-radius: 20px; }
-    .sidebar-footer { margin-top: auto; padding: 16px 14px 0; border-top: 1px solid rgba(255,255,255,0.6); }
+    .sidebar-footer { margin-top: auto; padding: 16px 12px 0; border-top: 1px solid rgba(200,205,220,0.25); }
     .user-card { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--radius-sm); cursor: pointer; transition: var(--transition); }
     .user-card:hover { background: rgba(79,128,255,0.07); }
-    .user-avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-teal), var(--accent-blue)); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: 700; }
+    .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-teal), var(--accent-blue)); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; font-weight: 700; flex-shrink: 0; }
     .user-name { font-size: 13px; font-weight: 600; color: var(--text-dark); }
     .user-role { font-size: 11px; color: var(--text-light); }
-    .sidebar-sep { height: 1px; background: rgba(255,255,255,0.5); margin: 10px 14px; }
+    .sidebar-sep { height: 1px; background: rgba(200,205,220,0.25); margin: 8px 12px; }
 
     /* MAIN */
     .main { margin-left: var(--sidebar-w); flex: 1; padding: 32px 32px 40px; position: relative; z-index: 1; }
@@ -557,8 +576,8 @@
 
   <div class="sidebar-section" style="padding-top:6px;">
     <div class="sidebar-section-label">Próximamente</div>
-    <a class="nav-subitem" style="opacity:.4;cursor:not-allowed;">Inventario</a>
-    <a class="nav-subitem" style="opacity:.4;cursor:not-allowed;">Recursos Humanos</a>
+    <a class="nav-subitem" style="opacity:.35;cursor:not-allowed;">Inventario</a>
+    <a class="nav-subitem" style="opacity:.35;cursor:not-allowed;">Recursos Humanos</a>
   </div>
 
   <div class="sidebar-footer">
@@ -621,6 +640,19 @@
       <div id="dash-objetivos" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;">
         <div style="text-align:center;padding:30px 0;color:var(--text-light);font-size:13px;">Sin datos</div>
       </div>
+    </div>
+
+    <!-- Card GAP acumulado -->
+    <div id="dash-gap-card" style="background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid var(--glass-border);border-radius:var(--radius);box-shadow:var(--glass-shadow);padding:28px 32px;margin-top:20px;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(167,139,250,0.09),transparent 70%);pointer-events:none;"></div>
+      <div class="card-header" style="margin-bottom:24px;">
+        <div>
+          <div class="card-title" style="font-size:16px;">GAP acumulado vs. PEQ</div>
+          <div class="card-sub">Superávit o déficit mensual respecto al punto de equilibrio ($90.000.000)</div>
+        </div>
+        <div id="dash-gap-total" style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;"></div>
+      </div>
+      <div id="dash-gap-tabla" style="overflow-x:auto;"></div>
     </div>
   </div>
 
@@ -979,10 +1011,10 @@
       <div class="modal-title" style="margin:0;">Editar sitio</div>
       <button onclick="cerrarModal()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--text-light);line-height:1;">✕</button>
     </div>
-    <div id="edit-sit-vinculos" style="display:none;background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.28);border-radius:var(--radius-sm);padding:14px 18px;margin-bottom:18px;">
-      <div style="font-weight:700;color:var(--accent-rose);font-size:13px;margin-bottom:8px;">⚠ Este sitio tiene líneas de facturación vinculadas</div>
+    <div id="edit-sit-vinculos" style="display:none;background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.35);border-radius:var(--radius-sm);padding:14px 18px;margin-bottom:18px;">
+      <div style="font-weight:700;color:#b45309;font-size:13px;margin-bottom:8px;">⚠ Este sitio tiene líneas de facturación vinculadas</div>
       <div id="edit-sit-vinculos-detalle" style="font-size:13px;color:var(--text-mid);line-height:1.8;"></div>
-      <div style="margin-top:10px;font-size:12px;color:var(--accent-rose);font-weight:600;">Para modificar este sitio, primero eliminá las líneas vinculadas en Seguimiento.</div>
+      <div style="margin-top:10px;font-size:12px;color:#b45309;font-weight:600;">Si modificás el monto de la PO, los montos de las líneas vinculadas se recalcularán automáticamente.</div>
     </div>
     <input type="hidden" id="edit-sit-original-id" />
     <div class="form-row">
@@ -1647,10 +1679,22 @@ function abrirEditarSitio(uid) {
       if (l.estado === 'Facturado')  { badgeColor = '#0d9488'; bg = 'rgba(45,212,191,0.15)'; }
       return `· <b>${l.pct}%</b> — ${mesLabel(l.mes)} — <span style="background:${bg};color:${badgeColor};padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;">${l.estado}</span> — ${fmt(l.monto)}`;
     }).join('<br>');
+    // Cambiar texto del aviso para indicar que igual se puede editar
+    const avisoTitle = avisoEl.querySelector('div[style*="font-weight:700"]');
+    if (avisoTitle) avisoTitle.textContent = '⚠ Este sitio tiene líneas de facturación vinculadas';
+    const avisoFooter = avisoEl.querySelector('div[style*="font-size:12px"]');
+    if (avisoFooter) avisoFooter.textContent = 'Si modificás el monto de la PO, los montos de las líneas vinculadas se recalcularán automáticamente.';
+    avisoEl.style.background = 'rgba(251,191,36,0.08)';
+    avisoEl.style.borderColor = 'rgba(251,191,36,0.35)';
+    const avisoTitleEl = avisoEl.querySelector('div[style*="font-weight:700"]');
+    if (avisoTitleEl) avisoTitleEl.style.color = '#b45309';
+    const avisoFooterEl = avisoEl.querySelector('div[style*="font-size:12px"]');
+    if (avisoFooterEl) avisoFooterEl.style.color = '#b45309';
     avisoEl.style.display = 'block';
-    btnGuard.disabled = true;
-    btnGuard.style.opacity = '0.4';
-    btnGuard.style.cursor = 'not-allowed';
+    // Permitir edición aunque haya líneas vinculadas
+    btnGuard.disabled = false;
+    btnGuard.style.opacity = '1';
+    btnGuard.style.cursor = 'pointer';
   } else {
     avisoEl.style.display = 'none';
     btnGuard.disabled = false;
@@ -1674,18 +1718,54 @@ async function guardarEdicionSitio() {
   if (!loc)   return alert('Seleccioná una provincia.');
   if (!cid)   return alert('Seleccioná un cliente.');
   if (!poNro) return alert('El N° de PO es obligatorio.');
+
+  const poAnterior = s.po;
+  const cambioMonto = po !== poAnterior;
+
+  // Buscar líneas vinculadas a este sitio
+  const sitiosConMismoId = sitios.filter(x => x.id === s.id);
+  const lineasVinculadas = lineas.filter(l => {
+    if (l.sitioId !== s.id) return false;
+    if (sitiosConMismoId.length === 1) return true;
+    if (l.poNroLinea && s.poNro) return l.poNroLinea === s.poNro;
+    const montoEsperado = s.po * l.pct / 100;
+    return Math.abs(l.monto - montoEsperado) < Math.max(1, montoEsperado * 0.01);
+  });
+
   setLoading(true);
   try {
     const compoundId = `${s.id}||${poNro}`;
+    // El ID de búsqueda es solo s.id (el valor real en la columna ID de Sheets)
+    const searchId = s.id;
     await apiPost('UPDATE', 'SITIOS', {
-      ID: compoundId, LOCALIDAD: loc, CLIENTE_ID: cid, CONCEPTO: con,
+      LOCALIDAD: loc, CLIENTE_ID: cid, CONCEPTO: con,
       PO_NRO: poNro, PO_TOTAL: po, OBSERVACION: obs
-    }, s.uid || s.id);
+    }, searchId);
     s.localidad = loc; s.clienteId = cid; s.concepto = con;
     s.poNro = poNro; s.po = po; s.obs = obs;
     s.uid = `${s.id}||${poNro}`;
-    cerrarModal(); renderSitios(); renderClientes(); actualizarDashboard();
-    toast('Sitio actualizado ✓');
+
+    // Si cambió el monto, recalcular y actualizar todas las líneas vinculadas
+    if (cambioMonto && lineasVinculadas.length > 0) {
+      let okLineas = 0, errLineas = 0;
+      for (const l of lineasVinculadas) {
+        const nuevoMonto = Math.round(po * l.pct / 100);
+        try {
+          await apiPost('UPDATE', 'FACTURACION', { MONTO: nuevoMonto }, l.id);
+          l.monto = nuevoMonto;
+          okLineas++;
+        } catch(e) { errLineas++; }
+      }
+      cerrarModal(); renderSitios(); renderClientes(); actualizarDashboard(); renderSeguimiento();
+      if (errLineas === 0) {
+        toast(`Sitio actualizado ✓ · ${okLineas} línea${okLineas!==1?'s':''} recalculada${okLineas!==1?'s':''}`);
+      } else {
+        toast(`Sitio actualizado. ${okLineas} líneas OK, ${errLineas} con error.`, 'err');
+      }
+    } else {
+      cerrarModal(); renderSitios(); renderClientes(); actualizarDashboard();
+      toast('Sitio actualizado ✓');
+    }
     setTimeout(autoSync, 1000);
   } catch(e) { toast('Error: ' + e.message, 'err'); }
   finally { setLoading(false); }
@@ -2811,10 +2891,16 @@ function actualizarDashboard() {
     obj.innerHTML = `<div style="text-align:center;padding:30px 0;color:var(--text-light);font-size:13px;">Sin clientes</div>`;
   } else {
     obj.innerHTML = clientes.map(c => {
-      const valFac  = lf.filter(l=>l.clienteId===c.id&&l.estado==='Facturado').reduce((a,l)=>a+l.monto,0);
-      const valTodo = lf.filter(l=>l.clienteId===c.id).reduce((a,l)=>a+l.monto,0);
+      const lineasCliente = lf.filter(l => l.clienteId === c.id);
+      const valFac  = lineasCliente.filter(l => l.estado === 'Facturado').reduce((a,l) => a+l.monto, 0);
+      const valTodo = lineasCliente.reduce((a,l) => a+l.monto, 0);
       const pct     = valTodo > 0 ? Math.round(valFac/valTodo*100) : 0;
-      return `<div style="background:rgba(255,255,255,0.35);border:1px solid rgba(255,255,255,0.7);border-radius:14px;padding:18px 20px;">
+      const mesActual = document.getElementById('dash-filtro-mes')?.value || '';
+      const mesLabel2 = mesActual ? mesLabel(mesActual) : 'el mes';
+      return `<div style="background:rgba(255,255,255,0.35);border:1px solid rgba(255,255,255,0.7);border-radius:14px;padding:18px 20px;cursor:pointer;transition:var(--transition);"
+        onclick="abrirDetalleCliente('${c.id}')"
+        onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 10px 30px rgba(100,110,140,0.15)'"
+        onmouseout="this.style.transform='';this.style.boxShadow=''">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
           <span style="display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px;">${dot(c.color)}${c.id}</span>
           <span style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:${c.color};">${fmt(valFac)}</span>
@@ -2829,9 +2915,154 @@ function actualizarDashboard() {
       </div>`;
     }).join('');
   }
+
+  // Renderizar GAP acumulado
+  renderGapAcumulado();
 }
 
-/* ══ TOOLTIP SITIOS ══ */
+/* ══ DETALLE CLIENTE ══ */
+function abrirDetalleCliente(clienteId) {
+  const c   = getCli(clienteId);
+  const mes = document.getElementById('dash-filtro-mes')?.value || '';
+  const lf  = mes ? lineas.filter(l => l.mes === mes) : lineas;
+  const lineasCliente = lf.filter(l => l.clienteId === clienteId);
+
+  const valFac  = lineasCliente.filter(l => l.estado === 'Facturado').reduce((a,l) => a+l.monto, 0);
+  const valTodo = lineasCliente.reduce((a,l) => a+l.monto, 0);
+  const mesStr  = mes ? mesLabel(mes) : 'todos los meses';
+
+  document.getElementById('kpi-modal-title').innerHTML =
+    `${c ? dot(c.color) : ''} <span style="margin-left:6px;">${clienteId}</span>`;
+  document.getElementById('kpi-modal-sub').textContent =
+    `Detalle de líneas · ${mesStr}`;
+  document.getElementById('kpi-modal-total').textContent = fmt(Math.round(valFac)) + ' facturado';
+
+  const estadoBadge = {
+    'Proyectado': '<span style="background:rgba(79,128,255,0.12);color:#3b5fc0;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;">Proyectado</span>',
+    'Solicitado': '<span style="background:rgba(251,191,36,0.15);color:#b45309;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;">Solicitado</span>',
+    'Facturado':  '<span style="background:rgba(45,212,191,0.15);color:#0d9488;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;">Facturado</span>',
+  };
+
+  const tbody = document.getElementById('kpi-modal-tbody');
+  if (!lineasCliente.length) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:48px;color:var(--text-light);font-size:14px;">Sin líneas para ${clienteId} en ${mesStr}</td></tr>`;
+  } else {
+    tbody.innerHTML = lineasCliente.map((l, i) => {
+      const sit   = sitios.find(s => s.id === l.sitioId);
+      const poNro = l.poNroLinea || (sit ? sit.poNro : '') || '—';
+      const bg    = i % 2 === 0 ? '' : 'background:rgba(240,242,248,0.4);';
+      return `<tr style="${bg}border-bottom:1px solid rgba(200,205,220,0.18);">
+        <td style="padding:13px 16px 13px 0;font-weight:700;font-size:14px;">${l.sitioId}</td>
+        <td style="padding:13px 16px;">
+          <span style="display:flex;align-items:center;gap:7px;">
+            ${c ? dot(c.color) : ''}${l.clienteId}
+          </span>
+        </td>
+        <td style="padding:13px 16px;text-align:center;">
+          <span style="background:rgba(79,128,255,0.10);color:#3a6bf0;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;">${l.pct}%</span>
+        </td>
+        <td style="padding:13px 16px;color:var(--text-mid);font-size:12px;">${poNro}</td>
+        <td style="padding:13px 0 13px 16px;text-align:right;font-weight:700;font-size:14px;">${fmt(Math.round(l.monto||0))}</td>
+        <td style="padding:13px 0 13px 16px;text-align:center;color:var(--text-mid);font-size:12px;">${mesLabel(l.mes)}</td>
+        <td style="padding:13px 0 13px 16px;text-align:center;">${estadoBadge[l.estado]||l.estado}</td>
+      </tr>`;
+    }).join('');
+  }
+  document.getElementById('modal-kpi-detalle').classList.add('open');
+}
+
+
+/* ══ GAP ACUMULADO ══ */
+function renderGapAcumulado() {
+  const tablaEl = document.getElementById('dash-gap-tabla');
+  const totalEl = document.getElementById('dash-gap-total');
+  if (!tablaEl || !totalEl) return;
+
+  const mesesConDatos = [...new Set(lineas.map(l => l.mes).filter(Boolean))].sort();
+
+  if (!mesesConDatos.length) {
+    tablaEl.innerHTML = `<div style="text-align:center;padding:30px 0;color:var(--text-light);font-size:13px;">Sin datos históricos de facturación</div>`;
+    totalEl.textContent = '';
+    return;
+  }
+
+  let gapAcumulado = 0;
+  const filas = mesesConDatos.map(mes => {
+    const facturado = lineas
+      .filter(l => l.mes === mes && l.estado === 'Facturado')
+      .reduce((a, l) => a + (l.monto || 0), 0);
+    const diff      = facturado - PEQ;
+    gapAcumulado   += diff;
+    return { mes, facturado, diff, gapAcumulado };
+  });
+
+  const gapFinal = filas[filas.length - 1]?.gapAcumulado || 0;
+  const colorTotal = gapFinal >= 0 ? '#0d9488' : '#be123c';
+  totalEl.innerHTML = `<span style="color:${colorTotal};">${gapFinal >= 0 ? '+' : ''}${fmt(Math.round(gapFinal))}</span>`;
+
+  tablaEl.innerHTML = `
+    <table style="width:100%;border-collapse:collapse;font-size:13px;">
+      <thead>
+        <tr>
+          <th style="text-align:left;padding:0 16px 12px 0;font-size:11px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:.7px;border-bottom:1px solid rgba(200,205,220,0.35);">Mes</th>
+          <th style="text-align:right;padding:0 16px 12px;font-size:11px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:.7px;border-bottom:1px solid rgba(200,205,220,0.35);">Facturado</th>
+          <th style="text-align:right;padding:0 16px 12px;font-size:11px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:.7px;border-bottom:1px solid rgba(200,205,220,0.35);">PEQ</th>
+          <th style="text-align:right;padding:0 16px 12px;font-size:11px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:.7px;border-bottom:1px solid rgba(200,205,220,0.35);">Diferencia mes</th>
+          <th style="text-align:right;padding:0 0 12px 16px;font-size:11px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:.7px;border-bottom:1px solid rgba(200,205,220,0.35);">GAP acumulado</th>
+          <th style="padding:0 0 12px 16px;border-bottom:1px solid rgba(200,205,220,0.35);width:180px;"></th>
+        </tr>
+      </thead>
+      <tbody>
+        ${filas.map((f, i) => {
+          const diffColor = f.diff >= 0 ? '#0d9488' : '#be123c';
+          const diffBg    = f.diff >= 0 ? 'rgba(45,212,191,0.10)' : 'rgba(248,113,113,0.10)';
+          const acumColor = f.gapAcumulado >= 0 ? '#3a6bf0' : '#be123c';
+          const acumBg    = f.gapAcumulado >= 0 ? 'rgba(79,128,255,0.08)' : 'rgba(248,113,113,0.08)';
+          const pctBar    = Math.min(100, Math.round(f.facturado / PEQ * 100));
+          const barColor  = f.facturado >= PEQ ? '#2dd4bf' : f.facturado >= PEQ * 0.7 ? '#4f80ff' : f.facturado >= PEQ * 0.4 ? '#fbbf24' : '#f87171';
+          const rowBg     = i % 2 === 0 ? '' : 'background:rgba(240,242,248,0.3);';
+          return `<tr style="${rowBg}border-bottom:1px solid rgba(200,205,220,0.18);">
+            <td style="padding:12px 16px 12px 0;font-weight:600;">${mesLabel(f.mes)}</td>
+            <td style="padding:12px 16px;text-align:right;font-weight:700;">${fmt(Math.round(f.facturado))}</td>
+            <td style="padding:12px 16px;text-align:right;color:var(--text-light);">${fmt(PEQ)}</td>
+            <td style="padding:12px 16px;text-align:right;">
+              <span style="background:${diffBg};color:${diffColor};padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;">
+                ${f.diff >= 0 ? '+' : ''}${fmt(Math.round(f.diff))}
+              </span>
+            </td>
+            <td style="padding:12px 0 12px 16px;text-align:right;">
+              <span style="background:${acumBg};color:${acumColor};padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;">
+                ${f.gapAcumulado >= 0 ? '+' : ''}${fmt(Math.round(f.gapAcumulado))}
+              </span>
+            </td>
+            <td style="padding:12px 0 12px 16px;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="flex:1;height:6px;background:rgba(200,205,220,0.3);border-radius:20px;overflow:hidden;">
+                  <div style="height:100%;width:${pctBar}%;background:${barColor};border-radius:20px;transition:width 1s ease;"></div>
+                </div>
+                <span style="font-size:11px;color:var(--text-light);min-width:32px;text-align:right;">${pctBar}%</span>
+              </div>
+            </td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+      <tfoot>
+        <tr style="border-top:2px solid rgba(200,205,220,0.4);">
+          <td colspan="3" style="padding:14px 0 0;font-size:12px;color:var(--text-light);font-style:italic;">
+            ${gapFinal >= 0
+              ? `✅ GAP positivo: el próximo PEQ efectivo es ${fmt(Math.max(0, PEQ - gapFinal))}`
+              : `⚠️ GAP negativo: se necesitan ${fmt(Math.abs(gapFinal))} adicionales sobre el PEQ para recuperar`}
+          </td>
+          <td colspan="3" style="padding:14px 0 0;text-align:right;">
+            <span style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:${gapFinal >= 0 ? '#0d9488' : '#be123c'};">
+              GAP total: ${gapFinal >= 0 ? '+' : ''}${fmt(Math.round(gapFinal))}
+            </span>
+          </td>
+        </tr>
+      </tfoot>
+    </table>`;
+}
+
 const _tip = () => document.getElementById('sit-global-tooltip');
 
 function showSitTooltip(event, uid) {
