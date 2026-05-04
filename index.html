@@ -1420,6 +1420,21 @@ async function cargarTodo() {
       };
     }).filter(s => s.id.trim() !== '');
 
+    // Normaliza un valor de fecha que puede venir como "YYYY-MM", "YYYY-MM-DD",
+    // "YYYY-MM-DDTHH:mm:ss.sssZ" o ya una Date serializada — devuelve "YYYY-MM-DD".
+    // Si solo trae año-mes, devuelve "YYYY-MM" tal cual.
+    const normFecha = v => {
+      const s = String(v || '').trim();
+      if (!s) return '';
+      // Recorta cualquier parte después de la T (hora ISO)
+      const sinT = s.split('T')[0];
+      // Si trae más de 10 caracteres por algún otro motivo, recorta a 10
+      return sinT.slice(0, 10);
+    };
+    // Normaliza el campo MES a "YYYY-MM" (Sheets a veces lo guarda como
+    // "2026-05-01" cuando autoformatea la celda como fecha).
+    const normMes = v => normFecha(v).slice(0, 7);
+
     lineas = (data.facturacion || []).map(r => {
       const rawSitioId = get(r, 'SITIO_ID');
       const sitioId = rawSitioId.includes('||') ? rawSitioId.split('||')[0] : rawSitioId;
@@ -1431,9 +1446,9 @@ async function cargarTodo() {
         clienteId:      get(r, 'CLIENTE_ID'),
         pct:            parseInt(get(r, 'PCT'))     || 0,
         monto:          Math.round(parseFloat(String(get(r, 'MONTO')).replace(/\$/g,'').replace(/\./g,'').replace(',','.').trim()) || 0),
-        mes:            get(r, 'MES'),
-        fechaSolicitud: get(r, 'FECHA_SOLICITUD'),
-        fechaFactura:   get(r, 'FECHA_FACTURA'),
+        mes:            normMes(get(r, 'MES')),
+        fechaSolicitud: normFecha(get(r, 'FECHA_SOLICITUD')),
+        fechaFactura:   normFecha(get(r, 'FECHA_FACTURA')),
         nroFactura:     get(r, 'NRO_FACTURA'),
         estado:         get(r, 'ESTADO') || 'Proyectado'
       };
@@ -2876,9 +2891,10 @@ function actualizarDashboard() {
       100,
       `abrirDetalleKPI('Proyectados','Todas las líneas del mes',window._dash_lf)`
     ) +
-    kpiCard('teal',  'Proyectados → Solicitados',
-      fmt(totalSol + totalFac), `de ${fmt(totalTodo)} total`, `${pctPSol}% avanzado`, pctPSol,
-      `abrirDetalleKPI('Proyectados → Solicitados','Líneas en estado Solicitado',window._dash_solicitadas)`
+    kpiCard('teal',  'Solicitados sin facturar',
+      fmt(totalSol), `de ${fmt(totalTodo)} total`, `${solicitadas.length} línea${solicitadas.length!==1?'s':''}`,
+      totalTodo > 0 ? Math.round(totalSol/totalTodo*100) : 0,
+      `abrirDetalleKPI('Solicitados sin facturar','Líneas en estado Solicitado',window._dash_solicitadas)`
     ) +
     kpiCard('rose',  'Solicitados → Facturados',
       fmt(totalFac), `de ${fmt(totalSol + totalFac)} solicitado`, `${pctSFac}% facturado`, pctSFac,
