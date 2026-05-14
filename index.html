@@ -1592,6 +1592,26 @@ async function apiPost(action, sheet, payload = {}, id = '') {
   return data;
 }
 
+/**
+ * Para UPDATE/DELETE sobre SITIOS con doble formato de ID:
+ * - Sitios nuevos: ID en el Sheet = `${id}||${poNro}` (uid)
+ * - Sitios viejos: ID en el Sheet = `${id}` (sin "||")
+ * Intenta primero con `primaryId` (uid), si responde "Fila no encontrada"
+ * reintenta con `fallbackId` (id corto).
+ */
+async function apiPostWithIdFallback(action, sheet, payload, primaryId, fallbackId) {
+  try {
+    return await apiPost(action, sheet, payload, primaryId);
+  } catch (e) {
+    const msg = String(e.message || '').toLowerCase();
+    // Detectar específicamente "fila no encontrada"; cualquier otro error se propaga
+    if (msg.includes('no encontrada') && fallbackId && fallbackId !== primaryId) {
+      return await apiPost(action, sheet, payload, fallbackId);
+    }
+    throw e;
+  }
+}
+
 function toast(msg, tipo = 'ok') {
   let t = document.getElementById('toast');
   if (!t) {
@@ -2177,12 +2197,12 @@ async function guardarEdicionSitio() {
   setLoading(true);
   try {
     const compoundId = `${s.id}||${poNro}`;
-    // El ID de búsqueda es solo s.id (el valor real en la columna ID de Sheets)
-    const searchId = s.id;
-    await apiPost('UPDATE', 'SITIOS', {
+    // Fallback: nuevos sitios están en el Sheet como `${id}||${poNro}` (uid).
+    // Viejos están como `${id}` plano. Intentamos primero el uid actual y caemos al id corto si falla.
+    await apiPostWithIdFallback('UPDATE', 'SITIOS', {
       LOCALIDAD: loc, CLIENTE_ID: cid, CONCEPTO: con,
       PO_NRO: poNro, PO_TOTAL: po, OBSERVACION: obs
-    }, searchId);
+    }, s.uid, s.id);
     s.localidad = loc; s.clienteId = cid; s.concepto = con;
     s.poNro = poNro; s.po = po; s.obs = obs;
     s.uid = `${s.id}||${poNro}`;
@@ -2416,7 +2436,8 @@ async function eliminarSitio(uid) {
   if (!confirm(`¿Eliminar sitio ${s.id} (PO: ${s.poNro || '—'})?`)) return;
   setLoading(true);
   try {
-    await apiPost('DELETE', 'SITIOS', {}, s.id);
+    // Fallback uid → id (ver comentario en apiPostWithIdFallback)
+    await apiPostWithIdFallback('DELETE', 'SITIOS', {}, s.uid, s.id);
     sitios = sitios.filter(x => x.uid !== uid);
     renderSitios(); renderClientes(); actualizarDashboard();
     toast('Sitio eliminado');
