@@ -172,6 +172,17 @@
     tbody tr { border-bottom: 1px solid rgba(200,205,220,0.25); transition: var(--transition); }
     tbody tr:last-child { border-bottom: none; }
     tbody tr:hover { background: rgba(79,128,255,0.04); }
+
+    /* ── Filas clickeables (vista Sitios) ── */
+    tr.row-sit-clickable { cursor: pointer; user-select: none; -webkit-user-select: none; }
+    tr.row-sit-clickable:hover td { background: rgba(79,128,255,0.10) !important; }
+    tr.row-sit-clickable td.col-acciones { cursor: default; }
+    /* Asegurar que el botón conserve cursor pointer dentro de col-acciones */
+    tr.row-sit-clickable td.col-acciones .btn { cursor: pointer; }
+
+    /* ── Filas clickeables del modal de detalle KPI/Cliente ── */
+    tr.row-detalle-clickable { cursor: pointer; user-select: none; -webkit-user-select: none; }
+    tr.row-detalle-clickable:hover td { background: rgba(79,128,255,0.10) !important; }
     tbody td { padding: 11px 14px; color: var(--text-dark); vertical-align: middle; }
 
     .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
@@ -239,6 +250,60 @@
     .sit-filtros-wrap .form-select,
     .sit-filtros-wrap .form-input { flex: 1; min-width: 130px; width: auto !important; }
 
+    /* ── Multiselect dropdown ── */
+    .ms-wrap { position: relative; display: inline-block; }
+    .ms-btn {
+      padding: 10px 30px 10px 14px; border-radius: var(--radius-sm);
+      border: 1px solid rgba(200,205,225,0.6);
+      background: rgba(255,255,255,0.65); backdrop-filter: blur(8px);
+      font-family: 'DM Sans', sans-serif; font-size: 13.5px; color: var(--text-dark);
+      outline: none; transition: var(--transition); cursor: pointer;
+      text-align: left; width: 100%;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      position: relative;
+    }
+    .ms-btn:hover { background: rgba(255,255,255,0.85); }
+    .ms-btn.ms-active { border-color: var(--accent-blue); background: rgba(255,255,255,0.9); box-shadow: 0 0 0 3px rgba(79,128,255,0.12); }
+    .ms-btn::after {
+      content: ''; position: absolute; right: 12px; top: 50%;
+      width: 8px; height: 8px; border-right: 1.5px solid var(--text-light); border-bottom: 1.5px solid var(--text-light);
+      transform: translateY(-70%) rotate(45deg); transition: transform 0.18s ease;
+    }
+    .ms-btn.ms-active::after { transform: translateY(-30%) rotate(-135deg); }
+    .ms-btn.ms-has-sel { color: var(--accent-blue); font-weight: 600; }
+    .ms-panel {
+      position: absolute; top: calc(100% + 4px); left: 0; min-width: 100%;
+      background: rgba(255,255,255,0.95); backdrop-filter: blur(12px);
+      border: 1px solid rgba(200,205,225,0.6); border-radius: var(--radius-sm);
+      box-shadow: 0 12px 32px rgba(40,50,80,0.15);
+      z-index: 1000; max-height: 320px; overflow-y: auto;
+      padding: 6px 0; display: none;
+    }
+    .ms-panel.ms-open { display: block; animation: msFadeIn 0.14s ease; }
+    @keyframes msFadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+    .ms-option {
+      display: flex; align-items: center; gap: 9px; padding: 8px 14px;
+      font-size: 13px; color: var(--text-dark); cursor: pointer;
+      transition: background 0.12s ease;
+      user-select: none; -webkit-user-select: none;
+    }
+    .ms-option:hover { background: rgba(79,128,255,0.07); }
+    .ms-option input[type="checkbox"] {
+      width: 15px; height: 15px; accent-color: var(--accent-blue);
+      cursor: pointer; flex-shrink: 0; margin: 0;
+    }
+    .ms-option-label { flex: 1; white-space: nowrap; }
+    .ms-clear {
+      border-top: 1px solid rgba(200,205,225,0.4);
+      padding: 8px 14px; margin-top: 4px;
+      font-size: 12px; color: var(--accent-rose); cursor: pointer;
+      font-weight: 600; text-align: center;
+      transition: background 0.12s ease;
+    }
+    .ms-clear:hover { background: rgba(248,113,113,0.07); }
+    .ms-clear.ms-disabled { color: var(--text-light); cursor: default; pointer-events: none; }
+    /* Adaptación dentro del wrap de filtros de sitios */
+    .sit-filtros-wrap .ms-wrap { flex: 1; min-width: 130px; }
     /* Centrado tabla seguimiento */
     #table-seguimiento th,
     #table-seguimiento td { text-align: center !important; vertical-align: middle !important; }
@@ -310,6 +375,123 @@
       .stats-row-5 { grid-template-columns: repeat(2,1fr); }
       .stats-row-4 { grid-template-columns: repeat(2,1fr); }
     }
+
+    /* ── Calendario de asignaciones ── */
+    .asig-cal-grid {
+      display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px;
+      background: rgba(200,205,225,0.20);
+      border: 1px solid rgba(200,205,225,0.30);
+      border-radius: 12px; overflow: hidden;
+    }
+    .asig-cal-head {
+      padding: 9px 0; background: rgba(255,255,255,0.55);
+      font-size: 11px; font-weight: 700; text-align: center;
+      color: var(--text-mid); letter-spacing: .4px; text-transform: uppercase;
+    }
+    .asig-cal-cell {
+      background: rgba(255,255,255,0.65); min-height: 84px;
+      padding: 7px 9px; position: relative;
+      display: flex; flex-direction: column; gap: 4px;
+      transition: var(--transition);
+    }
+    .asig-cal-cell.has-data { cursor: pointer; }
+    .asig-cal-cell.has-data:hover { background: rgba(79,128,255,0.10); }
+    .asig-cal-cell.empty-day { background: rgba(248,250,253,0.55); }
+    .asig-cal-cell.outside-month { background: rgba(232,235,245,0.30); opacity: 0.55; }
+    .asig-cal-cell.is-today { box-shadow: inset 0 0 0 2px var(--accent-blue); }
+    .asig-cal-cell.is-weekend { background: rgba(255,250,240,0.55); }
+    .asig-cal-cell.is-weekend.has-data:hover { background: rgba(79,128,255,0.10); }
+
+    .asig-cal-daynum {
+      font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; color: var(--text-dark);
+      line-height: 1;
+    }
+    .asig-cal-cell.outside-month .asig-cal-daynum { color: var(--text-light); font-weight: 500; }
+    .asig-cal-info {
+      font-size: 11px; color: var(--text-mid); display: flex; flex-direction: column; gap: 2px;
+    }
+    .asig-cal-info .pill {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: rgba(79,128,255,0.12); color: #3a6bf0;
+      padding: 1px 7px; border-radius: 20px; font-size: 10.5px; font-weight: 700;
+      width: fit-content;
+    }
+    .asig-cal-info .pill.teal { background: rgba(45,212,191,0.14); color: #0d9488; }
+
+    /* ── Autocomplete (selector de sitio) ── */
+    .ac-wrap { position: relative; }
+    .ac-input { width: 100%; }
+    .ac-panel {
+      position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+      background: rgba(255,255,255,0.97); backdrop-filter: blur(12px);
+      border: 1px solid rgba(200,205,225,0.6); border-radius: var(--radius-sm);
+      box-shadow: 0 12px 32px rgba(40,50,80,0.18);
+      z-index: 100; max-height: 260px; overflow-y: auto;
+      display: none; padding: 4px 0;
+    }
+    .ac-panel.ac-open { display: block; }
+    .ac-option {
+      padding: 9px 14px; font-size: 13px; cursor: pointer;
+      display: flex; align-items: center; gap: 8px;
+      transition: background .12s ease;
+    }
+    .ac-option:hover, .ac-option.ac-active { background: rgba(79,128,255,0.10); }
+    .ac-option.ac-disabled { opacity: .45; cursor: not-allowed; }
+    .ac-option .ac-meta { margin-left: auto; font-size: 11px; color: var(--text-light); }
+    .ac-empty { padding: 14px; font-size: 12px; color: var(--text-light); text-align: center; }
+
+    /* ── Cola virtual ── */
+    .cola-card {
+      background: var(--glass); backdrop-filter: var(--blur);
+      border: 1px solid var(--glass-border); border-radius: var(--radius);
+      box-shadow: var(--glass-shadow); padding: 22px 26px; margin-bottom: 20px;
+      position: relative; overflow: hidden;
+    }
+    .cola-empty {
+      text-align: center; padding: 30px 0; color: var(--text-light); font-size: 13px;
+    }
+    .cola-grupo {
+      background: rgba(255,255,255,0.45);
+      border: 1px solid rgba(200,205,225,0.5);
+      border-radius: 12px; padding: 12px 16px; margin-bottom: 10px;
+    }
+    .cola-grupo-fecha {
+      font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700;
+      color: var(--text-dark); margin-bottom: 8px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .cola-item {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 8px 0; border-top: 1px dashed rgba(200,205,225,0.5);
+    }
+    .cola-item:first-of-type { border-top: none; }
+    .cola-item-info { flex: 1; min-width: 0; }
+    .cola-item-sitio {
+      font-weight: 700; font-size: 13px; margin-bottom: 4px;
+    }
+    .cola-item-empleados {
+      display: flex; flex-wrap: wrap; gap: 5px;
+    }
+    .cola-emp-chip {
+      background: rgba(200,205,225,0.30); color: var(--text-mid);
+      border: 1px solid rgba(200,205,225,0.5);
+      padding: 3px 9px; border-radius: 20px;
+      font-size: 11px; font-weight: 600;
+      display: inline-flex; align-items: center; gap: 4px;
+    }
+    .cola-emp-chip-id { font-size: 9.5px; color: var(--text-light); font-weight: 500; }
+    .cola-item-acciones { display: flex; gap: 5px; flex-shrink: 0; }
+
+    /* ── Chip de empleado seleccionado en el modal ── */
+    .emp-chip-sel {
+      background: rgba(79,128,255,0.12); color: #3a6bf0;
+      padding: 4px 11px; border-radius: 20px;
+      font-size: 12px; font-weight: 600;
+      display: inline-flex; align-items: center; gap: 6px;
+      cursor: pointer; transition: var(--transition);
+    }
+    .emp-chip-sel:hover { background: rgba(79,128,255,0.20); }
+    .emp-chip-sel::after { content: '×'; font-size: 14px; opacity: .7; }
 
     /* LOGIN */
     #screen-login {
@@ -496,7 +678,7 @@
   <div class="login-card">
     <div class="login-logo">T</div>
     <div class="login-title">Terabyte SRL</div>
-    <div class="login-sub">Sistema de Gestión · Ingresá tus credenciales</div>
+    <div class="login-sub">Sistema de Gestión · Ingresá tu usuario</div>
     <div id="login-conn-status" style="margin-bottom:14px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
         <span id="login-conn-text" style="font-size:12px;color:var(--text-light);">Conectando con el servidor...</span>
@@ -507,14 +689,9 @@
       </div>
     </div>
     <div class="login-error" id="login-error"></div>
-    <div class="form-group" style="margin-bottom:14px;">
+    <div class="form-group" style="margin-bottom:22px;">
       <label class="form-label">Usuario</label>
       <input class="form-input" id="login-user" placeholder="Tu usuario" autocomplete="username"
-        onkeydown="if(event.key==='Enter') document.getElementById('login-pass').focus()" />
-    </div>
-    <div class="form-group" style="margin-bottom:22px;">
-      <label class="form-label">Contraseña</label>
-      <input class="form-input" id="login-pass" type="password" placeholder="Tu contraseña" autocomplete="current-password"
         onkeydown="if(event.key==='Enter') intentarLogin()" />
     </div>
     <button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;" onclick="intentarLogin()" id="btn-login" disabled>
@@ -561,6 +738,16 @@
 
   <div class="sidebar-sep"></div>
 
+  <div class="sidebar-section" style="padding-top:6px;">
+    <div class="nav-group-header" id="grp-operativa" onclick="toggleNavGroup('operativa')">
+      <span>Operativa</span>
+      <span class="nav-group-arrow">▶</span>
+    </div>
+    <div class="nav-subitems" id="sub-operativa">
+      <a class="nav-subitem" id="nav-asignaciones" onclick="showView('asignaciones',this)">Asignación personal</a>
+    </div>
+  </div>
+
   <!-- Grupo: Datos (colapsable) -->
   <div class="sidebar-section" style="padding-top:6px;">
     <div class="nav-group-header" id="grp-datos" onclick="toggleNavGroup('datos')">
@@ -577,7 +764,6 @@
   <div class="sidebar-section" style="padding-top:6px;">
     <div class="sidebar-section-label">Próximamente</div>
     <a class="nav-subitem" style="opacity:.35;cursor:not-allowed;">Inventario</a>
-    <a class="nav-subitem" style="opacity:.35;cursor:not-allowed;">Recursos Humanos</a>
   </div>
 
   <div class="sidebar-footer">
@@ -605,11 +791,19 @@
       </div>
       <div class="topbar-actions">
         <select class="form-select" id="dash-filtro-mes" onchange="actualizarDashboard()" style="min-width:160px;">
-          <option value="">— Mes —</option>
         </select>
         <button class="btn btn-glass" onclick="sincronizar()" style="font-size:12px;">🔄 Sincronizar</button>
         <button class="btn btn-glass" onclick="mostrarDebug()" style="font-size:12px;">🔍 Debug</button>
         <button class="btn btn-primary" onclick="abrirModalNuevaLinea()">+ Nueva línea</button>
+      </div>
+    </div>
+
+    <!-- Banner mes sin datos -->
+    <div id="dash-empty-banner" style="display:none;background:rgba(251,191,36,0.10);border:1px solid rgba(251,191,36,0.40);border-radius:var(--radius);padding:14px 22px;margin-bottom:20px;align-items:center;gap:12px;">
+      <span style="font-size:20px;">📭</span>
+      <div>
+        <div style="font-weight:700;color:#b45309;font-size:14px;" id="dash-empty-title">Sin datos cargados para —</div>
+        <div style="font-size:12px;color:var(--text-mid);margin-top:2px;">Aún no se cargaron líneas de facturación para el mes seleccionado.</div>
       </div>
     </div>
 
@@ -625,10 +819,10 @@
     </div>
 
     <!-- KPI Cards (5 cards: 4 originales + cumplimiento PEQ) -->
-    <div id="dash-kpi-row" class="stats-row-5"></div>
+    <div id="dash-kpi-row" class="stats-row-4"></div>
 
     <!-- Objetivos por cliente -->
-    <div style="background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid var(--glass-border);border-radius:var(--radius);box-shadow:var(--glass-shadow);padding:28px 32px;position:relative;overflow:hidden;">
+    <div id="dash-objetivos-card" style="background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid var(--glass-border);border-radius:var(--radius);box-shadow:var(--glass-shadow);padding:28px 32px;position:relative;overflow:hidden;">
       <div style="position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(79,128,255,0.08),transparent 70%);pointer-events:none;"></div>
       <div style="position:absolute;bottom:-30px;left:-30px;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle,rgba(45,212,191,0.07),transparent 70%);pointer-events:none;"></div>
       <div class="card-header" style="margin-bottom:24px;">
@@ -772,32 +966,10 @@
         <div class="card-title">Sitios registrados</div>
         <div class="sit-filtros-wrap">
           <input class="form-input" placeholder="Buscar..." id="sit-filtro-texto" oninput="aplicarFiltrosSitios()" />
-          <select class="form-select" id="sit-filtro-cliente" onchange="aplicarFiltrosSitios()">
-            <option value="">Todos los clientes</option>
-          </select>
-          <select class="form-select" id="sit-filtro-provincia" onchange="aplicarFiltrosSitios()">
-            <option value="">Todas las provincias</option>
-            <option>Buenos Aires</option><option>CABA</option><option>Catamarca</option>
-            <option>Chaco</option><option>Chubut</option><option>Córdoba</option>
-            <option>Corrientes</option><option>Entre Ríos</option><option>Formosa</option>
-            <option>Jujuy</option><option>La Pampa</option><option>La Rioja</option>
-            <option>Mendoza</option><option>Misiones</option><option>Neuquén</option>
-            <option>Río Negro</option><option>Salta</option><option>San Juan</option>
-            <option>San Luis</option><option>Santa Cruz</option><option>Santa Fe</option>
-            <option>Santiago del Estero</option><option>Tierra del Fuego</option><option>Tucumán</option>
-          </select>
-          <select class="form-select" id="sit-filtro-concepto" onchange="aplicarFiltrosSitios()">
-            <option value="">Todos los conceptos</option>
-            <option value="Básico">Básico</option>
-            <option value="Adicional">Adicional</option>
-          </select>
-          <select class="form-select" id="sit-filtro-status" onchange="aplicarFiltrosSitios()">
-            <option value="">Todos los status</option>
-            <option value="Sin asignar">Sin asignar</option>
-            <option value="Proyectado">Proyectado</option>
-            <option value="Solicitado">Solicitado</option>
-            <option value="Facturado">Facturado</option>
-          </select>
+          <div class="ms-wrap" id="sit-filtro-cliente"></div>
+          <div class="ms-wrap" id="sit-filtro-provincia"></div>
+          <div class="ms-wrap" id="sit-filtro-concepto"></div>
+          <div class="ms-wrap" id="sit-filtro-status"></div>
         </div>
       </div>
       <div class="table-wrap">
@@ -835,22 +1007,10 @@
           </div>
         </div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-          <input class="form-input" style="width:160px;" placeholder="Buscar..." oninput="aplicarFiltrosSeg()" id="seg-filtro-texto" />
-          <select class="form-select" style="width:160px;" id="seg-filtro-cliente" onchange="aplicarFiltrosSeg()">
-            <option value="">Todos los clientes</option>
-          </select>
-          <select class="form-select" style="width:160px;" id="seg-filtro-sitio" onchange="aplicarFiltrosSeg()">
-            <option value="">Todos los sitios</option>
-          </select>
-          <select class="form-select" style="width:150px;" id="seg-filtro-mes" onchange="aplicarFiltrosSeg()">
-            <option value="">Todos los meses</option>
-          </select>
-          <select class="form-select" style="width:160px;" id="seg-filtro-estado" onchange="aplicarFiltrosSeg()">
-            <option value="">Todos los estados</option>
-            <option value="Proyectado">Proyectado</option>
-            <option value="Solicitado">Solicitado</option>
-            <option value="Facturado">Facturado</option>
-          </select>
+          <input class="form-input" style="width:160px;" placeholder="Buscar..." oninput="onBuscarSegInput(this)" id="seg-filtro-texto" />
+          <div class="ms-wrap" id="seg-filtro-cliente" style="width:160px;"></div>
+          <div class="ms-wrap" id="seg-filtro-mes" style="width:150px;"></div>
+          <div class="ms-wrap" id="seg-filtro-estado" style="width:160px;"></div>
         </div>
       </div>
       <div class="table-wrap">
@@ -879,7 +1039,113 @@
     </div>
   </div>
 
+  <!-- ═══ ASIGNACIÓN PERSONAL ═══ -->
+  <div id="view-asignaciones" class="view">
+    <div class="topbar">
+      <div>
+        <div class="page-title">Asignación <span style="color:var(--accent-blue);">personal</span></div>
+        <div style="font-size:13px;color:var(--text-light);margin-top:3px;">Calendario diario de cuadrillas por obra</div>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-glass" onclick="sincronizar()" style="font-size:12px;">🔄 Sincronizar</button>
+        <button class="btn btn-primary" onclick="abrirModalNuevaAsig()">+ Nueva asignación</button>
+      </div>
+    </div>
+
+    <!-- Calendario -->
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-header" style="margin-bottom:18px;">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <button class="btn btn-glass btn-sm" onclick="navAsigMes(-1)" title="Mes anterior">◀</button>
+          <div class="card-title" id="asig-mes-label" style="font-size:18px;min-width:180px;text-align:center;">—</div>
+          <button class="btn btn-glass btn-sm" onclick="navAsigMes(1)" title="Mes siguiente">▶</button>
+          <button class="btn btn-glass btn-sm" onclick="navAsigMes(0)" title="Volver al mes actual" style="font-size:11px;">Hoy</button>
+        </div>
+        <div id="asig-mes-resumen" style="font-size:12px;color:var(--text-mid);"></div>
+      </div>
+      <div id="asig-calendar"></div>
+    </div>
+
+    <!-- Cola virtual: pendientes de confirmar -->
+    <div class="cola-card" id="cola-card">
+      <div style="position:absolute;top:-30px;right:-30px;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle,rgba(251,191,36,0.10),transparent 70%);pointer-events:none;"></div>
+      <div class="card-header" style="margin-bottom:14px;">
+        <div>
+          <div class="card-title" style="font-size:16px;">Pendientes de confirmar</div>
+          <div class="card-sub" id="cola-sub">Asignaciones en cola, aún no guardadas</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button id="btn-vaciar-cola" class="btn btn-glass btn-sm" onclick="vaciarColaConfirm()" style="display:none;font-size:11px;color:var(--accent-rose);">Vaciar cola</button>
+          <button id="btn-confirmar-cola" class="btn btn-primary" onclick="confirmarCola()" style="display:none;">Confirmar todo</button>
+        </div>
+      </div>
+      <div id="cola-contenido"></div>
+    </div>
+  </div>
+
 </main>
+
+<!-- Modal: Detalle del día -->
+<div class="modal-overlay" id="modal-asig-dia">
+  <div class="modal" style="max-width:600px;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;gap:14px;">
+      <div>
+        <div class="modal-title" id="asig-dia-titulo" style="margin-bottom:4px;">—</div>
+        <div id="asig-dia-sub" style="font-size:12px;color:var(--text-light);">—</div>
+      </div>
+      <button onclick="cerrarModalAsigDia()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--text-light);line-height:1;flex-shrink:0;">✕</button>
+    </div>
+    <div id="asig-dia-contenido" style="padding:0 4px;"></div>
+  </div>
+</div>
+
+<!-- Modal: Nueva asignación / edición de item de cola -->
+<div class="modal-overlay" id="modal-nueva-asig">
+  <div class="modal" style="max-width:560px;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;gap:14px;">
+      <div>
+        <div class="modal-title" id="modal-asig-titulo" style="margin-bottom:4px;">Nueva asignación</div>
+        <div style="font-size:12px;color:var(--text-light);">Cargá los empleados que estuvieron en una obra en un día</div>
+      </div>
+      <button onclick="cerrarModalNuevaAsig()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--text-light);line-height:1;flex-shrink:0;">✕</button>
+    </div>
+
+    <!-- Fecha -->
+    <div class="form-group">
+      <label class="form-label">Fecha</label>
+      <input type="date" class="form-input" id="asig-fecha" onchange="onCambioFechaAsig()" />
+    </div>
+
+    <!-- Sitio (autocomplete) -->
+    <div class="form-group">
+      <label class="form-label">Sitio</label>
+      <div class="ac-wrap" id="asig-sitio-wrap">
+        <input type="text" class="form-input ac-input" id="asig-sitio-input" placeholder="Tipeá para filtrar..." autocomplete="off"
+          oninput="onAcSitioInput()" onfocus="onAcSitioFocus()" onkeydown="onAcSitioKeydown(event)" />
+        <input type="hidden" id="asig-sitio-valor" />
+        <div class="ac-panel" id="asig-sitio-panel"></div>
+      </div>
+      <div id="asig-sitio-aviso" style="font-size:11px;color:var(--accent-rose);margin-top:5px;display:none;"></div>
+    </div>
+
+    <!-- Empleados (multiselect simplificado: input + chips) -->
+    <div class="form-group">
+      <label class="form-label">Empleados</label>
+      <div id="asig-empleados-chips" style="min-height:38px;padding:7px 10px;border:1px solid rgba(200,205,225,0.6);border-radius:var(--radius-sm);background:rgba(255,255,255,0.55);display:flex;flex-wrap:wrap;gap:6px;align-items:center;cursor:text;" onclick="document.getElementById('asig-empleados-input').focus()">
+        <input type="text" id="asig-empleados-input" placeholder="Tipeá para buscar empleado..." style="border:none;outline:none;background:transparent;flex:1;min-width:140px;font-family:inherit;font-size:13px;" oninput="onAcEmpleadoInput()" onfocus="onAcEmpleadoFocus()" onkeydown="onAcEmpleadoKeydown(event)" />
+      </div>
+      <div class="ac-wrap" style="position:relative;">
+        <div class="ac-panel" id="asig-empleados-panel" style="top:4px;"></div>
+      </div>
+      <div id="asig-empleados-aviso" style="font-size:11px;color:var(--text-light);margin-top:5px;">Los empleados ya asignados ese día no aparecen.</div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:18px;">
+      <button class="btn btn-glass" style="flex:1;justify-content:center;" onclick="cerrarModalNuevaAsig()">Cancelar</button>
+      <button class="btn btn-primary" id="btn-agregar-asig" style="flex:1;justify-content:center;" onclick="agregarAsigCola()">Agregar a la cola</button>
+    </div>
+  </div>
+</div>
 
 <!-- Banner flotante — proyecciones pendientes -->
 <div id="banner-proyecciones">
@@ -1303,7 +1569,7 @@
 // ═══════════════════════════════════════════════════════
 //  CONFIGURACIÓN
 // ═══════════════════════════════════════════════════════
-const API_URL = 'https://script.google.com/macros/s/AKfycbw3xETXAYurcO4bMdPA47W3oUuHIKU_rp2rLHFym4Yu13-k0kIvx1rQs4p0iAlT13vC/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbzpmVygqmhaTeMadRR2W9Ds1WSzHUZM2Wz9lSvL8djc-87KeZ3L7FWjCEqigjH8d4ZW/exec';
 
 // PEQ — objetivo mensual fijo
 const PEQ = 90000000;
@@ -1381,6 +1647,9 @@ function setLoading(on) {
 //  CARGA INICIAL
 // ═══════════════════════════════════════════════════════
 let clientes = [], sitios = [], lineas = [];
+let empleados = [], asignaciones = [];
+// Cola virtual de asignaciones pendientes de confirmar (persistida en sessionStorage)
+let colaAsignaciones = [];
 
 let _idCounter = 0;
 function nuevoId(prefix) {
@@ -1454,11 +1723,48 @@ async function cargarTodo() {
       };
     }).filter(l => l.id.trim() !== '');
 
+    /* ── EMPLEADOS: deduplicar por EmpleadoID (U1), tomar nombre de la fila más reciente (F1) ── */
+    const rawEmpleados = (data.empleados || []).map(r => ({
+      id:             String(get(r, 'EMPLEADOID') || '').trim(),
+      nombre:         String(get(r, 'EMPLEADONOMBRE') || '').trim(),
+      fechaDesde:     normFecha(get(r, 'FECHADESDE')),
+      valorHora:      get(r, 'VALORHORA'),
+      observaciones:  get(r, 'OBSERVACIONES')
+    })).filter(e => e.id);
+
+    // Agrupar por id y quedarse con la fila de mayor fechaDesde
+    const mapEmpleados = new Map();
+    rawEmpleados.forEach(e => {
+      const prev = mapEmpleados.get(e.id);
+      if (!prev || (e.fechaDesde || '') > (prev.fechaDesde || '')) {
+        mapEmpleados.set(e.id, e);
+      }
+    });
+    empleados = [...mapEmpleados.values()].sort((a, b) => a.id.localeCompare(b.id));
+
+    /* ── ASIGNACIONES ── */
+    asignaciones = (data.asignaciones || []).map(r => ({
+      id:            String(get(r, 'ID') || '').trim(),
+      fecha:         normFecha(get(r, 'FECHA')),
+      sitioId:       String(get(r, 'SITIO_ID') || '').trim(),
+      empleadoId:    String(get(r, 'EMPLEADO_ID') || '').trim(),
+      observacion:   get(r, 'OBSERVACION'),
+      confirmadoAt:  get(r, 'CONFIRMADO_AT'),
+      usuarioCarga:  get(r, 'USUARIO_CARGA')
+    })).filter(a => a.id && a.fecha && a.sitioId && a.empleadoId);
+
+    /* ── Restaurar cola virtual desde sessionStorage si existe ── */
+    try {
+      const colaGuardada = sessionStorage.getItem('terabyte_cola_asignaciones');
+      if (colaGuardada) colaAsignaciones = JSON.parse(colaGuardada);
+    } catch(e) { colaAsignaciones = []; }
+
     actualizarDashboard();
     actualizarBadge();
     renderClientes();
     renderSitios();
     renderSeguimiento();
+    if (typeof renderAsignaciones === 'function') renderAsignaciones();
   } catch (err) {
     toast('Error al cargar: ' + err.message, 'err');
     console.error('ERROR cargarTodo:', err);
@@ -1508,10 +1814,11 @@ function showView(name, el) {
   document.querySelectorAll('.nav-item, .nav-subitem').forEach(n => n.classList.remove('active'));
   const target = document.getElementById('nav-' + name);
   if (target) target.classList.add('active');
-  if (name === 'dashboard')   actualizarDashboard();
-  if (name === 'clientes')    renderClientes();
-  if (name === 'sitios')      { poblarSelect('sit-cliente'); aplicarFiltrosSitios(); }
-  if (name === 'seguimiento') renderSeguimiento();
+  if (name === 'dashboard')    actualizarDashboard();
+  if (name === 'clientes')     renderClientes();
+  if (name === 'sitios')       { poblarSelect('sit-cliente'); aplicarFiltrosSitios(); }
+  if (name === 'seguimiento')  renderSeguimiento();
+  if (name === 'asignaciones') renderAsignaciones();
 }
 
 /* ── HELPERS ── */
@@ -1529,6 +1836,126 @@ function fechaCorta(f) {
 const getCli  = id => clientes.find(c => c.id === id);
 const getSit  = uid => sitios.find(s => s.uid === uid) || sitios.find(s => s.id === uid);
 const dot     = color => `<span class="client-dot" style="background:${color}"></span>`;
+
+/* ══ MULTISELECT REUSABLE ══
+   Convierte un contenedor <div class="ms-wrap" id="..."> en un dropdown con checkboxes.
+   Estado: window._msState[id] = { options:[{value,label}], selected:Set, placeholder, onChange, isOpen }
+*/
+window._msState = window._msState || {};
+
+function msInit(id, options, placeholder, onChange) {
+  const wrap = document.getElementById(id);
+  if (!wrap) return;
+  // Preservar selección previa si ya estaba inicializado
+  const prevSel = (window._msState[id]?.selected) || new Set();
+  // Filtrar selección previa contra las nuevas opciones disponibles
+  const validValues = new Set(options.map(o => String(o.value)));
+  const newSel = new Set([...prevSel].filter(v => validValues.has(String(v))));
+  window._msState[id] = { options, selected: newSel, placeholder, onChange, isOpen: false };
+  msRender(id);
+}
+
+function msRender(id) {
+  const wrap = document.getElementById(id);
+  const st   = window._msState[id];
+  if (!wrap || !st) return;
+  const selCount = st.selected.size;
+  const btnLabel = selCount === 0 ? st.placeholder : `${selCount} seleccionado${selCount === 1 ? '' : 's'}`;
+  const optsHtml = st.options.map(o => {
+    const isSel = st.selected.has(String(o.value));
+    return `<label class="ms-option" onclick="event.stopPropagation()">
+      <input type="checkbox" ${isSel ? 'checked' : ''} onchange="msToggle('${id}', '${String(o.value).replace(/'/g, "\\'")}', this.checked)" />
+      <span class="ms-option-label">${o.label}</span>
+    </label>`;
+  }).join('');
+  const clearCls = selCount === 0 ? 'ms-clear ms-disabled' : 'ms-clear';
+  wrap.innerHTML = `
+    <button type="button" class="ms-btn ${st.isOpen ? 'ms-active' : ''} ${selCount > 0 ? 'ms-has-sel' : ''}" onclick="msToggleOpen('${id}', event)">${btnLabel}</button>
+    <div class="ms-panel ${st.isOpen ? 'ms-open' : ''}">
+      ${optsHtml || '<div style="padding:10px 14px;font-size:12px;color:var(--text-light);">— Sin opciones —</div>'}
+      <div class="${clearCls}" onclick="msClear('${id}', event)">Limpiar</div>
+    </div>
+  `;
+}
+
+function msToggleOpen(id, ev) {
+  if (ev) ev.stopPropagation();
+  const st = window._msState[id];
+  if (!st) return;
+  // Cerrar todos los demás
+  Object.keys(window._msState).forEach(k => {
+    if (k !== id) window._msState[k].isOpen = false;
+  });
+  st.isOpen = !st.isOpen;
+  // Re-renderizar todos para reflejar cierre
+  Object.keys(window._msState).forEach(msRender);
+}
+
+function msToggle(id, value, checked) {
+  const st = window._msState[id];
+  if (!st) return;
+  const v = String(value);
+  if (checked) st.selected.add(v);
+  else st.selected.delete(v);
+  msRender(id);
+  if (typeof st.onChange === 'function') st.onChange();
+}
+
+function msClear(id, ev) {
+  if (ev) ev.stopPropagation();
+  const st = window._msState[id];
+  if (!st || st.selected.size === 0) return;
+  st.selected.clear();
+  msRender(id);
+  if (typeof st.onChange === 'function') st.onChange();
+}
+
+function msGet(id) {
+  const st = window._msState[id];
+  if (!st) return [];
+  return [...st.selected];
+}
+
+function msHas(id, value) {
+  const st = window._msState[id];
+  if (!st || st.selected.size === 0) return true; // 0 seleccionados = no filtra
+  return st.selected.has(String(value));
+}
+
+function msClearAll(id) {
+  const st = window._msState[id];
+  if (!st) return;
+  st.selected.clear();
+  msRender(id);
+}
+
+// Click fuera cierra los dropdowns abiertos
+document.addEventListener('click', function(e) {
+  if (!window._msState) return;
+  let cambios = false;
+  Object.keys(window._msState).forEach(id => {
+    const wrap = document.getElementById(id);
+    if (!wrap) return;
+    const st = window._msState[id];
+    if (st.isOpen && !wrap.contains(e.target)) {
+      st.isOpen = false;
+      cambios = true;
+    }
+  });
+  if (cambios) Object.keys(window._msState).forEach(msRender);
+
+  // Cerrar autocompletes (sitio + empleados) al click fuera
+  const acSitioWrap     = document.getElementById('asig-sitio-wrap');
+  const acSitioPanel    = document.getElementById('asig-sitio-panel');
+  if (acSitioWrap && acSitioPanel && acSitioPanel.classList.contains('ac-open') && !acSitioWrap.contains(e.target)) {
+    cerrarAcSitio();
+  }
+  const empChipsBox   = document.getElementById('asig-empleados-chips');
+  const empPanel      = document.getElementById('asig-empleados-panel');
+  if (empChipsBox && empPanel && empPanel.classList.contains('ac-open') && !empChipsBox.contains(e.target) && !empPanel.contains(e.target)) {
+    cerrarAcEmpleado();
+  }
+});
 
 /* ══ CLIENTES ══ */
 function toggleFormCliente() {
@@ -1819,23 +2246,55 @@ function getSitStatus(uid) {
   return { label: 'Proyectado', color: 'rgba(79,128,255,0.12)', text: '#3a6bf0' };
 }
 
+/* Listas estáticas para multiselects */
+const PROVINCIAS_OPTS = ['Buenos Aires','CABA','Catamarca','Chaco','Chubut','Córdoba','Corrientes','Entre Ríos','Formosa','Jujuy','La Pampa','La Rioja','Mendoza','Misiones','Neuquén','Río Negro','Salta','San Juan','San Luis','Santa Cruz','Santa Fe','Santiago del Estero','Tierra del Fuego','Tucumán'].map(p => ({value: p, label: p}));
+const CONCEPTOS_OPTS  = [{value:'Básico', label:'Básico'}, {value:'Adicional', label:'Adicional'}];
+const STATUS_SIT_OPTS = [
+  {value:'Sin asignar',       label:'Sin asignar'},
+  {value:'Proyectado',        label:'Proyectado'},
+  {value:'Solicitado',        label:'Solicitado'},
+  {value:'Facturado 100%',    label:'Facturado 100%'},
+  {value:'Facturado parcial', label:'Facturado parcial'}
+];
+const ESTADO_SEG_OPTS = [
+  {value:'Proyectado', label:'Proyectado'},
+  {value:'Solicitado', label:'Solicitado'},
+  {value:'Facturado',  label:'Facturado'}
+];
+
+// Flag de control: el default del filtro status de Sitios solo se aplica una vez por sesión
+let _defaultStatusAplicado = false;
+// Flag de control: el default del filtro estado de Seguimiento solo se aplica una vez por sesión
+let _defaultEstadoSegAplicado = false;
+
 function renderSitios(filtro = '', filtros = null) {
   const tbody = document.getElementById('tabla-sitios');
-  const selCli = document.getElementById('sit-filtro-cliente');
-  if (selCli) {
-    const prev = selCli.value;
-    selCli.innerHTML = '<option value="">Todos los clientes</option>';
-    clientes.forEach(c => selCli.innerHTML += `<option value="${c.id}">${c.id}</option>`);
-    if (prev) selCli.value = prev;
+  // Inicializar/re-inicializar multiselects de Sitios
+  const clientesOpts = clientes.map(c => ({value: c.id, label: c.id}));
+  msInit('sit-filtro-cliente',   clientesOpts,    'Todos los clientes',  aplicarFiltrosSitios);
+  msInit('sit-filtro-provincia', PROVINCIAS_OPTS, 'Todas las provincias', aplicarFiltrosSitios);
+  msInit('sit-filtro-concepto',  CONCEPTOS_OPTS,  'Todos los conceptos',  aplicarFiltrosSitios);
+  msInit('sit-filtro-status',    STATUS_SIT_OPTS, 'Todos los status',     aplicarFiltrosSitios);
+
+  // Default del filtro status: en el primer render de la sesión, marcar todo excepto "Facturado 100%"
+  if (!_defaultStatusAplicado) {
+    const st = window._msState?.['sit-filtro-status'];
+    if (st && st.selected.size === 0) {
+      STATUS_SIT_OPTS.forEach(opt => {
+        if (opt.value !== 'Facturado 100%') st.selected.add(opt.value);
+      });
+      msRender('sit-filtro-status');
+    }
+    _defaultStatusAplicado = true;
   }
 
   if (!filtros && !filtro) {
     filtros = {
-      texto:    (document.getElementById('sit-filtro-texto')?.value || '').toLowerCase(),
-      cliente:  document.getElementById('sit-filtro-cliente')?.value  || '',
-      provincia:document.getElementById('sit-filtro-provincia')?.value || '',
-      concepto: document.getElementById('sit-filtro-concepto')?.value  || '',
-      status:   document.getElementById('sit-filtro-status')?.value    || ''
+      texto:      (document.getElementById('sit-filtro-texto')?.value || '').toLowerCase(),
+      clientes:   msGet('sit-filtro-cliente'),
+      provincias: msGet('sit-filtro-provincia'),
+      conceptos:  msGet('sit-filtro-concepto'),
+      statuses:   msGet('sit-filtro-status')
     };
   }
 
@@ -1845,18 +2304,21 @@ function renderSitios(filtro = '', filtros = null) {
     return a.id.localeCompare(b.id);
   });
   if (filtros) {
-    if (filtros.texto)    lista = lista.filter(s => s.id.toLowerCase().includes(filtros.texto) || s.localidad.toLowerCase().includes(filtros.texto) || s.clienteId.toLowerCase().includes(filtros.texto));
-    if (filtros.cliente)  lista = lista.filter(s => s.clienteId === filtros.cliente);
-    if (filtros.provincia)lista = lista.filter(s => s.localidad  === filtros.provincia);
-    if (filtros.concepto) lista = lista.filter(s => s.concepto   === filtros.concepto);
-    if (filtros.status) {
+    if (filtros.texto)                lista = lista.filter(s => s.id.toLowerCase().includes(filtros.texto) || s.localidad.toLowerCase().includes(filtros.texto) || s.clienteId.toLowerCase().includes(filtros.texto));
+    if (filtros.clientes?.length)     lista = lista.filter(s => filtros.clientes.includes(s.clienteId));
+    if (filtros.provincias?.length)   lista = lista.filter(s => filtros.provincias.includes(s.localidad));
+    if (filtros.conceptos?.length)    lista = lista.filter(s => filtros.conceptos.includes(s.concepto));
+    if (filtros.statuses?.length) {
       lista = lista.filter(s => {
         const st = getSitStatus(s.uid);
-        if (filtros.status === 'Sin asignar') return st.label === 'Sin asignar';
-        if (filtros.status === 'Proyectado')  return st.label === 'Proyectado';
-        if (filtros.status === 'Solicitado')  return st.label === 'Solicitado';
-        if (filtros.status === 'Facturado')   return st.label.includes('Facturado');
-        return true;
+        return filtros.statuses.some(target => {
+          if (target === 'Sin asignar')       return st.label === 'Sin asignar';
+          if (target === 'Proyectado')        return st.label === 'Proyectado';
+          if (target === 'Solicitado')        return st.label === 'Solicitado';
+          if (target === 'Facturado 100%')    return st.label === 'Facturado 100%';
+          if (target === 'Facturado parcial') return st.label.includes('Facturado') && st.label !== 'Facturado 100%';
+          return false;
+        });
       });
     }
   } else if (filtro) {
@@ -1878,12 +2340,13 @@ function renderSitios(filtro = '', filtros = null) {
       if (iguales.length === 1) return l.sitioId === s.id;
       return l.sitioId === s.id && Math.abs(l.monto - s.po * l.pct / 100) < 1;
     }).reduce((a,l) => a + l.pct, 0);
-    const rowClass = pctFacTotal >= 100 ? 'row-facturado-100' : '';
+    const rowClass = pctFacTotal >= 100 ? 'row-facturado-100 row-sit-clickable' : 'row-sit-clickable';
     return `<tr class="${rowClass}"
+      ondblclick="irASeguimientoDesdeSitio('${s.id.replace(/'/g, "\\'")}')"
       onmouseenter="showSitTooltip(event,'${s.uid}')"
       onmousemove="moveSitTooltip(event)"
       onmouseleave="hideSitTooltip()">
-      <td style="font-weight:600;cursor:default;">${s.id}</td>
+      <td style="font-weight:600;">${s.id}</td>
       <td>${s.localidad}</td>
       <td><span style="display:flex;align-items:center;gap:6px;">${cli?dot(cli.color):''}${s.clienteId}</span></td>
       <td><span class="badge ${cb}">${s.concepto}</span></td>
@@ -1891,7 +2354,7 @@ function renderSitios(filtro = '', filtros = null) {
       <td style="font-weight:600;">${s.po ? fmt(s.po) : '—'}</td>
       <td><span style="display:inline-block;padding:4px 11px;border-radius:20px;font-size:12px;font-weight:600;background:${st.color};color:${st.text};">${st.label}</span></td>
       <td style="color:var(--text-mid);font-size:12px;">${s.obs||'—'}</td>
-      <td><span style="display:flex;align-items:center;gap:6px;">
+      <td class="col-acciones" ondblclick="event.stopPropagation()"><span style="display:flex;align-items:center;gap:6px;">
         <button class="btn btn-glass btn-sm" onclick="abrirProyectarSitio('${s.uid}')" title="Proyectar" style="color:var(--accent-blue);font-size:11px;font-weight:700;padding:5px 9px;">+Seg</button>
         <button class="btn btn-glass btn-sm" onclick="abrirEditarSitio('${s.uid}')" title="Editar">✏️</button>
         <button class="btn btn-rose btn-sm" onclick="eliminarSitio('${s.uid}')" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
@@ -1902,6 +2365,50 @@ function renderSitios(filtro = '', filtros = null) {
 
 function aplicarFiltrosSitios() { renderSitios(); }
 function filtrarSitios(v) { renderSitios(v); }
+
+/* ── Navegación dblclick Sitios → Seguimiento ── */
+function irASeguimientoDesdeSitio(idSitio) {
+  // Verificar que el sitio tenga al menos 1 línea de cualquier estado
+  const tieneLineas = lineas.some(l => l.sitioId === idSitio);
+  if (!tieneLineas) {
+    mostrarModalInfo(`No hay líneas en Seguimiento para el sitio ${idSitio}.`);
+    return;
+  }
+  // Cambiar a vista Seguimiento
+  const navSeg = document.getElementById('nav-seguimiento');
+  showView('seguimiento', navSeg);
+  // Limpiar solo el filtro Estado (para garantizar que aparezca aunque esté Facturado)
+  // y setear el buscador con el ID del sitio. Cliente y Mes se respetan si el usuario los puso.
+  msClearAll('seg-filtro-estado');
+  const txt = document.getElementById('seg-filtro-texto');
+  if (txt) txt.value = idSitio;
+  _busquedaSegPrevia = idSitio; // sincronizar memoria del handler manual
+  aplicarFiltrosSeg();
+}
+
+/* ── Modal informativo genérico (glassmorphism) ── */
+function mostrarModalInfo(mensaje) {
+  // Si ya existe, lo removemos para refrescar contenido
+  const existente = document.getElementById('modal-info-generico');
+  if (existente) existente.remove();
+  const overlay = document.createElement('div');
+  overlay.id = 'modal-info-generico';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(20,25,40,0.45);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:9999;animation:fadeIn 0.2s ease;';
+  overlay.innerHTML = `
+    <div style="background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid var(--glass-border);border-radius:var(--radius);box-shadow:var(--glass-shadow);padding:28px 32px;max-width:420px;width:90%;text-align:center;">
+      <div style="font-size:32px;margin-bottom:12px;">📭</div>
+      <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--text-dark);margin-bottom:8px;">Sin resultados</div>
+      <div style="font-size:14px;color:var(--text-mid);margin-bottom:22px;line-height:1.5;">${mensaje}</div>
+      <button class="btn btn-primary" style="min-width:120px;justify-content:center;" onclick="document.getElementById('modal-info-generico').remove()">Aceptar</button>
+    </div>
+  `;
+  // Cerrar al click fuera
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  // Cerrar con Escape
+  const onEsc = e => { if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', onEsc); } };
+  document.addEventListener('keydown', onEsc);
+  document.body.appendChild(overlay);
+}
 
 async function eliminarSitio(uid) {
   const s = getSit(uid);
@@ -2126,14 +2633,24 @@ function descartarProyecciones() {
 }
 
 /* ── FILTROS SEGUIMIENTO ── */
-let filtroTextoSeg = '', filtroEstadoSeg = '', filtroClienteSeg = '', filtroSitioSeg = '', filtroMesSeg = '';
+let filtroTextoSeg = '', filtroEstadosSeg = [], filtroClientesSeg = [], filtroMesesSeg = [];
+let _busquedaSegPrevia = ''; // recordamos el valor previo del buscador para detectar paso de vacío→no-vacío
+
+function onBuscarSegInput(input) {
+  const valActual = (input.value || '').trim();
+  // Si pasamos de vacío a no-vacío, limpiamos el filtro Estado (para garantizar que aparezcan también los Facturados)
+  if (!_busquedaSegPrevia && valActual) {
+    msClearAll('seg-filtro-estado');
+  }
+  _busquedaSegPrevia = valActual;
+  aplicarFiltrosSeg();
+}
 
 function aplicarFiltrosSeg() {
-  filtroTextoSeg   = (document.getElementById('seg-filtro-texto')?.value   || '').toLowerCase();
-  filtroClienteSeg = document.getElementById('seg-filtro-cliente')?.value  || '';
-  filtroSitioSeg   = document.getElementById('seg-filtro-sitio')?.value    || '';
-  filtroMesSeg     = document.getElementById('seg-filtro-mes')?.value      || '';
-  filtroEstadoSeg  = document.getElementById('seg-filtro-estado')?.value   || '';
+  filtroTextoSeg    = (document.getElementById('seg-filtro-texto')?.value || '').toLowerCase();
+  filtroClientesSeg = msGet('seg-filtro-cliente');
+  filtroMesesSeg    = msGet('seg-filtro-mes');
+  filtroEstadosSeg  = msGet('seg-filtro-estado');
   renderSeguimiento();
 }
 
@@ -2298,44 +2815,50 @@ async function guardarNuevaLinea() {
 }
 
 function renderSeguimiento() {
-  const selCli = document.getElementById('seg-filtro-cliente');
-  if (selCli) {
-    const prev = selCli.value;
-    selCli.innerHTML = '<option value="">Todos los clientes</option>';
-    clientes.forEach(c => selCli.innerHTML += `<option value="${c.id}">${c.id}</option>`);
-    if (prev) selCli.value = prev;
+  // Inicializar/re-inicializar multiselects
+  const clientesOpts = clientes.map(c => ({value: c.id, label: c.id}));
+  msInit('seg-filtro-cliente', clientesOpts, 'Todos los clientes', aplicarFiltrosSeg);
+
+  const mesesUnicos = [...new Set(lineas.map(l => l.mes).filter(Boolean))].sort();
+  const mesesOpts = mesesUnicos.map(m => ({value: m, label: mesLabel(m)}));
+  msInit('seg-filtro-mes', mesesOpts, 'Todos los meses', aplicarFiltrosSeg);
+
+  msInit('seg-filtro-estado', ESTADO_SEG_OPTS, 'Todos los estados', aplicarFiltrosSeg);
+
+  // Default del filtro estado: en el primer render de la sesión, marcar Proyectado y Solicitado
+  if (!_defaultEstadoSegAplicado) {
+    const st = window._msState?.['seg-filtro-estado'];
+    if (st && st.selected.size === 0) {
+      st.selected.add('Proyectado');
+      st.selected.add('Solicitado');
+      msRender('seg-filtro-estado');
+    }
+    _defaultEstadoSegAplicado = true;
   }
-  const selSit = document.getElementById('seg-filtro-sitio');
-  if (selSit) {
-    const prev = selSit.value;
-    selSit.innerHTML = '<option value="">Todos los sitios</option>';
-    sitios.forEach(s => selSit.innerHTML += `<option value="${s.id}">${s.id}</option>`);
-    if (prev) selSit.value = prev;
-  }
-  const selMes = document.getElementById('seg-filtro-mes');
-  if (selMes) {
-    const prev = selMes.value;
-    const mesesUnicos = [...new Set(lineas.map(l => l.mes).filter(Boolean))].sort();
-    selMes.innerHTML = '<option value="">Todos los meses</option>';
-    mesesUnicos.forEach(m => selMes.innerHTML += `<option value="${m}">${mesLabel(m)}</option>`);
-    if (prev && mesesUnicos.includes(prev)) selMes.value = prev;
-  }
+
+  // Después de re-init, refrescar selecciones globales (por si alguna opción dejó de existir)
+  filtroClientesSeg = msGet('seg-filtro-cliente');
+  filtroMesesSeg    = msGet('seg-filtro-mes');
+  filtroEstadosSeg  = msGet('seg-filtro-estado');
 
   const tbody = document.getElementById('tabla-seguimiento');
   let lista = [...lineas];
-  if (filtroTextoSeg)   lista = lista.filter(l => l.sitioId.toLowerCase().includes(filtroTextoSeg) || l.clienteId.toLowerCase().includes(filtroTextoSeg));
-  if (filtroClienteSeg) lista = lista.filter(l => l.clienteId === filtroClienteSeg);
-  if (filtroSitioSeg)   lista = lista.filter(l => l.sitioId   === filtroSitioSeg);
-  if (filtroEstadoSeg)  lista = lista.filter(l => l.estado    === filtroEstadoSeg);
-  if (filtroMesSeg) {
-    lista = lista.filter(l => {
-      if (filtroEstadoSeg === 'Proyectado') return l.mes === filtroMesSeg;
-      if (filtroEstadoSeg === 'Solicitado') return l.fechaSolicitud && l.fechaSolicitud.startsWith(filtroMesSeg);
-      if (filtroEstadoSeg === 'Facturado')  return l.fechaFactura   && l.fechaFactura.startsWith(filtroMesSeg);
-      return l.mes === filtroMesSeg ||
-             (l.fechaSolicitud && l.fechaSolicitud.startsWith(filtroMesSeg)) ||
-             (l.fechaFactura   && l.fechaFactura.startsWith(filtroMesSeg));
-    });
+  if (filtroTextoSeg)             lista = lista.filter(l => l.sitioId.toLowerCase().includes(filtroTextoSeg) || l.clienteId.toLowerCase().includes(filtroTextoSeg));
+  if (filtroClientesSeg.length)   lista = lista.filter(l => filtroClientesSeg.includes(l.clienteId));
+  if (filtroEstadosSeg.length)    lista = lista.filter(l => filtroEstadosSeg.includes(l.estado));
+  if (filtroMesesSeg.length) {
+    // Para cada línea: chequear cualquier coincidencia con los meses seleccionados.
+    // Cuando hay 1 solo estado seleccionado, el "mes" se mide contra la fecha de ese estado.
+    // Cuando hay 0 o varios estados, el mes puede caer en cualquiera (mes proy, solicitud o factura).
+    const unicoEstado = filtroEstadosSeg.length === 1 ? filtroEstadosSeg[0] : null;
+    lista = lista.filter(l => filtroMesesSeg.some(mes => {
+      if (unicoEstado === 'Proyectado') return l.mes === mes;
+      if (unicoEstado === 'Solicitado') return l.fechaSolicitud && l.fechaSolicitud.startsWith(mes);
+      if (unicoEstado === 'Facturado')  return l.fechaFactura   && l.fechaFactura.startsWith(mes);
+      return l.mes === mes ||
+             (l.fechaSolicitud && l.fechaSolicitud.startsWith(mes)) ||
+             (l.fechaFactura   && l.fechaFactura.startsWith(mes));
+    }));
   }
 
   lista.sort((a, b) => {
@@ -2352,7 +2875,7 @@ function renderSeguimiento() {
   const totalEl = document.getElementById('seg-summary-total');
   if (sumEl) {
     const totalMonto = lista.reduce((acc, l) => acc + (l.monto || 0), 0);
-    const hayFiltro  = filtroTextoSeg || filtroClienteSeg || filtroSitioSeg || filtroMesSeg || filtroEstadoSeg;
+    const hayFiltro  = filtroTextoSeg || filtroClientesSeg.length || filtroMesesSeg.length || filtroEstadosSeg.length;
     if (hayFiltro || lista.length !== lineas.length) {
       countEl.textContent = `${lista.length} línea${lista.length !== 1 ? 's' : ''}`;
       totalEl.textContent = fmt(Math.round(totalMonto));
@@ -2373,11 +2896,11 @@ function renderSeguimiento() {
 
     let sitioDisplay = l.sitioId;
     let poDisplay = '—';
-    if (l.sitioId && l.sitioId.includes('||')) {
-      const parts = l.sitioId.split('||');
-      sitioDisplay = parts[0];
-      poDisplay = parts[1] || '—';
+    if (l.poNroLinea) {
+      // La línea ya trae el N° PO específico extraído del SITIO_ID raw (patrón "ID||PO_NRO")
+      poDisplay = l.poNroLinea;
     } else {
+      // Fallback: línea legacy sin "||" en SITIO_ID → tomar el poNro del primer sitio con ese id
       const sMatch = sitios.find(s => s.id === l.sitioId);
       if (sMatch) poDisplay = sMatch.poNro || '—';
     }
@@ -2748,14 +3271,25 @@ function poblarFiltroMes(selectId) {
   const sel = document.getElementById(selectId);
   if (!sel) return;
   const prev = sel.value;
-  sel.innerHTML = '<option value="">— Todos los meses —</option>';
-  getMesesDisponibles().forEach(m => {
+  // Conjunto: meses con líneas + mes en curso + mes siguiente
+  const hoy = new Date();
+  const yyyy = hoy.getFullYear();
+  const mm   = hoy.getMonth() + 1; // 1..12
+  const mesActual    = `${yyyy}-${String(mm).padStart(2,'0')}`;
+  const mesSiguiente = mm === 12
+    ? `${yyyy + 1}-01`
+    : `${yyyy}-${String(mm + 1).padStart(2,'0')}`;
+  const set = new Set(getMesesDisponibles());
+  set.add(mesActual);
+  set.add(mesSiguiente);
+  const lista = [...set].sort();
+  sel.innerHTML = '';
+  lista.forEach(m => {
     sel.innerHTML += `<option value="${m}">${mesLabel(m)}</option>`;
   });
-  if (prev && [...sel.options].some(o => o.value === prev)) sel.value = prev;
-  else if (!prev && getMesesDisponibles().length > 0) {
-    sel.value = getMesesDisponibles().slice(-1)[0];
-  }
+  // Selección: si había una previa válida, mantenerla. Si no, default = mes en curso.
+  if (prev && lista.includes(prev)) sel.value = prev;
+  else sel.value = mesActual;
 }
 
 function filtrarLineasPorMes(filtroMesId) {
@@ -2809,6 +3343,12 @@ function kpiCardPEQ(totalFac, clickFn) {
 }
 
 /* ── MODAL DETALLE KPI ── */
+function irASeguimientoDesdeModalDetalle(idSitio) {
+  // Cerrar el modal antes de navegar
+  document.getElementById('modal-kpi-detalle').classList.remove('open');
+  irASeguimientoDesdeSitio(idSitio);
+}
+
 function abrirDetalleKPI(titulo, subtitulo, lineasFiltradas) {
   document.getElementById('kpi-modal-title').textContent = titulo;
   document.getElementById('kpi-modal-sub').textContent   = subtitulo;
@@ -2830,7 +3370,8 @@ function abrirDetalleKPI(titulo, subtitulo, lineasFiltradas) {
       const sit   = sitios.find(s => s.id === l.sitioId);
       const poNro = l.poNroLinea || (sit ? sit.poNro : '') || '—';
       const bg    = i % 2 === 0 ? '' : 'background:rgba(240,242,248,0.4);';
-      return `<tr style="${bg}border-bottom:1px solid rgba(200,205,220,0.18);">
+      const sitId = String(l.sitioId).replace(/'/g, "\\'");
+      return `<tr class="row-detalle-clickable" ondblclick="irASeguimientoDesdeModalDetalle('${sitId}')" style="${bg}border-bottom:1px solid rgba(200,205,220,0.18);">
         <td style="padding:13px 16px 13px 0;font-weight:700;font-size:14px;">${l.sitioId}</td>
         <td style="padding:13px 16px;">
           <span style="display:flex;align-items:center;gap:7px;">
@@ -2850,6 +3391,762 @@ function abrirDetalleKPI(titulo, subtitulo, lineasFiltradas) {
   document.getElementById('modal-kpi-detalle').classList.add('open');
 }
 
+/* ══ ASIGNACIÓN PERSONAL ══ */
+// Mes mostrado en el calendario (Date apuntando al día 1)
+let _asigMesActual = null;
+
+function renderAsignaciones() {
+  if (!_asigMesActual) {
+    const hoy = new Date();
+    _asigMesActual = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+  }
+  renderAsigCalendario();
+  renderCola();
+}
+
+function navAsigMes(delta) {
+  if (delta === 0) {
+    const hoy = new Date();
+    _asigMesActual = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+  } else {
+    _asigMesActual = new Date(_asigMesActual.getFullYear(), _asigMesActual.getMonth() + delta, 1);
+  }
+  renderAsigCalendario();
+}
+
+function renderAsigCalendario() {
+  const contenedor = document.getElementById('asig-calendar');
+  const labelEl    = document.getElementById('asig-mes-label');
+  const resumenEl  = document.getElementById('asig-mes-resumen');
+  if (!contenedor || !labelEl) return;
+
+  const año = _asigMesActual.getFullYear();
+  const mes = _asigMesActual.getMonth(); // 0..11
+  const nombresMes = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  labelEl.textContent = nombresMes[mes] + ' ' + año;
+
+  // Indexar asignaciones por fecha YYYY-MM-DD para acceso O(1)
+  const porFecha = new Map();
+  asignaciones.forEach(a => {
+    if (!a.fecha) return;
+    if (!porFecha.has(a.fecha)) porFecha.set(a.fecha, []);
+    porFecha.get(a.fecha).push(a);
+  });
+
+  // Calcular grid: 7 columnas (Lun..Dom), comenzando por lunes
+  const primerDiaMes = new Date(año, mes, 1);
+  // En JS: getDay() devuelve 0=Domingo..6=Sábado. Convertimos a Lun=0..Dom=6
+  const offset = (primerDiaMes.getDay() + 6) % 7;
+  const diasEnMes = new Date(año, mes + 1, 0).getDate();
+  const diasEnMesAnt = new Date(año, mes, 0).getDate();
+  const totalCeldas = Math.ceil((offset + diasEnMes) / 7) * 7;
+
+  const hoyStr = (() => {
+    const h = new Date(); return `${h.getFullYear()}-${String(h.getMonth()+1).padStart(2,'0')}-${String(h.getDate()).padStart(2,'0')}`;
+  })();
+
+  let html = '<div class="asig-cal-grid">';
+  ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'].forEach(d => {
+    html += `<div class="asig-cal-head">${d}</div>`;
+  });
+
+  let totalObrasMes = 0, totalEmpleadosUnicosMes = new Set();
+
+  for (let i = 0; i < totalCeldas; i++) {
+    const diaIdx = i - offset; // 0-based, puede ser negativo (mes anterior) o > diasEnMes (mes siguiente)
+    let dia, mesCell, añoCell, outside = false;
+    if (diaIdx < 0) {
+      dia = diasEnMesAnt + diaIdx + 1;
+      mesCell = mes === 0 ? 11 : mes - 1;
+      añoCell = mes === 0 ? año - 1 : año;
+      outside = true;
+    } else if (diaIdx >= diasEnMes) {
+      dia = diaIdx - diasEnMes + 1;
+      mesCell = mes === 11 ? 0 : mes + 1;
+      añoCell = mes === 11 ? año + 1 : año;
+      outside = true;
+    } else {
+      dia = diaIdx + 1;
+      mesCell = mes;
+      añoCell = año;
+    }
+    const fechaStr = `${añoCell}-${String(mesCell+1).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
+    const items = porFecha.get(fechaStr) || [];
+    const obrasDelDia    = new Set(items.map(a => a.sitioId));
+    const empleadosDelDia = new Set(items.map(a => a.empleadoId));
+    const tieneData = items.length > 0;
+
+    // Estadísticas mes en curso (sin contar outside)
+    if (!outside) {
+      totalObrasMes += obrasDelDia.size;
+      empleadosDelDia.forEach(e => totalEmpleadosUnicosMes.add(e));
+    }
+
+    const diaSemana = new Date(añoCell, mesCell, dia).getDay(); // 0=Dom, 6=Sáb
+    const isWeekend = (diaSemana === 0 || diaSemana === 6);
+
+    const classes = ['asig-cal-cell'];
+    if (outside) classes.push('outside-month');
+    if (tieneData && !outside) classes.push('has-data');
+    if (!tieneData && !outside) classes.push('empty-day');
+    if (fechaStr === hoyStr && !outside) classes.push('is-today');
+    if (isWeekend && !outside) classes.push('is-weekend');
+
+    const clickHandler = (tieneData && !outside) ? ` onclick="abrirModalAsigDia('${fechaStr}')"` : '';
+    let infoHtml = '';
+    if (tieneData && !outside) {
+      const obrasLbl = obrasDelDia.size === 1 ? '1 obra' : `${obrasDelDia.size} obras`;
+      const empLbl   = empleadosDelDia.size === 1 ? '1 emp.' : `${empleadosDelDia.size} emp.`;
+      infoHtml = `
+        <div class="asig-cal-info">
+          <span class="pill">${obrasLbl}</span>
+          <span class="pill teal">${empLbl}</span>
+        </div>`;
+    }
+    html += `<div class="${classes.join(' ')}"${clickHandler}>
+      <div class="asig-cal-daynum">${dia}</div>
+      ${infoHtml}
+    </div>`;
+  }
+  html += '</div>';
+  contenedor.innerHTML = html;
+
+  if (resumenEl) {
+    if (totalObrasMes === 0) {
+      resumenEl.textContent = 'Sin asignaciones registradas este mes';
+    } else {
+      resumenEl.textContent = `${totalObrasMes} obra${totalObrasMes!==1?'s':''} · ${totalEmpleadosUnicosMes.size} empleado${totalEmpleadosUnicosMes.size!==1?'s':''} con actividad`;
+    }
+  }
+}
+
+// Fecha actualmente abierta en el modal de detalle (para refrescos)
+let _asigModalFecha = null;
+
+function abrirModalAsigDia(fechaStr) {
+  _asigModalFecha = fechaStr;
+  renderModalAsigDia();
+  document.getElementById('modal-asig-dia').classList.add('open');
+}
+
+/* Re-render del contenido del modal (extraído para reutilizar tras eliminaciones) */
+function renderModalAsigDia() {
+  const fechaStr = _asigModalFecha;
+  if (!fechaStr) return;
+  const items = asignaciones.filter(a => a.fecha === fechaStr);
+  if (!items.length) {
+    // Se quedó sin items → cerrar (E1)
+    cerrarModalAsigDia();
+    return;
+  }
+  const [y, m, d] = fechaStr.split('-');
+  const fechaDate = new Date(parseInt(y), parseInt(m)-1, parseInt(d));
+  const diasSemana = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  const nombresMes = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const tituloFecha = `${diasSemana[fechaDate.getDay()]} ${parseInt(d)} de ${nombresMes[parseInt(m)-1]} ${y}`;
+
+  document.getElementById('asig-dia-titulo').textContent = tituloFecha;
+
+  // Agrupar por sitio
+  const porSitio = new Map();
+  items.forEach(a => {
+    if (!porSitio.has(a.sitioId)) porSitio.set(a.sitioId, []);
+    porSitio.get(a.sitioId).push(a);
+  });
+
+  const obrasCount = porSitio.size;
+  const empleadosCount = new Set(items.map(a => a.empleadoId)).size;
+  document.getElementById('asig-dia-sub').textContent = `${obrasCount} obra${obrasCount!==1?'s':''} · ${empleadosCount} empleado${empleadosCount!==1?'s':''}`;
+
+  const cont = document.getElementById('asig-dia-contenido');
+  const bloques = [];
+  porSitio.forEach((asigs, sitioId) => {
+    const empleadosHtml = asigs.map(a => {
+      const emp = empleados.find(e => e.id === a.empleadoId);
+      const nombre = emp ? emp.nombre : a.empleadoId;
+      // Chip glass gris con × clickeable solo para borrar
+      return `<span style="display:inline-flex;align-items:center;gap:6px;background:rgba(200,205,225,0.30);color:var(--text-mid);padding:4px 6px 4px 11px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid rgba(200,205,225,0.5);">
+        <span style="font-size:10px;color:var(--text-light);font-weight:500;">${a.empleadoId}</span>${nombre}
+        <button class="chip-x" title="Quitar este empleado de esta obra" onclick="eliminarAsignacionConfirmada('${a.id.replace(/'/g, "\\'")}')"
+          style="background:rgba(248,113,113,0.10);border:none;border-radius:50%;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:#dc2626;font-size:11px;font-weight:700;line-height:1;padding:0;transition:var(--transition);"
+          onmouseover="this.style.background='rgba(248,113,113,0.25)'"
+          onmouseout="this.style.background='rgba(248,113,113,0.10)'">×</button>
+      </span>`;
+    }).join(' ');
+    bloques.push(`
+      <div style="background:rgba(255,255,255,0.45);border:1px solid rgba(200,205,225,0.5);border-radius:12px;padding:14px 16px;margin-bottom:10px;">
+        <div style="font-weight:700;font-size:14px;margin-bottom:8px;display:flex;align-items:center;gap:8px;">
+          <span style="background:rgba(79,128,255,0.12);color:#3a6bf0;padding:3px 11px;border-radius:20px;font-size:13px;font-weight:700;">${sitioId}</span>
+          <span style="font-size:11px;color:var(--text-light);font-weight:500;">${asigs.length} empleado${asigs.length!==1?'s':''}</span>
+          <button class="btn btn-rose btn-sm" title="Eliminar la obra completa de este día" style="margin-left:auto;" onclick="eliminarObraConfirmada('${sitioId.replace(/'/g, "\\'")}')"><i class="fa-solid fa-trash"></i></button>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">${empleadosHtml}</div>
+      </div>
+    `);
+  });
+  cont.innerHTML = bloques.join('') || '<div style="padding:30px;text-align:center;color:var(--text-light);">Sin datos</div>';
+}
+
+function cerrarModalAsigDia() {
+  _asigModalFecha = null;
+  document.getElementById('modal-asig-dia').classList.remove('open');
+}
+
+/* ══ ELIMINAR ASIGNACIÓN CONFIRMADA (1 empleado) ══ */
+async function eliminarAsignacionConfirmada(asigId) {
+  const item = asignaciones.find(a => a.id === asigId);
+  if (!item) return;
+  const empNombre = nombreEmpleado(item.empleadoId);
+  if (!confirm(`¿Quitar a ${empNombre} (${item.empleadoId}) del sitio ${item.sitioId} del ${item.fecha}?`)) return;
+
+  setLoading(true);
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'DELETE', sheet: 'ASIGNACIONES', id: asigId })
+    });
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error || 'Error al eliminar');
+
+    // D2: solo borrar local si server confirmó
+    asignaciones = asignaciones.filter(a => a.id !== asigId);
+    renderModalAsigDia();      // E1: refrescar el modal (cierra si quedó vacío)
+    renderAsigCalendario();    // Refrescar contadores del calendario
+    toast('Asignación eliminada ✓');
+  } catch (err) {
+    toast('Error al eliminar: ' + err.message, 'err');
+  } finally {
+    setLoading(false);
+  }
+}
+
+/* ══ ELIMINAR OBRA COMPLETA (N empleados de un sitio en un día) ══ */
+async function eliminarObraConfirmada(sitioId) {
+  const fechaStr = _asigModalFecha;
+  if (!fechaStr) return;
+  const items = asignaciones.filter(a => a.fecha === fechaStr && a.sitioId === sitioId);
+  if (!items.length) return;
+  if (!confirm(`¿Eliminar la obra "${sitioId}" del ${fechaStr}? Se van a quitar ${items.length} registro${items.length!==1?'s':''} (todos los empleados de esa obra ese día).`)) return;
+
+  setLoading(true);
+  let okCount = 0;
+  let primerError = null;
+  for (const item of items) {
+    try {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'DELETE', sheet: 'ASIGNACIONES', id: item.id })
+      });
+      const json = await res.json();
+      if (!json.ok) throw new Error(json.error || 'Error al eliminar');
+      // D2: solo borrar local si server confirmó
+      asignaciones = asignaciones.filter(a => a.id !== item.id);
+      okCount++;
+    } catch (err) {
+      primerError = err.message;
+      break; // detener al primer error para no seguir desincronizando
+    }
+  }
+  setLoading(false);
+
+  renderModalAsigDia();
+  renderAsigCalendario();
+
+  if (primerError) {
+    toast(`Eliminaron ${okCount} de ${items.length}. Error: ${primerError}`, 'err');
+  } else {
+    toast(`Obra eliminada: ${okCount} registro${okCount!==1?'s':''} ✓`);
+  }
+}
+
+/* ── COLA VIRTUAL: persistencia ── */
+function guardarColaSession() {
+  try { sessionStorage.setItem('terabyte_cola_asignaciones', JSON.stringify(colaAsignaciones)); } catch(e) {}
+}
+
+/* ── Helper: fecha de hoy en YYYY-MM-DD según el reloj local ── */
+function fechaHoyStr() {
+  const h = new Date();
+  return `${h.getFullYear()}-${String(h.getMonth()+1).padStart(2,'0')}-${String(h.getDate()).padStart(2,'0')}`;
+}
+
+/* ── Helper: nombre de empleado por ID, con fallback al ID si no se encuentra ── */
+function nombreEmpleado(empId) {
+  const e = empleados.find(x => x.id === empId);
+  return e ? e.nombre : empId;
+}
+
+/* ── Helper: obtener todas las asignaciones (confirmadas + cola) de una fecha ── */
+function asignacionesDeLaFecha(fechaStr) {
+  const confirmadas = asignaciones.filter(a => a.fecha === fechaStr);
+  const enCola = [];
+  colaAsignaciones.forEach(c => {
+    if (c.fecha === fechaStr) {
+      c.empleadoIds.forEach(eid => enCola.push({ sitioId: c.sitioId, empleadoId: eid }));
+    }
+  });
+  return { confirmadas, enCola, todas: [...confirmadas, ...enCola] };
+}
+
+/* ── Estado del modal: edición de un item existente vs nuevo ── */
+let _asigEditandoColaId = null;
+let _asigEmpleadosSeleccionados = []; // array de empleadoIds en el modal abierto
+let _acSitioActivoIdx = -1; // para navegación con teclado
+let _acEmpleadoActivoIdx = -1;
+
+/* ── Abrir modal: nueva asignación ── */
+function abrirModalNuevaAsig() {
+  _asigEditandoColaId = null;
+  _asigEmpleadosSeleccionados = [];
+  document.getElementById('modal-asig-titulo').textContent = 'Nueva asignación';
+  document.getElementById('asig-fecha').value = fechaHoyStr();
+  document.getElementById('asig-sitio-input').value = '';
+  document.getElementById('asig-sitio-valor').value = '';
+  document.getElementById('asig-empleados-input').value = '';
+  document.getElementById('asig-sitio-aviso').style.display = 'none';
+  document.getElementById('btn-agregar-asig').textContent = 'Agregar a la cola';
+  renderEmpleadosChips();
+  cerrarAcSitio();
+  cerrarAcEmpleado();
+  document.getElementById('modal-nueva-asig').classList.add('open');
+  setTimeout(() => document.getElementById('asig-sitio-input').focus(), 80);
+}
+
+/* ── Abrir modal: edición de un item de cola (ED1 - solo empleados) ── */
+function abrirModalEditarCola(colaId) {
+  const item = colaAsignaciones.find(c => c.id === colaId);
+  if (!item) return;
+  _asigEditandoColaId = colaId;
+  _asigEmpleadosSeleccionados = [...item.empleadoIds];
+  document.getElementById('modal-asig-titulo').textContent = 'Editar empleados';
+  document.getElementById('asig-fecha').value = item.fecha;
+  document.getElementById('asig-fecha').disabled = true;
+  document.getElementById('asig-sitio-input').value = item.sitioId;
+  document.getElementById('asig-sitio-input').disabled = true;
+  document.getElementById('asig-sitio-valor').value = item.sitioId;
+  document.getElementById('asig-empleados-input').value = '';
+  document.getElementById('asig-sitio-aviso').style.display = 'none';
+  document.getElementById('btn-agregar-asig').textContent = 'Guardar cambios';
+  renderEmpleadosChips();
+  cerrarAcSitio();
+  cerrarAcEmpleado();
+  document.getElementById('modal-nueva-asig').classList.add('open');
+  setTimeout(() => document.getElementById('asig-empleados-input').focus(), 80);
+}
+
+function cerrarModalNuevaAsig() {
+  document.getElementById('asig-fecha').disabled = false;
+  document.getElementById('asig-sitio-input').disabled = false;
+  document.getElementById('modal-nueva-asig').classList.remove('open');
+  cerrarAcSitio();
+  cerrarAcEmpleado();
+}
+
+function onCambioFechaAsig() {
+  // Al cambiar la fecha, los empleados ya seleccionados podrían ser inválidos
+  // (ya estar asignados a otra obra ese nuevo día). Validamos.
+  const fecha = document.getElementById('asig-fecha').value;
+  if (!fecha || _asigEditandoColaId) return;
+  const { todas } = asignacionesDeLaFecha(fecha);
+  const yaAsignados = new Set(todas.map(a => a.empleadoId));
+  // Quitar de _asigEmpleadosSeleccionados los que ya estén asignados ese día
+  const conflictivos = _asigEmpleadosSeleccionados.filter(eid => yaAsignados.has(eid));
+  if (conflictivos.length) {
+    _asigEmpleadosSeleccionados = _asigEmpleadosSeleccionados.filter(eid => !yaAsignados.has(eid));
+    renderEmpleadosChips();
+    toast(`${conflictivos.length} empleado${conflictivos.length!==1?'s':''} removido${conflictivos.length!==1?'s':''}: ya están asignados ese día`, 'err');
+  }
+  // También chequear si el sitio actualmente elegido ya está asignado ese día
+  const sitioActual = document.getElementById('asig-sitio-valor').value;
+  if (sitioActual) {
+    const sitiosYaUsados = new Set(todas.map(a => a.sitioId));
+    if (sitiosYaUsados.has(sitioActual)) {
+      document.getElementById('asig-sitio-input').value = '';
+      document.getElementById('asig-sitio-valor').value = '';
+      const aviso = document.getElementById('asig-sitio-aviso');
+      aviso.textContent = `El sitio ${sitioActual} ya estaba asignado en esa fecha. Elegí otro.`;
+      aviso.style.display = 'block';
+    }
+  }
+}
+
+/* ══ AUTOCOMPLETE DE SITIO ══ */
+function onAcSitioFocus() {
+  onAcSitioInput();
+}
+
+function onAcSitioInput() {
+  if (_asigEditandoColaId) return; // No se puede cambiar sitio en modo edición
+  // Apertura mutuamente exclusiva: cerrar el de empleados si está abierto
+  cerrarAcEmpleado();
+  const q = document.getElementById('asig-sitio-input').value.trim().toLowerCase();
+  const fecha = document.getElementById('asig-fecha').value;
+  const { todas } = fecha ? asignacionesDeLaFecha(fecha) : { todas: [] };
+  const sitiosYaUsados = new Set(todas.map(a => a.sitioId));
+
+  // Lista única de sitios disponibles: usamos s.id (los IDs cortos: IDLE, BA00193, etc.)
+  // Como vos elegiste S1 (guardar el ID corto), deduplicamos.
+  const sitiosUnicos = [...new Set(sitios.map(s => s.id))];
+
+  let resultados = sitiosUnicos.map(id => {
+    // Tomar el primer sitio con ese ID para datos extra (cliente, localidad)
+    const s = sitios.find(x => x.id === id);
+    return {
+      id,
+      cliente: s ? s.clienteId : '',
+      localidad: s ? s.localidad : '',
+      disabled: sitiosYaUsados.has(id)
+    };
+  });
+
+  if (q) resultados = resultados.filter(r =>
+    r.id.toLowerCase().includes(q) ||
+    r.cliente.toLowerCase().includes(q) ||
+    r.localidad.toLowerCase().includes(q)
+  );
+  // Sin límite: el panel ya tiene max-height + scroll
+
+  _acSitioActivoIdx = -1;
+  const panel = document.getElementById('asig-sitio-panel');
+  if (!resultados.length) {
+    panel.innerHTML = '<div class="ac-empty">Sin sitios para mostrar</div>';
+  } else {
+    panel.innerHTML = resultados.map((r, i) => `
+      <div class="ac-option ${r.disabled ? 'ac-disabled' : ''}" data-idx="${i}" data-id="${r.id}"
+        ${r.disabled ? 'title="Ya asignado ese día"' : `onclick="seleccionarSitio('${r.id.replace(/'/g, "\\'")}')"`}>
+        <span style="font-weight:600;">${r.id}</span>
+        <span class="ac-meta">${r.cliente}${r.localidad ? ' · ' + r.localidad : ''}${r.disabled ? ' · ya asignado' : ''}</span>
+      </div>`
+    ).join('');
+  }
+  panel.classList.add('ac-open');
+}
+
+function onAcSitioKeydown(ev) {
+  const panel = document.getElementById('asig-sitio-panel');
+  const opts = panel.querySelectorAll('.ac-option:not(.ac-disabled)');
+  if (ev.key === 'ArrowDown') {
+    ev.preventDefault();
+    _acSitioActivoIdx = Math.min(_acSitioActivoIdx + 1, opts.length - 1);
+    actualizarAcActivo(opts, _acSitioActivoIdx);
+  } else if (ev.key === 'ArrowUp') {
+    ev.preventDefault();
+    _acSitioActivoIdx = Math.max(_acSitioActivoIdx - 1, 0);
+    actualizarAcActivo(opts, _acSitioActivoIdx);
+  } else if (ev.key === 'Enter') {
+    ev.preventDefault();
+    if (_acSitioActivoIdx >= 0 && opts[_acSitioActivoIdx]) {
+      seleccionarSitio(opts[_acSitioActivoIdx].getAttribute('data-id'));
+    }
+  } else if (ev.key === 'Escape') {
+    cerrarAcSitio();
+  }
+}
+
+function actualizarAcActivo(opts, idx) {
+  opts.forEach((o, i) => o.classList.toggle('ac-active', i === idx));
+  if (opts[idx]) opts[idx].scrollIntoView({ block: 'nearest' });
+}
+
+function seleccionarSitio(id) {
+  document.getElementById('asig-sitio-input').value = id;
+  document.getElementById('asig-sitio-valor').value = id;
+  document.getElementById('asig-sitio-aviso').style.display = 'none';
+  cerrarAcSitio();
+  document.getElementById('asig-empleados-input').focus();
+}
+
+function cerrarAcSitio() {
+  document.getElementById('asig-sitio-panel').classList.remove('ac-open');
+}
+
+/* ══ AUTOCOMPLETE DE EMPLEADOS ══ */
+function onAcEmpleadoFocus() {
+  onAcEmpleadoInput();
+}
+
+function onAcEmpleadoInput() {
+  // Apertura mutuamente exclusiva: cerrar el de sitios si está abierto
+  cerrarAcSitio();
+  const q = document.getElementById('asig-empleados-input').value.trim().toLowerCase();
+  const fecha = document.getElementById('asig-fecha').value;
+  const { todas } = fecha ? asignacionesDeLaFecha(fecha) : { todas: [] };
+  // Excluir: ya asignados ese día (sin contar este mismo item si estoy editando)
+  let yaAsignados = new Set();
+  if (_asigEditandoColaId) {
+    const itemActual = colaAsignaciones.find(c => c.id === _asigEditandoColaId);
+    const idsActualesItem = new Set(itemActual ? itemActual.empleadoIds : []);
+    todas.forEach(a => { if (!idsActualesItem.has(a.empleadoId)) yaAsignados.add(a.empleadoId); });
+  } else {
+    todas.forEach(a => yaAsignados.add(a.empleadoId));
+  }
+  // También excluir los ya seleccionados en este modal
+  const seleccionados = new Set(_asigEmpleadosSeleccionados);
+
+  let resultados = empleados
+    .filter(e => !yaAsignados.has(e.id) && !seleccionados.has(e.id));
+  if (q) resultados = resultados.filter(e =>
+    e.id.toLowerCase().includes(q) || e.nombre.toLowerCase().includes(q)
+  );
+  // Sin límite: el panel ya tiene max-height + scroll
+
+  _acEmpleadoActivoIdx = -1;
+  const panel = document.getElementById('asig-empleados-panel');
+  if (!resultados.length) {
+    panel.innerHTML = '<div class="ac-empty">Sin empleados disponibles</div>';
+  } else {
+    panel.innerHTML = resultados.map((e, i) => `
+      <div class="ac-option" data-idx="${i}" data-id="${e.id}" onclick="agregarEmpleado('${e.id}')">
+        <span style="font-weight:600;">${e.nombre}</span>
+        <span class="ac-meta">${e.id}</span>
+      </div>`
+    ).join('');
+  }
+  panel.classList.add('ac-open');
+}
+
+function onAcEmpleadoKeydown(ev) {
+  const panel = document.getElementById('asig-empleados-panel');
+  const opts = panel.querySelectorAll('.ac-option:not(.ac-disabled)');
+  if (ev.key === 'ArrowDown') {
+    ev.preventDefault();
+    _acEmpleadoActivoIdx = Math.min(_acEmpleadoActivoIdx + 1, opts.length - 1);
+    actualizarAcActivo(opts, _acEmpleadoActivoIdx);
+  } else if (ev.key === 'ArrowUp') {
+    ev.preventDefault();
+    _acEmpleadoActivoIdx = Math.max(_acEmpleadoActivoIdx - 1, 0);
+    actualizarAcActivo(opts, _acEmpleadoActivoIdx);
+  } else if (ev.key === 'Enter') {
+    ev.preventDefault();
+    if (_acEmpleadoActivoIdx >= 0 && opts[_acEmpleadoActivoIdx]) {
+      agregarEmpleado(opts[_acEmpleadoActivoIdx].getAttribute('data-id'));
+    }
+  } else if (ev.key === 'Backspace' && document.getElementById('asig-empleados-input').value === '') {
+    // Backspace en input vacío → quitar el último empleado
+    if (_asigEmpleadosSeleccionados.length) {
+      _asigEmpleadosSeleccionados.pop();
+      renderEmpleadosChips();
+      onAcEmpleadoInput();
+    }
+  } else if (ev.key === 'Escape') {
+    cerrarAcEmpleado();
+  }
+}
+
+function agregarEmpleado(empId) {
+  if (_asigEmpleadosSeleccionados.includes(empId)) return;
+  _asigEmpleadosSeleccionados.push(empId);
+  document.getElementById('asig-empleados-input').value = '';
+  renderEmpleadosChips();
+  onAcEmpleadoInput();
+  document.getElementById('asig-empleados-input').focus();
+}
+
+function quitarEmpleado(empId) {
+  _asigEmpleadosSeleccionados = _asigEmpleadosSeleccionados.filter(e => e !== empId);
+  renderEmpleadosChips();
+  onAcEmpleadoInput();
+}
+
+function renderEmpleadosChips() {
+  const cont = document.getElementById('asig-empleados-chips');
+  const input = document.getElementById('asig-empleados-input');
+  // Limpiar todo menos el input
+  Array.from(cont.querySelectorAll('.emp-chip-sel')).forEach(c => c.remove());
+  _asigEmpleadosSeleccionados.forEach(eid => {
+    const chip = document.createElement('span');
+    chip.className = 'emp-chip-sel';
+    chip.innerHTML = `<span class="cola-emp-chip-id">${eid}</span>${nombreEmpleado(eid)}`;
+    chip.onclick = (e) => { e.stopPropagation(); quitarEmpleado(eid); };
+    cont.insertBefore(chip, input);
+  });
+}
+
+function cerrarAcEmpleado() {
+  document.getElementById('asig-empleados-panel').classList.remove('ac-open');
+}
+
+/* ══ AGREGAR / EDITAR EN COLA ══ */
+function agregarAsigCola() {
+  const fecha   = document.getElementById('asig-fecha').value;
+  const sitioId = document.getElementById('asig-sitio-valor').value.trim();
+  if (!fecha)        return toast('Elegí una fecha', 'err');
+  if (!sitioId)      return toast('Elegí un sitio', 'err');
+  if (!_asigEmpleadosSeleccionados.length) return toast('Elegí al menos un empleado', 'err');
+
+  if (_asigEditandoColaId) {
+    // Edición: solo actualiza los empleados del item
+    const item = colaAsignaciones.find(c => c.id === _asigEditandoColaId);
+    if (item) {
+      item.empleadoIds = [..._asigEmpleadosSeleccionados];
+      guardarColaSession();
+      renderCola();
+      renderAsigCalendario();
+      cerrarModalNuevaAsig();
+      toast('Asignación actualizada ✓');
+    }
+    return;
+  }
+
+  // Nuevo item: validar que el sitio no esté ya en la cola para esa fecha
+  const yaExiste = colaAsignaciones.find(c => c.fecha === fecha && c.sitioId === sitioId);
+  if (yaExiste) return toast(`El sitio ${sitioId} ya está en cola para esa fecha`, 'err');
+
+  const colaItem = {
+    id: 'COLA-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
+    fecha,
+    sitioId,
+    empleadoIds: [..._asigEmpleadosSeleccionados]
+  };
+  colaAsignaciones.push(colaItem);
+  guardarColaSession();
+  renderCola();
+  renderAsigCalendario();
+  cerrarModalNuevaAsig();
+  toast(`Agregado a la cola: ${sitioId} (${colaItem.empleadoIds.length} empleado${colaItem.empleadoIds.length!==1?'s':''})`);
+}
+
+function eliminarItemCola(colaId) {
+  const item = colaAsignaciones.find(c => c.id === colaId);
+  if (!item) return;
+  if (!confirm(`¿Quitar de la cola el sitio ${item.sitioId} del ${item.fecha}?`)) return;
+  colaAsignaciones = colaAsignaciones.filter(c => c.id !== colaId);
+  guardarColaSession();
+  renderCola();
+  renderAsigCalendario();
+}
+
+function vaciarColaConfirm() {
+  if (!colaAsignaciones.length) return;
+  if (!confirm(`¿Vaciar toda la cola (${colaAsignaciones.length} items)? Esta acción no se puede deshacer.`)) return;
+  colaAsignaciones = [];
+  guardarColaSession();
+  renderCola();
+  renderAsigCalendario();
+}
+
+/* ══ RENDER COLA ══ */
+function renderCola() {
+  const cont       = document.getElementById('cola-contenido');
+  const btnConf    = document.getElementById('btn-confirmar-cola');
+  const btnVaciar  = document.getElementById('btn-vaciar-cola');
+  const subEl      = document.getElementById('cola-sub');
+  if (!cont) return;
+
+  if (!colaAsignaciones.length) {
+    cont.innerHTML = '<div class="cola-empty">No hay asignaciones pendientes. Usá "+ Nueva asignación" para empezar.</div>';
+    if (btnConf)   btnConf.style.display = 'none';
+    if (btnVaciar) btnVaciar.style.display = 'none';
+    if (subEl)     subEl.textContent = 'Asignaciones en cola, aún no guardadas';
+    return;
+  }
+
+  // Agrupar por fecha
+  const porFecha = new Map();
+  colaAsignaciones.forEach(c => {
+    if (!porFecha.has(c.fecha)) porFecha.set(c.fecha, []);
+    porFecha.get(c.fecha).push(c);
+  });
+  const fechasOrden = [...porFecha.keys()].sort();
+
+  const totalRegistros = colaAsignaciones.reduce((acc, c) => acc + c.empleadoIds.length, 0);
+  if (subEl) subEl.textContent = `${colaAsignaciones.length} obra${colaAsignaciones.length!==1?'s':''} · ${totalRegistros} registro${totalRegistros!==1?'s':''} se van a guardar`;
+
+  const nombresMes = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const diasSemana = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+
+  cont.innerHTML = fechasOrden.map(fecha => {
+    const items = porFecha.get(fecha);
+    const [y,m,d] = fecha.split('-');
+    const fechaDate = new Date(parseInt(y), parseInt(m)-1, parseInt(d));
+    const fechaLbl = `${diasSemana[fechaDate.getDay()]} ${parseInt(d)} ${nombresMes[parseInt(m)-1]} ${y}`;
+    return `
+      <div class="cola-grupo">
+        <div class="cola-grupo-fecha">
+          <span style="background:rgba(251,191,36,0.18);color:#b45309;padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;">PENDIENTE</span>
+          ${fechaLbl}
+        </div>
+        ${items.map(item => `
+          <div class="cola-item">
+            <div class="cola-item-info">
+              <div class="cola-item-sitio">
+                <span style="background:rgba(79,128,255,0.12);color:#3a6bf0;padding:2px 11px;border-radius:20px;font-size:13px;font-weight:700;margin-right:6px;">${item.sitioId}</span>
+                <span style="font-size:11px;color:var(--text-light);font-weight:500;">(${item.empleadoIds.length} empleado${item.empleadoIds.length!==1?'s':''})</span>
+              </div>
+              <div class="cola-item-empleados">
+                ${item.empleadoIds.map(eid => `<span class="cola-emp-chip"><span class="cola-emp-chip-id">${eid}</span>${nombreEmpleado(eid)}</span>`).join('')}
+              </div>
+            </div>
+            <div class="cola-item-acciones">
+              <button class="btn btn-glass btn-sm" title="Editar empleados" onclick="abrirModalEditarCola('${item.id}')">✏️</button>
+              <button class="btn btn-rose btn-sm" title="Quitar" onclick="eliminarItemCola('${item.id}')"><i class="fa-solid fa-trash"></i></button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }).join('');
+
+  if (btnConf)   btnConf.style.display = '';
+  if (btnVaciar) btnVaciar.style.display = '';
+}
+
+/* ══ CONFIRMAR COLA (BULK_INSERT) ══ */
+async function confirmarCola() {
+  if (!colaAsignaciones.length) return;
+  const totalRegistros = colaAsignaciones.reduce((acc, c) => acc + c.empleadoIds.length, 0);
+  if (!confirm(`¿Confirmar ${totalRegistros} asignación${totalRegistros!==1?'es':''} (${colaAsignaciones.length} obra${colaAsignaciones.length!==1?'s':''})?`)) return;
+
+  const usuarioCarga = (_usuarioActual && (_usuarioActual.idUsuario || _usuarioActual.usuario)) || '';
+  const confirmadoAt = new Date().toISOString();
+  const rows = [];
+  colaAsignaciones.forEach(c => {
+    c.empleadoIds.forEach(eid => {
+      rows.push({
+        ID:            'ASG-' + Date.now() + '-' + Math.floor(Math.random() * 100000),
+        FECHA:         c.fecha,
+        SITIO_ID:      c.sitioId,
+        EMPLEADO_ID:   eid,
+        OBSERVACION:   '',
+        CONFIRMADO_AT: confirmadoAt,
+        USUARIO_CARGA: usuarioCarga
+      });
+    });
+  });
+
+  setLoading(true);
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'BULK_INSERT', sheet: 'ASIGNACIONES', rows })
+    });
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error || 'Error al guardar');
+
+    // Optimistic: agregar al array local (en formato normalizado)
+    rows.forEach(r => {
+      asignaciones.push({
+        id:           r.ID,
+        fecha:        r.FECHA,
+        sitioId:      r.SITIO_ID,
+        empleadoId:   r.EMPLEADO_ID,
+        observacion:  r.OBSERVACION,
+        confirmadoAt: r.CONFIRMADO_AT,
+        usuarioCarga: r.USUARIO_CARGA
+      });
+    });
+    colaAsignaciones = [];
+    guardarColaSession();
+    renderCola();
+    renderAsigCalendario();
+    toast(`${rows.length} asignacion${rows.length!==1?'es':''} guardada${rows.length!==1?'s':''} ✓`);
+  } catch (err) {
+    toast('Error al guardar: ' + err.message, 'err');
+  } finally {
+    setLoading(false);
+  }
+}
+
 /* ══ DASHBOARD ══ */
 function actualizarDashboard() {
   const hoy = new Date();
@@ -2858,6 +4155,26 @@ function actualizarDashboard() {
 
   poblarFiltroMes('dash-filtro-mes');
   const lf = filtrarLineasPorMes('dash-filtro-mes');
+  const mesSel = document.getElementById('dash-filtro-mes')?.value || '';
+  const sinDatos = lf.length === 0;
+
+  // Banner "Sin datos cargados para X"
+  const banner = document.getElementById('dash-empty-banner');
+  const bannerTitle = document.getElementById('dash-empty-title');
+  if (banner && bannerTitle) {
+    if (sinDatos && mesSel) {
+      bannerTitle.textContent = `Sin datos cargados para ${mesLabel(mesSel)}`;
+      banner.style.display = 'flex';
+    } else {
+      banner.style.display = 'none';
+    }
+  }
+
+  // Ocultar Objetivos y GAP cuando no hay datos
+  const objCard = document.getElementById('dash-objetivos-card');
+  const gapCard = document.getElementById('dash-gap-card');
+  if (objCard) objCard.style.display = sinDatos ? 'none' : '';
+  if (gapCard) gapCard.style.display = sinDatos ? 'none' : '';
 
   const facturadas  = lf.filter(l => l.estado === 'Facturado');
   const proyectadas = lf.filter(l => l.estado === 'Proyectado');
@@ -2866,8 +4183,6 @@ function actualizarDashboard() {
   const totalFac  = facturadas.reduce((a,l) => a+l.monto, 0);
   const totalSol  = solicitadas.reduce((a,l) => a+l.monto, 0);
   const totalTodo = lf.reduce((a,l) => a+l.monto, 0);
-  const pctPSol   = totalTodo > 0 ? Math.round((totalSol + totalFac) / totalTodo * 100) : 0;
-  const pctSFac   = (totalSol + totalFac) > 0 ? Math.round(totalFac / (totalSol + totalFac) * 100) : 0;
 
   // Guardar lineas en window para acceso desde onclick
   window._dash_lf         = lf;
@@ -2875,10 +4190,10 @@ function actualizarDashboard() {
   window._dash_proyectadas= proyectadas;
   window._dash_solicitadas= solicitadas;
 
-  // 5 KPI cards: PEQ primero, luego las 4
+  // 4 KPI cards: PEQ + 3
   const row = document.getElementById('dash-kpi-row');
   if (!row) return;
-  row.className = 'stats-row-5';
+  row.className = 'stats-row-4';
   row.innerHTML =
     kpiCardPEQ(totalFac, `abrirDetalleKPI('Cumplimiento PEQ','Líneas facturadas del mes',window._dash_facturadas)`) +
     kpiCard('blue',  'Facturación mensual',
@@ -2895,45 +4210,43 @@ function actualizarDashboard() {
       fmt(totalSol), `de ${fmt(totalTodo)} total`, `${solicitadas.length} línea${solicitadas.length!==1?'s':''}`,
       totalTodo > 0 ? Math.round(totalSol/totalTodo*100) : 0,
       `abrirDetalleKPI('Solicitados sin facturar','Líneas en estado Solicitado',window._dash_solicitadas)`
-    ) +
-    kpiCard('rose',  'Solicitados → Facturados',
-      fmt(totalFac), `de ${fmt(totalSol + totalFac)} solicitado`, `${pctSFac}% facturado`, pctSFac,
-      `abrirDetalleKPI('Solicitados → Facturados','Líneas en estado Facturado',window._dash_facturadas)`
     );
 
-  // Objetivos por cliente
+  // Objetivos por cliente (solo si hay datos)
   const obj = document.getElementById('dash-objetivos');
-  if (!clientes.length) {
-    obj.innerHTML = `<div style="text-align:center;padding:30px 0;color:var(--text-light);font-size:13px;">Sin clientes</div>`;
-  } else {
-    obj.innerHTML = clientes.map(c => {
-      const lineasCliente = lf.filter(l => l.clienteId === c.id);
-      const valFac  = lineasCliente.filter(l => l.estado === 'Facturado').reduce((a,l) => a+l.monto, 0);
-      const valTodo = lineasCliente.reduce((a,l) => a+l.monto, 0);
-      const pct     = valTodo > 0 ? Math.round(valFac/valTodo*100) : 0;
-      const mesActual = document.getElementById('dash-filtro-mes')?.value || '';
-      const mesLabel2 = mesActual ? mesLabel(mesActual) : 'el mes';
-      return `<div style="background:rgba(255,255,255,0.35);border:1px solid rgba(255,255,255,0.7);border-radius:14px;padding:18px 20px;cursor:pointer;transition:var(--transition);"
-        onclick="abrirDetalleCliente('${c.id}')"
-        onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 10px 30px rgba(100,110,140,0.15)'"
-        onmouseout="this.style.transform='';this.style.boxShadow=''">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-          <span style="display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px;">${dot(c.color)}${c.id}</span>
-          <span style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:${c.color};">${fmt(valFac)}</span>
-        </div>
-        <div style="height:6px;background:rgba(200,205,220,0.3);border-radius:20px;overflow:hidden;margin-bottom:8px;">
-          <div style="height:100%;width:${pct}%;background:${c.color};border-radius:20px;transition:.4s ease;"></div>
-        </div>
-        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-light);">
-          <span>${pct}% facturado</span>
-          <span>de ${fmt(valTodo)} total</span>
-        </div>
-      </div>`;
-    }).join('');
+  if (!sinDatos && obj) {
+    // Solo clientes con al menos 1 línea en el mes
+    const clientesConActividad = clientes.filter(c => lf.some(l => l.clienteId === c.id));
+    if (!clientesConActividad.length) {
+      obj.innerHTML = `<div style="text-align:center;padding:30px 0;color:var(--text-light);font-size:13px;">Sin clientes con proyecciones para este mes</div>`;
+    } else {
+      obj.innerHTML = clientesConActividad.map(c => {
+        const lineasCliente = lf.filter(l => l.clienteId === c.id);
+        const valFac  = lineasCliente.filter(l => l.estado === 'Facturado').reduce((a,l) => a+l.monto, 0);
+        const valTodo = lineasCliente.reduce((a,l) => a+l.monto, 0);
+        const pct     = valTodo > 0 ? Math.round(valFac/valTodo*100) : 0;
+        return `<div style="background:rgba(255,255,255,0.35);border:1px solid rgba(255,255,255,0.7);border-radius:14px;padding:18px 20px;cursor:pointer;transition:var(--transition);"
+          onclick="abrirDetalleCliente('${c.id}')"
+          onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 10px 30px rgba(100,110,140,0.15)'"
+          onmouseout="this.style.transform='';this.style.boxShadow=''">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <span style="display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px;">${dot(c.color)}${c.id}</span>
+            <span style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:${c.color};">${fmt(valFac)}</span>
+          </div>
+          <div style="height:6px;background:rgba(200,205,220,0.3);border-radius:20px;overflow:hidden;margin-bottom:8px;">
+            <div style="height:100%;width:${pct}%;background:${c.color};border-radius:20px;transition:.4s ease;"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-light);">
+            <span>${pct}% facturado</span>
+            <span>de ${fmt(valTodo)} total</span>
+          </div>
+        </div>`;
+      }).join('');
+    }
   }
 
-  // Renderizar GAP acumulado
-  renderGapAcumulado();
+  // GAP acumulado (solo si hay datos)
+  if (!sinDatos) renderGapAcumulado();
 }
 
 /* ══ DETALLE CLIENTE ══ */
@@ -2967,7 +4280,8 @@ function abrirDetalleCliente(clienteId) {
       const sit   = sitios.find(s => s.id === l.sitioId);
       const poNro = l.poNroLinea || (sit ? sit.poNro : '') || '—';
       const bg    = i % 2 === 0 ? '' : 'background:rgba(240,242,248,0.4);';
-      return `<tr style="${bg}border-bottom:1px solid rgba(200,205,220,0.18);">
+      const sitId = String(l.sitioId).replace(/'/g, "\\'");
+      return `<tr class="row-detalle-clickable" ondblclick="irASeguimientoDesdeModalDetalle('${sitId}')" style="${bg}border-bottom:1px solid rgba(200,205,220,0.18);">
         <td style="padding:13px 16px 13px 0;font-weight:700;font-size:14px;">${l.sitioId}</td>
         <td style="padding:13px 16px;">
           <span style="display:flex;align-items:center;gap:7px;">
@@ -3212,10 +4526,9 @@ async function cargarUsuariosAdmin() {
 
 async function intentarLogin() {
   const user  = document.getElementById('login-user').value.trim();
-  const pass  = document.getElementById('login-pass').value;
   const errEl = document.getElementById('login-error');
   const btn   = document.getElementById('btn-login');
-  if (!user || !pass) { errEl.textContent = 'Ingresá usuario y contraseña.'; errEl.style.display = 'block'; return; }
+  if (!user) { errEl.textContent = 'Ingresá tu usuario.'; errEl.style.display = 'block'; return; }
   btn.textContent = 'Verificando...';
   btn.disabled = true;
   errEl.style.display = 'none';
@@ -3225,14 +4538,11 @@ async function intentarLogin() {
     errEl.style.display = 'block';
     btn.textContent = 'Ingresar'; btn.disabled = false; return;
   }
-  const match = _usuariosAdmin.find(u => u.usuario.toLowerCase() === user.toLowerCase() && u.clave === pass);
+  const match = _usuariosAdmin.find(u => u.usuario.toLowerCase() === user.toLowerCase());
   if (!match) {
-    const existeUser = _usuariosAdmin.find(u => u.usuario.toLowerCase() === user.toLowerCase());
-    errEl.textContent = existeUser ? 'Contraseña incorrecta.' : 'Usuario no encontrado.';
+    errEl.textContent = 'Usuario no encontrado.';
     errEl.style.display = 'block';
     btn.textContent = 'Ingresar'; btn.disabled = false;
-    document.getElementById('login-pass').value = '';
-    document.getElementById('login-pass').focus();
     return;
   }
   if (!match.habilitado) {
@@ -3241,6 +4551,7 @@ async function intentarLogin() {
     btn.textContent = 'Ingresar'; btn.disabled = false; return;
   }
   _usuarioActual = match;
+  try { sessionStorage.setItem('terabyte_user', match.usuario); } catch(e) {}
   mostrarBienvenida(match);
 }
 
@@ -3271,8 +4582,8 @@ function mostrarBienvenida(user) {
 function cerrarSesion() {
   if (!confirm('¿Cerrar sesión?')) return;
   _usuarioActual = null; _usuariosAdmin = [];
+  try { sessionStorage.removeItem('terabyte_user'); } catch(e) {}
   document.getElementById('login-user').value = '';
-  document.getElementById('login-pass').value = '';
   document.getElementById('login-error').style.display = 'none';
   document.getElementById('btn-login').textContent = 'Ingresar';
   document.getElementById('btn-login').disabled = false;
@@ -3323,6 +4634,27 @@ function cerrarSesion() {
     txt.style.color = '#b91c1c';
     btn.disabled = false;
   }
+
+  /* ── Restauración de sesión (sessionStorage) ── */
+  try {
+    const userGuardado = sessionStorage.getItem('terabyte_user');
+    if (!userGuardado) return;
+    if (btn.disabled) return; // ping falló, no restaurar
+    _usuariosAdmin = await cargarUsuariosAdmin();
+    const match = _usuariosAdmin.find(u => u.usuario.toLowerCase() === userGuardado.toLowerCase());
+    if (!match || !match.habilitado) {
+      sessionStorage.removeItem('terabyte_user');
+      return;
+    }
+    _usuarioActual = match;
+    const nombre       = match.idUsuario || match.usuario;
+    const primerNombre = nombre.split(' ')[0];
+    document.getElementById('sidebar-avatar').textContent = primerNombre.charAt(0).toUpperCase();
+    document.getElementById('sidebar-nombre').textContent = nombre;
+    document.getElementById('sidebar-rol').textContent    = match.rol || 'Usuario';
+    document.getElementById('screen-login').style.display = 'none';
+    await cargarTodo();
+  } catch(e) { /* sessionStorage bloqueado u otro error: queda en login */ }
 })();
 </script>
 </body>
