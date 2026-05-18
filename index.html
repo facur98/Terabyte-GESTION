@@ -367,14 +367,43 @@
     .kc-green  .kpi-bar-fill { background: linear-gradient(90deg,#16a34a,#4ade80); }
 
     .stats-row-5 { display: grid; grid-template-columns: repeat(5,1fr); gap: 14px; margin-bottom: 24px; }
-    .stats-row-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 24px; }
+    /* Cards de KPI: 2×2 fijo, más grandes, contenido centrado */
+    .stats-row-4 { display: grid; grid-template-columns: repeat(2,1fr); gap: 18px; margin-bottom: 24px; }
     @media (max-width: 1400px) {
       .stats-row-5 { grid-template-columns: repeat(3,1fr); }
     }
     @media (max-width: 1200px) {
       .stats-row-5 { grid-template-columns: repeat(2,1fr); }
-      .stats-row-4 { grid-template-columns: repeat(2,1fr); }
     }
+    @media (max-width: 720px) {
+      .stats-row-4 { grid-template-columns: 1fr; }
+    }
+    /* Cards KPI más grandes y centradas (2×2) */
+    .stats-row-4 .kpi-card {
+      padding: 30px 28px;
+      display: flex; flex-direction: column; align-items: center; text-align: center;
+    }
+    .stats-row-4 .kpi-card .kpi-label { font-size: 14px; margin-bottom: 14px; }
+    .stats-row-4 .kpi-card .kpi-value { font-size: 30px; }
+    .stats-row-4 .kpi-card .kpi-sub,
+    .stats-row-4 .kpi-card .kpi-ref { text-align: center; }
+    .stats-row-4 .kpi-card .kpi-bar-bg { width: 100%; margin-top: 16px; }
+
+    /* ── Círculo de progreso de Cumplimiento PEQ ── */
+    .peq-ring-wrap { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+    .peq-ring { position: relative; width: 150px; height: 150px; }
+    .peq-ring svg { transform: rotate(-90deg); }
+    .peq-ring-track { fill: none; stroke: rgba(200,205,220,0.35); }
+    .peq-ring-fill  { fill: none; stroke-linecap: round; transition: stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1); }
+    .peq-ring-center {
+      position: absolute; inset: 0; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+    }
+    .peq-ring-pct {
+      font-family: 'Syne', sans-serif; font-weight: 700; line-height: 1;
+      font-size: 34px;
+    }
+    .peq-ring-cap { font-size: 10.5px; color: var(--text-light); font-weight: 600; margin-top: 3px; letter-spacing: .3px; }
 
     /* ── Calendario de asignaciones ── */
     .asig-cal-grid {
@@ -492,6 +521,103 @@
     }
     .emp-chip-sel:hover { background: rgba(79,128,255,0.20); }
     .emp-chip-sel::after { content: '×'; font-size: 14px; opacity: .7; }
+
+    /* ── Modal empleado-céntrico: filas de empleado ── */
+    .asig-emp-lista {
+      max-height: 52vh; overflow-y: auto;
+      border: 1px solid rgba(200,205,225,0.5); border-radius: var(--radius-sm);
+      background: rgba(255,255,255,0.4);
+    }
+    .asig-emp-fila {
+      display: flex; align-items: center; gap: 12px;
+      padding: 9px 14px;
+      border-bottom: 1px solid rgba(200,205,225,0.30);
+    }
+    .asig-emp-fila:last-child { border-bottom: none; }
+    .asig-emp-fila.sin-asignar { background: rgba(251,191,36,0.07); }
+    .asig-emp-fila.confirmada  { background: rgba(45,212,191,0.06); }
+    .asig-emp-datos { flex: 0 0 200px; min-width: 0; }
+    .asig-emp-nombre { font-weight: 600; font-size: 13px; color: var(--text-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .asig-emp-id { font-size: 10.5px; color: var(--text-light); font-weight: 500; }
+
+    /* ── Badge de relación de empleado (P = Propio celeste, C = Contratista fucsia) ── */
+    .rel-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 16px; height: 16px; border-radius: 5px;
+      font-size: 9.5px; font-weight: 800; line-height: 1;
+      margin-right: 5px; flex-shrink: 0; vertical-align: middle;
+    }
+    .rel-badge.rel-p { background: rgba(56,189,248,0.20); color: #0284c7; }
+    .rel-badge.rel-c { background: rgba(217,70,239,0.16); color: #c026d3; }
+    .asig-emp-control { flex: 1; position: relative; display: flex; align-items: center; gap: 6px; }
+    .asig-emp-estado {
+      flex: 0 0 auto; font-size: 10.5px; font-weight: 700;
+      padding: 2px 9px; border-radius: 20px; white-space: nowrap;
+    }
+    .asig-emp-estado.st-sin   { background: rgba(251,191,36,0.18);  color: #b45309; }
+    .asig-emp-estado.st-ok    { background: rgba(79,128,255,0.14);  color: #3a6bf0; }
+    .asig-emp-estado.st-conf  { background: rgba(45,212,191,0.16);  color: #0d9488; }
+    .asig-emp-input {
+      width: 100%; padding: 7px 10px; font-size: 12.5px;
+      border: 1px solid rgba(200,205,225,0.6); border-radius: 8px;
+      background: rgba(255,255,255,0.7); font-family: inherit; outline: none;
+    }
+    .asig-emp-input:focus { border-color: var(--accent-blue); box-shadow: 0 0 0 3px rgba(79,128,255,0.10); }
+    .asig-emp-input:disabled { background: rgba(235,238,245,0.7); color: var(--text-mid); cursor: not-allowed; }
+    .asig-emp-clear {
+      flex: 0 0 auto; background: rgba(248,113,113,0.10); border: none; border-radius: 50%;
+      width: 22px; height: 22px; cursor: pointer; color: #dc2626; font-size: 13px; font-weight: 700;
+      line-height: 1; display: inline-flex; align-items: center; justify-content: center;
+      transition: var(--transition);
+    }
+    .asig-emp-clear:hover { background: rgba(248,113,113,0.25); }
+    .asig-emp-resumen {
+      display: flex; gap: 14px; align-items: center;
+      font-size: 12px; margin-bottom: 12px;
+    }
+    .asig-resumen-pill {
+      padding: 3px 11px; border-radius: 20px; font-weight: 700; font-size: 11.5px;
+    }
+    .asig-resumen-pill.ok  { background: rgba(45,212,191,0.14); color: #0d9488; }
+    .asig-resumen-pill.sin { background: rgba(251,191,36,0.16); color: #b45309; }
+
+    /* ── Nueva asignación: dos columnas ── */
+    .nasig-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+    @media (max-width: 1100px) { .nasig-cols { grid-template-columns: 1fr; } }
+    .nasig-col-izq .asig-emp-lista { max-height: 60vh; }
+    .nasig-col-der #nasig-cards { max-height: 60vh; overflow-y: auto; }
+    .nasig-obra-card {
+      background: rgba(255,255,255,0.5);
+      border: 1px solid rgba(200,205,225,0.5);
+      border-radius: 12px; padding: 13px 15px; margin-bottom: 10px;
+    }
+    .nasig-obra-card:last-child { margin-bottom: 0; }
+    .nasig-obra-titulo {
+      font-weight: 700; font-size: 13.5px; margin-bottom: 9px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .nasig-obra-id {
+      background: rgba(79,128,255,0.12); color: #3a6bf0;
+      padding: 3px 11px; border-radius: 20px; font-size: 13px; font-weight: 700;
+    }
+    .nasig-obra-count { font-size: 11px; color: var(--text-light); font-weight: 500; }
+    .nasig-obra-emps { display: flex; flex-wrap: wrap; gap: 6px; }
+    .nasig-emp-chip {
+      padding: 3px 10px; border-radius: 20px;
+      font-size: 11px; font-weight: 600;
+      display: inline-flex; align-items: center; gap: 5px;
+    }
+    .nasig-emp-chip.nuevo {
+      background: rgba(79,128,255,0.12); color: #3a6bf0;
+    }
+    .nasig-emp-chip.confirmado {
+      background: rgba(200,205,225,0.30); color: var(--text-mid);
+      border: 1px solid rgba(200,205,225,0.5);
+    }
+    .nasig-emp-chip .chip-emp-id { font-size: 9.5px; color: var(--text-light); font-weight: 500; }
+    .nasig-cards-empty {
+      text-align: center; padding: 40px 20px; color: var(--text-light); font-size: 13px;
+    }
 
     /* LOGIN */
     #screen-login {
@@ -648,27 +774,6 @@
       cursor: pointer; transition: all .2s;
     }
     .banner-cancel:hover { background: rgba(255,255,255,0.15); color: #e2e8f0; }
-
-    /* Card cumplimiento PEQ */
-    .peq-track {
-      margin-top: 14px;
-    }
-    .peq-bar-bg {
-      height: 8px; border-radius: 20px;
-      background: rgba(200,205,220,0.35); overflow: hidden; margin-bottom: 8px;
-    }
-    .peq-bar-fill {
-      height: 100%; border-radius: 20px;
-      transition: width 1.2s cubic-bezier(.4,0,.2,1);
-    }
-    .peq-labels {
-      display: flex; justify-content: space-between;
-      font-size: 11px; color: var(--text-light);
-    }
-    .peq-pct-big {
-      font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 700;
-      line-height: 1; margin-bottom: 4px;
-    }
   </style>
 </head>
 <body>
@@ -836,8 +941,8 @@
       </div>
     </div>
 
-    <!-- Card GAP acumulado -->
-    <div id="dash-gap-card" style="background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid var(--glass-border);border-radius:var(--radius);box-shadow:var(--glass-shadow);padding:28px 32px;margin-top:20px;position:relative;overflow:hidden;">
+    <!-- Card GAP acumulado — OCULTA por pedido (la lógica se mantiene por si se reactiva) -->
+    <div id="dash-gap-card" style="display:none;background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid var(--glass-border);border-radius:var(--radius);box-shadow:var(--glass-shadow);padding:28px 32px;margin-top:20px;position:relative;overflow:hidden;">
       <div style="position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(167,139,250,0.09),transparent 70%);pointer-events:none;"></div>
       <div class="card-header" style="margin-bottom:24px;">
         <div>
@@ -1048,7 +1153,7 @@
       </div>
       <div class="topbar-actions">
         <button class="btn btn-glass" onclick="sincronizar()" style="font-size:12px;">🔄 Sincronizar</button>
-        <button class="btn btn-primary" onclick="abrirModalNuevaAsig()">+ Nueva asignación</button>
+        <button class="btn btn-primary" onclick="abrirVistaNuevaAsig()">+ Nueva asignación</button>
       </div>
     </div>
 
@@ -1083,6 +1188,41 @@
     </div>
   </div>
 
+  <!-- ═══ VISTA: NUEVA ASIGNACIÓN (dos columnas) ═══ -->
+  <div id="view-nueva-asig" class="view">
+    <div class="topbar">
+      <div>
+        <div class="page-title" id="nasig-titulo">Nueva <span style="color:var(--accent-blue);">asignación</span></div>
+        <div style="font-size:13px;color:var(--text-light);margin-top:3px;">Asigná a cada empleado el sitio donde trabajó ese día</div>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-glass" onclick="volverDeNuevaAsig()">Cancelar</button>
+        <button class="btn btn-primary" id="btn-agregar-asig" onclick="agregarAsigCola()">Agregar a la cola</button>
+      </div>
+    </div>
+
+    <!-- Fecha + resumen -->
+    <div class="card" style="margin-bottom:16px;display:flex;align-items:center;gap:24px;flex-wrap:wrap;">
+      <div>
+        <label class="form-label" style="display:block;margin-bottom:4px;">Fecha</label>
+        <input type="date" class="form-input" id="asig-fecha" onchange="onCambioFechaAsig()" style="max-width:220px;" />
+      </div>
+      <div class="asig-emp-resumen" id="asig-emp-resumen" style="margin-bottom:0;"></div>
+    </div>
+
+    <!-- Dos columnas -->
+    <div class="nasig-cols">
+      <div class="card nasig-col-izq">
+        <div class="card-title" style="font-size:15px;margin-bottom:12px;">Empleados</div>
+        <div class="asig-emp-lista" id="asig-emp-lista"></div>
+      </div>
+      <div class="card nasig-col-der">
+        <div class="card-title" style="font-size:15px;margin-bottom:12px;">Obras del día</div>
+        <div id="nasig-cards"></div>
+      </div>
+    </div>
+  </div>
+
 </main>
 
 <!-- Modal: Detalle del día -->
@@ -1093,57 +1233,12 @@
         <div class="modal-title" id="asig-dia-titulo" style="margin-bottom:4px;">—</div>
         <div id="asig-dia-sub" style="font-size:12px;color:var(--text-light);">—</div>
       </div>
-      <button onclick="cerrarModalAsigDia()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--text-light);line-height:1;flex-shrink:0;">✕</button>
-    </div>
-    <div id="asig-dia-contenido" style="padding:0 4px;"></div>
-  </div>
-</div>
-
-<!-- Modal: Nueva asignación / edición de item de cola -->
-<div class="modal-overlay" id="modal-nueva-asig">
-  <div class="modal" style="max-width:560px;">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;gap:14px;">
-      <div>
-        <div class="modal-title" id="modal-asig-titulo" style="margin-bottom:4px;">Nueva asignación</div>
-        <div style="font-size:12px;color:var(--text-light);">Cargá los empleados que estuvieron en una obra en un día</div>
+      <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+        <button class="btn btn-primary btn-sm" id="btn-editar-dia" onclick="editarDiaDesdeDetalle()">Editar día</button>
+        <button onclick="cerrarModalAsigDia()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--text-light);line-height:1;">✕</button>
       </div>
-      <button onclick="cerrarModalNuevaAsig()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--text-light);line-height:1;flex-shrink:0;">✕</button>
     </div>
-
-    <!-- Fecha -->
-    <div class="form-group">
-      <label class="form-label">Fecha</label>
-      <input type="date" class="form-input" id="asig-fecha" onchange="onCambioFechaAsig()" />
-    </div>
-
-    <!-- Sitio (autocomplete) -->
-    <div class="form-group">
-      <label class="form-label">Sitio</label>
-      <div class="ac-wrap" id="asig-sitio-wrap">
-        <input type="text" class="form-input ac-input" id="asig-sitio-input" placeholder="Tipeá para filtrar..." autocomplete="off"
-          oninput="onAcSitioInput()" onfocus="onAcSitioFocus()" onkeydown="onAcSitioKeydown(event)" />
-        <input type="hidden" id="asig-sitio-valor" />
-        <div class="ac-panel" id="asig-sitio-panel"></div>
-      </div>
-      <div id="asig-sitio-aviso" style="font-size:11px;color:var(--accent-rose);margin-top:5px;display:none;"></div>
-    </div>
-
-    <!-- Empleados (multiselect simplificado: input + chips) -->
-    <div class="form-group">
-      <label class="form-label">Empleados</label>
-      <div id="asig-empleados-chips" style="min-height:38px;padding:7px 10px;border:1px solid rgba(200,205,225,0.6);border-radius:var(--radius-sm);background:rgba(255,255,255,0.55);display:flex;flex-wrap:wrap;gap:6px;align-items:center;cursor:text;" onclick="document.getElementById('asig-empleados-input').focus()">
-        <input type="text" id="asig-empleados-input" placeholder="Tipeá para buscar empleado..." style="border:none;outline:none;background:transparent;flex:1;min-width:140px;font-family:inherit;font-size:13px;" oninput="onAcEmpleadoInput()" onfocus="onAcEmpleadoFocus()" onkeydown="onAcEmpleadoKeydown(event)" />
-      </div>
-      <div class="ac-wrap" style="position:relative;">
-        <div class="ac-panel" id="asig-empleados-panel" style="top:4px;"></div>
-      </div>
-      <div id="asig-empleados-aviso" style="font-size:11px;color:var(--text-light);margin-top:5px;">Los empleados ya asignados ese día no aparecen.</div>
-    </div>
-
-    <div style="display:flex;gap:10px;margin-top:18px;">
-      <button class="btn btn-glass" style="flex:1;justify-content:center;" onclick="cerrarModalNuevaAsig()">Cancelar</button>
-      <button class="btn btn-primary" id="btn-agregar-asig" style="flex:1;justify-content:center;" onclick="agregarAsigCola()">Agregar a la cola</button>
-    </div>
+    <div id="asig-dia-contenido"></div>
   </div>
 </div>
 
@@ -1569,7 +1664,7 @@
 // ═══════════════════════════════════════════════════════
 //  CONFIGURACIÓN
 // ═══════════════════════════════════════════════════════
-const API_URL = 'https://script.google.com/macros/s/AKfycbzpmVygqmhaTeMadRR2W9Ds1WSzHUZM2Wz9lSvL8djc-87KeZ3L7FWjCEqigjH8d4ZW/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbww-0XO0ZOZmjjkWJuQaDBafgb1d9wJ6Oof81kdp6Sxt5fWt3cRbuPdPkMjaYTQvaM_/exec';
 
 // PEQ — objetivo mensual fijo
 const PEQ = 90000000;
@@ -1743,22 +1838,17 @@ async function cargarTodo() {
       };
     }).filter(l => l.id.trim() !== '');
 
-    /* ── EMPLEADOS: deduplicar por EmpleadoID (U1), tomar nombre de la fila más reciente (F1) ── */
+    /* ── EMPLEADOS: hoja flat (1 fila por empleado). Columnas: EmpleadoID, EmpleadoNombre, Relacion ── */
     const rawEmpleados = (data.empleados || []).map(r => ({
-      id:             String(get(r, 'EMPLEADOID') || '').trim(),
-      nombre:         String(get(r, 'EMPLEADONOMBRE') || '').trim(),
-      fechaDesde:     normFecha(get(r, 'FECHADESDE')),
-      valorHora:      get(r, 'VALORHORA'),
-      observaciones:  get(r, 'OBSERVACIONES')
+      id:        String(get(r, 'EMPLEADOID') || '').trim(),
+      nombre:    String(get(r, 'EMPLEADONOMBRE') || '').trim(),
+      relacion:  String(get(r, 'RELACION') || '').trim().toUpperCase()  // 'P' | 'C' | '' (sin definir)
     })).filter(e => e.id);
 
-    // Agrupar por id y quedarse con la fila de mayor fechaDesde
+    // Deduplicar por EmpleadoID (U1); si hubiera repetidos, se queda con la primera aparición
     const mapEmpleados = new Map();
     rawEmpleados.forEach(e => {
-      const prev = mapEmpleados.get(e.id);
-      if (!prev || (e.fechaDesde || '') > (prev.fechaDesde || '')) {
-        mapEmpleados.set(e.id, e);
-      }
+      if (!mapEmpleados.has(e.id)) mapEmpleados.set(e.id, e);
     });
     empleados = [...mapEmpleados.values()].sort((a, b) => a.id.localeCompare(b.id));
 
@@ -1964,16 +2054,12 @@ document.addEventListener('click', function(e) {
   });
   if (cambios) Object.keys(window._msState).forEach(msRender);
 
-  // Cerrar autocompletes (sitio + empleados) al click fuera
-  const acSitioWrap     = document.getElementById('asig-sitio-wrap');
-  const acSitioPanel    = document.getElementById('asig-sitio-panel');
-  if (acSitioWrap && acSitioPanel && acSitioPanel.classList.contains('ac-open') && !acSitioWrap.contains(e.target)) {
-    cerrarAcSitio();
-  }
-  const empChipsBox   = document.getElementById('asig-empleados-chips');
-  const empPanel      = document.getElementById('asig-empleados-panel');
-  if (empChipsBox && empPanel && empPanel.classList.contains('ac-open') && !empChipsBox.contains(e.target) && !empPanel.contains(e.target)) {
-    cerrarAcEmpleado();
+  // Cerrar el autocomplete de fila abierto (modal empleado-céntrico) al click fuera
+  if (_acFilaAbierta) {
+    const fila = document.querySelector(`.asig-emp-fila[data-emp="${_acFilaAbierta}"]`);
+    if (fila && !fila.contains(e.target)) {
+      cerrarAcFila(_acFilaAbierta);
+    }
   }
 });
 
@@ -3332,17 +3418,18 @@ function kpiCard(tipo, label, value, sub, ref, pct, clickFn) {
   </div>`;
 }
 
-/* ── KPI CARD CUMPLIMIENTO PEQ ── */
+/* ── KPI CARD CUMPLIMIENTO PEQ — círculo de progreso ── */
 function kpiCardPEQ(totalFac, clickFn) {
   const pctReal = totalFac / PEQ * 100;
-  const pctDisp = Math.min(100, Math.round(pctReal));
+  const pctRedondeado = Math.round(pctReal);
+  const pctAnillo = Math.min(100, Math.max(0, pctReal)); // el anillo se capa a 100% (3b)
   const tipo    = pctReal >= 100 ? 'teal' : pctReal >= 70 ? 'blue' : pctReal >= 40 ? 'amber' : 'rose';
-  const colorMap = {
-    teal:  'linear-gradient(90deg,#0d9488,#2dd4bf)',
-    blue:  'linear-gradient(90deg,#4f80ff,#7ba3ff)',
-    amber: 'linear-gradient(90deg,#f59e0b,#fbbf24)',
-    rose:  'linear-gradient(90deg,#e11d48,#f87171)'
-  };
+  const colorSolido = {
+    teal:  '#0d9488',
+    blue:  '#4f80ff',
+    amber: '#f59e0b',
+    rose:  '#e11d48'
+  }[tipo];
   let refTxt;
   if (pctReal >= 100) {
     const exceso = Math.round((pctReal - 100) * 10) / 10;
@@ -3352,13 +3439,31 @@ function kpiCardPEQ(totalFac, clickFn) {
   }
   const cursor = clickFn ? 'cursor:pointer;' : '';
   const hover  = clickFn ? `onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 18px 48px rgba(100,110,140,0.22)'" onmouseout="this.style.transform='';this.style.boxShadow=''"` : '';
+
+  // Geometría del anillo SVG
+  const R = 64, CIRC = 2 * Math.PI * R;
+  const offset = CIRC * (1 - pctAnillo / 100);
+
   return `<div class="kpi-card kc-${tipo}" style="${cursor}" onclick="${clickFn||''}" ${hover}>
     <div class="kpi-label">Cumplimiento PEQ</div>
-    <div class="peq-pct-big">${Math.round(pctReal)}%</div>
-    <div class="kpi-sub">${fmt(Math.round(totalFac))} de ${fmt(PEQ)}</div>
-    <div class="kpi-ref">${refTxt}</div>
-    <div class="peq-bar-bg">
-      <div class="peq-bar-fill" style="width:${pctDisp}%;background:${colorMap[tipo]};"></div>
+    <div class="peq-ring-wrap">
+      <div class="peq-ring">
+        <svg width="150" height="150" viewBox="0 0 150 150">
+          <circle class="peq-ring-track" cx="75" cy="75" r="${R}" stroke-width="13"></circle>
+          <circle class="peq-ring-fill"  cx="75" cy="75" r="${R}" stroke-width="13"
+            stroke="${colorSolido}"
+            stroke-dasharray="${CIRC.toFixed(1)}"
+            stroke-dashoffset="${offset.toFixed(1)}"></circle>
+        </svg>
+        <div class="peq-ring-center">
+          <div class="peq-ring-pct" style="color:${colorSolido};">${pctRedondeado}%</div>
+          <div class="peq-ring-cap">del PEQ</div>
+        </div>
+      </div>
+      <div style="text-align:center;">
+        <div class="kpi-sub">${fmt(Math.round(totalFac))} de ${fmt(PEQ)}</div>
+        <div class="kpi-ref">${refTxt}</div>
+      </div>
     </div>
   </div>`;
 }
@@ -3582,35 +3687,55 @@ function renderModalAsigDia() {
   const cont = document.getElementById('asig-dia-contenido');
   const bloques = [];
   porSitio.forEach((asigs, sitioId) => {
+    const abierta = (_asigDiaObraAbierta === sitioId);
     const empleadosHtml = asigs.map(a => {
       const emp = empleados.find(e => e.id === a.empleadoId);
       const nombre = emp ? emp.nombre : a.empleadoId;
-      // Chip glass gris con × clickeable solo para borrar
       return `<span style="display:inline-flex;align-items:center;gap:6px;background:rgba(200,205,225,0.30);color:var(--text-mid);padding:4px 6px 4px 11px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid rgba(200,205,225,0.5);">
-        <span style="font-size:10px;color:var(--text-light);font-weight:500;">${a.empleadoId}</span>${nombre}
+        <span style="font-size:10px;color:var(--text-light);font-weight:500;">${a.empleadoId}</span>${badgeRelacion(a.empleadoId)}${nombre}
         <button class="chip-x" title="Quitar este empleado de esta obra" onclick="eliminarAsignacionConfirmada('${a.id.replace(/'/g, "\\'")}')"
           style="background:rgba(248,113,113,0.10);border:none;border-radius:50%;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:#dc2626;font-size:11px;font-weight:700;line-height:1;padding:0;transition:var(--transition);"
           onmouseover="this.style.background='rgba(248,113,113,0.25)'"
           onmouseout="this.style.background='rgba(248,113,113,0.10)'">×</button>
       </span>`;
     }).join(' ');
+    const sidEsc = sitioId.replace(/'/g, "\\'");
     bloques.push(`
-      <div style="background:rgba(255,255,255,0.45);border:1px solid rgba(200,205,225,0.5);border-radius:12px;padding:14px 16px;margin-bottom:10px;">
-        <div style="font-weight:700;font-size:14px;margin-bottom:8px;display:flex;align-items:center;gap:8px;">
+      <div style="background:rgba(255,255,255,0.45);border:1px solid rgba(200,205,225,0.5);border-radius:12px;overflow:hidden;">
+        <div onclick="toggleObraDia('${sidEsc}')" style="cursor:pointer;font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px;padding:13px 15px;">
+          <span style="font-size:11px;color:var(--text-light);transition:transform .15s;transform:rotate(${abierta?'90':'0'}deg);">▶</span>
           <span style="background:rgba(79,128,255,0.12);color:#3a6bf0;padding:3px 11px;border-radius:20px;font-size:13px;font-weight:700;">${sitioId}</span>
           <span style="font-size:11px;color:var(--text-light);font-weight:500;">${asigs.length} empleado${asigs.length!==1?'s':''}</span>
-          <button class="btn btn-rose btn-sm" title="Eliminar la obra completa de este día" style="margin-left:auto;" onclick="eliminarObraConfirmada('${sitioId.replace(/'/g, "\\'")}')"><i class="fa-solid fa-trash"></i></button>
+          <button class="btn btn-rose btn-sm" title="Eliminar la obra completa de este día" style="margin-left:auto;" onclick="event.stopPropagation();eliminarObraConfirmada('${sidEsc}')"><i class="fa-solid fa-trash"></i></button>
         </div>
-        <div style="display:flex;flex-wrap:wrap;gap:6px;">${empleadosHtml}</div>
+        ${abierta ? `<div style="display:flex;flex-wrap:wrap;gap:6px;padding:0 15px 14px;">${empleadosHtml}</div>` : ''}
       </div>
     `);
   });
-  cont.innerHTML = bloques.join('') || '<div style="padding:30px;text-align:center;color:var(--text-light);">Sin datos</div>';
+  cont.innerHTML = bloques.length
+    ? `<div style="display:flex;flex-direction:column;gap:8px;">${bloques.join('')}</div>`
+    : '<div style="padding:30px;text-align:center;color:var(--text-light);">Sin datos</div>';
+}
+
+/* Obra actualmente expandida en el modal de detalle (acordeón, una a la vez) */
+let _asigDiaObraAbierta = null;
+
+function toggleObraDia(sitioId) {
+  _asigDiaObraAbierta = (_asigDiaObraAbierta === sitioId) ? null : sitioId;
+  renderModalAsigDia();
 }
 
 function cerrarModalAsigDia() {
   _asigModalFecha = null;
+  _asigDiaObraAbierta = null;
   document.getElementById('modal-asig-dia').classList.remove('open');
+}
+
+/* ── Botón "Editar día" del modal de detalle → abre la vista de dos columnas ── */
+function editarDiaDesdeDetalle() {
+  const fecha = _asigModalFecha;
+  cerrarModalAsigDia();
+  if (fecha) abrirVistaNuevaAsig(fecha);
 }
 
 /* ══ ELIMINAR ASIGNACIÓN CONFIRMADA (1 empleado) ══ */
@@ -3697,6 +3822,28 @@ function nombreEmpleado(empId) {
   return e ? e.nombre : empId;
 }
 
+/* ── Helper: relación de un empleado por ID ('P' | 'C' | '') ── */
+function relacionEmpleado(empId) {
+  const e = empleados.find(x => x.id === empId);
+  return e ? (e.relacion || '') : '';
+}
+
+/* ── Helper: etiqueta legible de la relación ── */
+function labelRelacion(rel) {
+  const r = String(rel || '').trim().toUpperCase();
+  if (r === 'P') return 'Propio';
+  if (r === 'C') return 'Contratista';
+  return 'Sin definir';
+}
+
+/* ── Helper: HTML del badge P/C de un empleado. Vacío si no tiene relación (SD1). ── */
+function badgeRelacion(empId) {
+  const r = relacionEmpleado(empId);
+  if (r === 'P') return '<span class="rel-badge rel-p" title="Propio">P</span>';
+  if (r === 'C') return '<span class="rel-badge rel-c" title="Contratista">C</span>';
+  return '';
+}
+
 /* ── Helper: obtener todas las asignaciones (confirmadas + cola) de una fecha ── */
 function asignacionesDeLaFecha(fechaStr) {
   const confirmadas = asignaciones.filter(a => a.fecha === fechaStr);
@@ -3709,158 +3856,254 @@ function asignacionesDeLaFecha(fechaStr) {
   return { confirmadas, enCola, todas: [...confirmadas, ...enCola] };
 }
 
-/* ── Estado del modal: edición de un item existente vs nuevo ── */
-let _asigEditandoColaId = null;
-let _asigEmpleadosSeleccionados = []; // array de empleadoIds en el modal abierto
-let _acSitioActivoIdx = -1; // para navegación con teclado
-let _acEmpleadoActivoIdx = -1;
+/* ══ MODAL NUEVA ASIGNACIÓN — empleado-céntrico ══
+   Estado:
+   - _asigModalFechaActual: la fecha que está abierta en el modal
+   - _asigSitioPorEmpleado: { empleadoId: sitioId } — selección en curso (editable)
+   - _asigEmpConfirmados:    { empleadoId: sitioId } — ya confirmados ese día (bloqueados)
+   - _acFilaAbierta:         empleadoId de la fila cuyo autocomplete está desplegado, o null
+   - _acFilaActivoIdx:       índice de navegación con teclado en el panel abierto
+*/
+let _asigModalFechaActual = null;
+let _asigSitioPorEmpleado = {};
+let _asigEmpConfirmados   = {};
+let _acFilaAbierta        = null;
+let _acFilaActivoIdx      = -1;
 
-/* ── Abrir modal: nueva asignación ── */
-function abrirModalNuevaAsig() {
-  _asigEditandoColaId = null;
-  _asigEmpleadosSeleccionados = [];
-  document.getElementById('modal-asig-titulo').textContent = 'Nueva asignación';
-  document.getElementById('asig-fecha').value = fechaHoyStr();
-  document.getElementById('asig-sitio-input').value = '';
-  document.getElementById('asig-sitio-valor').value = '';
-  document.getElementById('asig-empleados-input').value = '';
-  document.getElementById('asig-sitio-aviso').style.display = 'none';
-  document.getElementById('btn-agregar-asig').textContent = 'Agregar a la cola';
-  renderEmpleadosChips();
-  cerrarAcSitio();
-  cerrarAcEmpleado();
-  document.getElementById('modal-nueva-asig').classList.add('open');
-  setTimeout(() => document.getElementById('asig-sitio-input').focus(), 80);
+/* ── Abrir la vista "Nueva asignación" para una fecha ── */
+function abrirVistaNuevaAsig(fechaPre) {
+  const fecha = fechaPre || fechaHoyStr();
+  document.getElementById('nasig-titulo').innerHTML = 'Nueva <span style="color:var(--accent-blue);">asignación</span>';
+  document.getElementById('asig-fecha').value = fecha;
+  cargarEstadoModalAsig(fecha);
+  // Navegar a la vista (sin marcar item de sidebar, no tiene nav propio)
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-nueva-asig').classList.add('active');
 }
 
-/* ── Abrir modal: edición de un item de cola (ED1 - solo empleados) ── */
+/* ── Volver al calendario de Asignación personal ── */
+function volverDeNuevaAsig() {
+  _acFilaAbierta = null;
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-asignaciones').classList.add('active');
+  document.querySelectorAll('.nav-item, .nav-subitem').forEach(n => n.classList.remove('active'));
+  const navAsig = document.getElementById('nav-asignaciones');
+  if (navAsig) navAsig.classList.add('active');
+  renderAsignaciones();
+}
+
+/* ── Abrir desde el botón ✏️ de la cola: edita el día completo ── */
 function abrirModalEditarCola(colaId) {
   const item = colaAsignaciones.find(c => c.id === colaId);
   if (!item) return;
-  _asigEditandoColaId = colaId;
-  _asigEmpleadosSeleccionados = [...item.empleadoIds];
-  document.getElementById('modal-asig-titulo').textContent = 'Editar empleados';
-  document.getElementById('asig-fecha').value = item.fecha;
-  document.getElementById('asig-fecha').disabled = true;
-  document.getElementById('asig-sitio-input').value = item.sitioId;
-  document.getElementById('asig-sitio-input').disabled = true;
-  document.getElementById('asig-sitio-valor').value = item.sitioId;
-  document.getElementById('asig-empleados-input').value = '';
-  document.getElementById('asig-sitio-aviso').style.display = 'none';
-  document.getElementById('btn-agregar-asig').textContent = 'Guardar cambios';
-  renderEmpleadosChips();
-  cerrarAcSitio();
-  cerrarAcEmpleado();
-  document.getElementById('modal-nueva-asig').classList.add('open');
-  setTimeout(() => document.getElementById('asig-empleados-input').focus(), 80);
+  abrirVistaNuevaAsig(item.fecha);
+  document.getElementById('nasig-titulo').innerHTML = 'Editar <span style="color:var(--accent-blue);">asignación del día</span>';
 }
 
-function cerrarModalNuevaAsig() {
-  document.getElementById('asig-fecha').disabled = false;
-  document.getElementById('asig-sitio-input').disabled = false;
-  document.getElementById('modal-nueva-asig').classList.remove('open');
-  cerrarAcSitio();
-  cerrarAcEmpleado();
-}
+/* ── Construye el estado de la vista para una fecha dada ── */
+function cargarEstadoModalAsig(fecha) {
+  _asigModalFechaActual = fecha;
+  _asigSitioPorEmpleado = {};
+  _asigEmpConfirmados   = {};
+  _acFilaAbierta = null;
 
-function onCambioFechaAsig() {
-  // Al cambiar la fecha, los empleados ya seleccionados podrían ser inválidos
-  // (ya estar asignados a otra obra ese nuevo día). Validamos.
-  const fecha = document.getElementById('asig-fecha').value;
-  if (!fecha || _asigEditandoColaId) return;
-  const { todas } = asignacionesDeLaFecha(fecha);
-  const yaAsignados = new Set(todas.map(a => a.empleadoId));
-  // Quitar de _asigEmpleadosSeleccionados los que ya estén asignados ese día
-  const conflictivos = _asigEmpleadosSeleccionados.filter(eid => yaAsignados.has(eid));
-  if (conflictivos.length) {
-    _asigEmpleadosSeleccionados = _asigEmpleadosSeleccionados.filter(eid => !yaAsignados.has(eid));
-    renderEmpleadosChips();
-    toast(`${conflictivos.length} empleado${conflictivos.length!==1?'s':''} removido${conflictivos.length!==1?'s':''}: ya están asignados ese día`, 'err');
-  }
-  // También chequear si el sitio actualmente elegido ya está asignado ese día
-  const sitioActual = document.getElementById('asig-sitio-valor').value;
-  if (sitioActual) {
-    const sitiosYaUsados = new Set(todas.map(a => a.sitioId));
-    if (sitiosYaUsados.has(sitioActual)) {
-      document.getElementById('asig-sitio-input').value = '';
-      document.getElementById('asig-sitio-valor').value = '';
-      const aviso = document.getElementById('asig-sitio-aviso');
-      aviso.textContent = `El sitio ${sitioActual} ya estaba asignado en esa fecha. Elegí otro.`;
-      aviso.style.display = 'block';
-    }
-  }
-}
-
-/* ══ AUTOCOMPLETE DE SITIO ══ */
-function onAcSitioFocus() {
-  onAcSitioInput();
-}
-
-function onAcSitioInput() {
-  if (_asigEditandoColaId) return; // No se puede cambiar sitio en modo edición
-  // Apertura mutuamente exclusiva: cerrar el de empleados si está abierto
-  cerrarAcEmpleado();
-  const q = document.getElementById('asig-sitio-input').value.trim().toLowerCase();
-  const fecha = document.getElementById('asig-fecha').value;
-  const { todas } = fecha ? asignacionesDeLaFecha(fecha) : { todas: [] };
-  const sitiosYaUsados = new Set(todas.map(a => a.sitioId));
-
-  // Lista única de sitios disponibles: usamos s.id (los IDs cortos: IDLE, BA00193, etc.)
-  // Como vos elegiste S1 (guardar el ID corto), deduplicamos.
-  const sitiosUnicos = [...new Set(sitios.map(s => s.id))];
-
-  let resultados = sitiosUnicos.map(id => {
-    // Tomar el primer sitio con ese ID para datos extra (cliente, localidad)
-    const s = sitios.find(x => x.id === id);
-    return {
-      id,
-      cliente: s ? s.clienteId : '',
-      localidad: s ? s.localidad : '',
-      disabled: sitiosYaUsados.has(id)
-    };
+  // Empleados ya confirmados ese día (vienen del Sheet) → bloqueados (G1)
+  asignaciones.filter(a => a.fecha === fecha).forEach(a => {
+    _asigEmpConfirmados[a.empleadoId] = a.sitioId;
   });
 
-  if (q) resultados = resultados.filter(r =>
+  // Items en cola para esa fecha → precargar selección editable
+  colaAsignaciones.filter(c => c.fecha === fecha).forEach(c => {
+    c.empleadoIds.forEach(eid => {
+      if (!_asigEmpConfirmados[eid]) _asigSitioPorEmpleado[eid] = c.sitioId;
+    });
+  });
+
+  renderModalEmpleados();
+}
+
+/* ── Al cambiar la fecha, recargar todo el estado ── */
+function onCambioFechaAsig() {
+  const fecha = document.getElementById('asig-fecha').value;
+  if (!fecha) return;
+  cargarEstadoModalAsig(fecha);
+}
+
+/* ── Render de la lista de empleados ── */
+function renderModalEmpleados() {
+  const lista = document.getElementById('asig-emp-lista');
+  const resumen = document.getElementById('asig-emp-resumen');
+  if (!lista) return;
+
+  const total = empleados.length;
+  let asignados = 0;
+
+  lista.innerHTML = empleados.map(e => {
+    const confirmadoSitio = _asigEmpConfirmados[e.id];
+    const sitioElegido    = _asigSitioPorEmpleado[e.id] || '';
+    const estaConfirmado  = !!confirmadoSitio;
+    const tieneSitio      = estaConfirmado || !!sitioElegido;
+    if (tieneSitio) asignados++;
+
+    let filaClase = 'asig-emp-fila';
+    if (estaConfirmado)      filaClase += ' confirmada';
+    else if (!sitioElegido)  filaClase += ' sin-asignar';
+
+    let estadoHtml, controlHtml;
+    if (estaConfirmado) {
+      estadoHtml = `<span class="asig-emp-estado st-conf">Confirmado</span>`;
+      controlHtml = `<input class="asig-emp-input" value="${confirmadoSitio}" disabled />`;
+    } else if (sitioElegido) {
+      estadoHtml = `<span class="asig-emp-estado st-ok">Asignado</span>`;
+      controlHtml = `
+        <input class="asig-emp-input" value="${sitioElegido}" readonly
+          onclick="abrirAcFila('${e.id}')" style="cursor:pointer;" />
+        <button class="asig-emp-clear" title="Quitar sitio" onclick="limpiarSitioEmpleado('${e.id}')">×</button>`;
+    } else {
+      estadoHtml = `<span class="asig-emp-estado st-sin">Sin asignar</span>`;
+      controlHtml = `
+        <input class="asig-emp-input" id="ac-fila-input-${e.id}" placeholder="Tipeá el sitio..." autocomplete="off"
+          oninput="onAcFilaInput('${e.id}')" onkeydown="onAcFilaKeydown(event,'${e.id}')" />`;
+    }
+
+    return `
+      <div class="${filaClase}" data-emp="${e.id}">
+        <div class="asig-emp-datos">
+          <div class="asig-emp-nombre">${badgeRelacion(e.id)}${e.nombre}</div>
+          <div class="asig-emp-id">${e.id}</div>
+        </div>
+        <div class="asig-emp-control">
+          ${controlHtml}
+          <div class="ac-panel" id="ac-fila-panel-${e.id}"></div>
+        </div>
+        ${estadoHtml}
+      </div>`;
+  }).join('');
+
+  const sinAsignar = total - asignados;
+  resumen.innerHTML = `
+    <span class="asig-resumen-pill ok">${asignados} de ${total} asignados</span>
+    ${sinAsignar > 0 ? `<span class="asig-resumen-pill sin">${sinAsignar} sin asignar</span>` : ''}
+  `;
+
+  renderObrasCards();
+}
+
+/* ── Render de las cards de obras en vivo (columna derecha) ──
+   D2: muestra el día completo (confirmados + lo que se está agregando).
+   F2: ordenado alfabéticamente por ID de sitio.
+*/
+function renderObrasCards() {
+  const cont = document.getElementById('nasig-cards');
+  if (!cont) return;
+
+  // Combinar: por cada sitio, empleados confirmados (del Sheet) + nuevos (selección actual)
+  const porSitio = {}; // sitioId -> { confirmados: [empId], nuevos: [empId] }
+  const asegurar = (sid) => { if (!porSitio[sid]) porSitio[sid] = { confirmados: [], nuevos: [] }; };
+
+  Object.entries(_asigEmpConfirmados).forEach(([eid, sid]) => {
+    asegurar(sid); porSitio[sid].confirmados.push(eid);
+  });
+  Object.entries(_asigSitioPorEmpleado).forEach(([eid, sid]) => {
+    if (!sid) return;
+    asegurar(sid); porSitio[sid].nuevos.push(eid);
+  });
+
+  const sitiosOrden = Object.keys(porSitio).sort((a, b) => a.localeCompare(b));
+
+  if (!sitiosOrden.length) {
+    cont.innerHTML = '<div class="nasig-cards-empty">Asigná empleados para ver las obras del día.</div>';
+    return;
+  }
+
+  cont.innerHTML = sitiosOrden.map(sid => {
+    const grupo = porSitio[sid];
+    const totalEmp = grupo.confirmados.length + grupo.nuevos.length;
+    const chipConf = grupo.confirmados.map(eid =>
+      `<span class="nasig-emp-chip confirmado" title="Ya confirmado">
+        <span class="chip-emp-id">${eid}</span>${badgeRelacion(eid)}${nombreEmpleado(eid)}</span>`
+    ).join('');
+    const chipNuevo = grupo.nuevos.map(eid =>
+      `<span class="nasig-emp-chip nuevo">
+        <span class="chip-emp-id">${eid}</span>${badgeRelacion(eid)}${nombreEmpleado(eid)}</span>`
+    ).join('');
+    return `
+      <div class="nasig-obra-card">
+        <div class="nasig-obra-titulo">
+          <span class="nasig-obra-id">${sid}</span>
+          <span class="nasig-obra-count">${totalEmp} empleado${totalEmp!==1?'s':''}</span>
+        </div>
+        <div class="nasig-obra-emps">${chipConf}${chipNuevo}</div>
+      </div>`;
+  }).join('');
+}
+
+/* ── Autocomplete por fila ── */
+function abrirAcFila(empId) {
+  // Al hacer click en una fila ya asignada, la volvemos editable
+  limpiarSitioEmpleado(empId, true); // true = no re-render completo aún
+  renderModalEmpleados();
+  const input = document.getElementById('ac-fila-input-' + empId);
+  if (input) input.focus();
+}
+
+function onAcFilaInput(empId) {
+  // Apertura mutuamente exclusiva: cerrar cualquier otro panel
+  if (_acFilaAbierta && _acFilaAbierta !== empId) cerrarAcFila(_acFilaAbierta);
+  _acFilaAbierta = empId;
+  _acFilaActivoIdx = -1;
+
+  const input = document.getElementById('ac-fila-input-' + empId);
+  const panel = document.getElementById('ac-fila-panel-' + empId);
+  if (!input || !panel) return;
+  const q = input.value.trim().toLowerCase();
+
+  // Muchos sitios: solo mostrar resultados al tipear (mín. 1 caracter)
+  if (!q) { panel.classList.remove('ac-open'); panel.innerHTML = ''; return; }
+
+  const sitiosUnicos = [...new Set(sitios.map(s => s.id))];
+  let resultados = sitiosUnicos.map(id => {
+    const s = sitios.find(x => x.id === id);
+    return { id, cliente: s ? s.clienteId : '', localidad: s ? s.localidad : '' };
+  }).filter(r =>
     r.id.toLowerCase().includes(q) ||
     r.cliente.toLowerCase().includes(q) ||
     r.localidad.toLowerCase().includes(q)
   );
-  // Sin límite: el panel ya tiene max-height + scroll
 
-  _acSitioActivoIdx = -1;
-  const panel = document.getElementById('asig-sitio-panel');
   if (!resultados.length) {
-    panel.innerHTML = '<div class="ac-empty">Sin sitios para mostrar</div>';
+    panel.innerHTML = '<div class="ac-empty">Sin sitios que coincidan</div>';
   } else {
     panel.innerHTML = resultados.map((r, i) => `
-      <div class="ac-option ${r.disabled ? 'ac-disabled' : ''}" data-idx="${i}" data-id="${r.id}"
-        ${r.disabled ? 'title="Ya asignado ese día"' : `onclick="seleccionarSitio('${r.id.replace(/'/g, "\\'")}')"`}>
+      <div class="ac-option" data-idx="${i}" data-id="${r.id}"
+        onclick="elegirSitioFila('${empId}','${r.id.replace(/'/g, "\\'")}')">
         <span style="font-weight:600;">${r.id}</span>
-        <span class="ac-meta">${r.cliente}${r.localidad ? ' · ' + r.localidad : ''}${r.disabled ? ' · ya asignado' : ''}</span>
+        <span class="ac-meta">${r.cliente}${r.localidad ? ' · ' + r.localidad : ''}</span>
       </div>`
     ).join('');
   }
   panel.classList.add('ac-open');
 }
 
-function onAcSitioKeydown(ev) {
-  const panel = document.getElementById('asig-sitio-panel');
-  const opts = panel.querySelectorAll('.ac-option:not(.ac-disabled)');
+function onAcFilaKeydown(ev, empId) {
+  const panel = document.getElementById('ac-fila-panel-' + empId);
+  if (!panel) return;
+  const opts = panel.querySelectorAll('.ac-option');
   if (ev.key === 'ArrowDown') {
     ev.preventDefault();
-    _acSitioActivoIdx = Math.min(_acSitioActivoIdx + 1, opts.length - 1);
-    actualizarAcActivo(opts, _acSitioActivoIdx);
+    _acFilaActivoIdx = Math.min(_acFilaActivoIdx + 1, opts.length - 1);
+    actualizarAcActivo(opts, _acFilaActivoIdx);
   } else if (ev.key === 'ArrowUp') {
     ev.preventDefault();
-    _acSitioActivoIdx = Math.max(_acSitioActivoIdx - 1, 0);
-    actualizarAcActivo(opts, _acSitioActivoIdx);
+    _acFilaActivoIdx = Math.max(_acFilaActivoIdx - 1, 0);
+    actualizarAcActivo(opts, _acFilaActivoIdx);
   } else if (ev.key === 'Enter') {
     ev.preventDefault();
-    if (_acSitioActivoIdx >= 0 && opts[_acSitioActivoIdx]) {
-      seleccionarSitio(opts[_acSitioActivoIdx].getAttribute('data-id'));
+    if (_acFilaActivoIdx >= 0 && opts[_acFilaActivoIdx]) {
+      elegirSitioFila(empId, opts[_acFilaActivoIdx].getAttribute('data-id'));
     }
   } else if (ev.key === 'Escape') {
-    cerrarAcSitio();
+    cerrarAcFila(empId);
   }
 }
 
@@ -3869,162 +4112,68 @@ function actualizarAcActivo(opts, idx) {
   if (opts[idx]) opts[idx].scrollIntoView({ block: 'nearest' });
 }
 
-function seleccionarSitio(id) {
-  document.getElementById('asig-sitio-input').value = id;
-  document.getElementById('asig-sitio-valor').value = id;
-  document.getElementById('asig-sitio-aviso').style.display = 'none';
-  cerrarAcSitio();
-  document.getElementById('asig-empleados-input').focus();
+function elegirSitioFila(empId, sitioId) {
+  _asigSitioPorEmpleado[empId] = sitioId;
+  _acFilaAbierta = null;
+  renderModalEmpleados();
 }
 
-function cerrarAcSitio() {
-  document.getElementById('asig-sitio-panel').classList.remove('ac-open');
+function limpiarSitioEmpleado(empId, skipRender) {
+  delete _asigSitioPorEmpleado[empId];
+  if (!skipRender) renderModalEmpleados();
 }
 
-/* ══ AUTOCOMPLETE DE EMPLEADOS ══ */
-function onAcEmpleadoFocus() {
-  onAcEmpleadoInput();
+function cerrarAcFila(empId) {
+  const panel = document.getElementById('ac-fila-panel-' + empId);
+  if (panel) panel.classList.remove('ac-open');
+  if (_acFilaAbierta === empId) _acFilaAbierta = null;
 }
 
-function onAcEmpleadoInput() {
-  // Apertura mutuamente exclusiva: cerrar el de sitios si está abierto
-  cerrarAcSitio();
-  const q = document.getElementById('asig-empleados-input').value.trim().toLowerCase();
-  const fecha = document.getElementById('asig-fecha').value;
-  const { todas } = fecha ? asignacionesDeLaFecha(fecha) : { todas: [] };
-  // Excluir: ya asignados ese día (sin contar este mismo item si estoy editando)
-  let yaAsignados = new Set();
-  if (_asigEditandoColaId) {
-    const itemActual = colaAsignaciones.find(c => c.id === _asigEditandoColaId);
-    const idsActualesItem = new Set(itemActual ? itemActual.empleadoIds : []);
-    todas.forEach(a => { if (!idsActualesItem.has(a.empleadoId)) yaAsignados.add(a.empleadoId); });
-  } else {
-    todas.forEach(a => yaAsignados.add(a.empleadoId));
-  }
-  // También excluir los ya seleccionados en este modal
-  const seleccionados = new Set(_asigEmpleadosSeleccionados);
-
-  let resultados = empleados
-    .filter(e => !yaAsignados.has(e.id) && !seleccionados.has(e.id));
-  if (q) resultados = resultados.filter(e =>
-    e.id.toLowerCase().includes(q) || e.nombre.toLowerCase().includes(q)
-  );
-  // Sin límite: el panel ya tiene max-height + scroll
-
-  _acEmpleadoActivoIdx = -1;
-  const panel = document.getElementById('asig-empleados-panel');
-  if (!resultados.length) {
-    panel.innerHTML = '<div class="ac-empty">Sin empleados disponibles</div>';
-  } else {
-    panel.innerHTML = resultados.map((e, i) => `
-      <div class="ac-option" data-idx="${i}" data-id="${e.id}" onclick="agregarEmpleado('${e.id}')">
-        <span style="font-weight:600;">${e.nombre}</span>
-        <span class="ac-meta">${e.id}</span>
-      </div>`
-    ).join('');
-  }
-  panel.classList.add('ac-open');
-}
-
-function onAcEmpleadoKeydown(ev) {
-  const panel = document.getElementById('asig-empleados-panel');
-  const opts = panel.querySelectorAll('.ac-option:not(.ac-disabled)');
-  if (ev.key === 'ArrowDown') {
-    ev.preventDefault();
-    _acEmpleadoActivoIdx = Math.min(_acEmpleadoActivoIdx + 1, opts.length - 1);
-    actualizarAcActivo(opts, _acEmpleadoActivoIdx);
-  } else if (ev.key === 'ArrowUp') {
-    ev.preventDefault();
-    _acEmpleadoActivoIdx = Math.max(_acEmpleadoActivoIdx - 1, 0);
-    actualizarAcActivo(opts, _acEmpleadoActivoIdx);
-  } else if (ev.key === 'Enter') {
-    ev.preventDefault();
-    if (_acEmpleadoActivoIdx >= 0 && opts[_acEmpleadoActivoIdx]) {
-      agregarEmpleado(opts[_acEmpleadoActivoIdx].getAttribute('data-id'));
-    }
-  } else if (ev.key === 'Backspace' && document.getElementById('asig-empleados-input').value === '') {
-    // Backspace en input vacío → quitar el último empleado
-    if (_asigEmpleadosSeleccionados.length) {
-      _asigEmpleadosSeleccionados.pop();
-      renderEmpleadosChips();
-      onAcEmpleadoInput();
-    }
-  } else if (ev.key === 'Escape') {
-    cerrarAcEmpleado();
-  }
-}
-
-function agregarEmpleado(empId) {
-  if (_asigEmpleadosSeleccionados.includes(empId)) return;
-  _asigEmpleadosSeleccionados.push(empId);
-  document.getElementById('asig-empleados-input').value = '';
-  renderEmpleadosChips();
-  onAcEmpleadoInput();
-  document.getElementById('asig-empleados-input').focus();
-}
-
-function quitarEmpleado(empId) {
-  _asigEmpleadosSeleccionados = _asigEmpleadosSeleccionados.filter(e => e !== empId);
-  renderEmpleadosChips();
-  onAcEmpleadoInput();
-}
-
-function renderEmpleadosChips() {
-  const cont = document.getElementById('asig-empleados-chips');
-  const input = document.getElementById('asig-empleados-input');
-  // Limpiar todo menos el input
-  Array.from(cont.querySelectorAll('.emp-chip-sel')).forEach(c => c.remove());
-  _asigEmpleadosSeleccionados.forEach(eid => {
-    const chip = document.createElement('span');
-    chip.className = 'emp-chip-sel';
-    chip.innerHTML = `<span class="cola-emp-chip-id">${eid}</span>${nombreEmpleado(eid)}`;
-    chip.onclick = (e) => { e.stopPropagation(); quitarEmpleado(eid); };
-    cont.insertBefore(chip, input);
-  });
-}
-
-function cerrarAcEmpleado() {
-  document.getElementById('asig-empleados-panel').classList.remove('ac-open');
-}
-
-/* ══ AGREGAR / EDITAR EN COLA ══ */
+/* ══ AGREGAR A LA COLA — sincroniza toda la cola del día ══ */
 function agregarAsigCola() {
-  const fecha   = document.getElementById('asig-fecha').value;
-  const sitioId = document.getElementById('asig-sitio-valor').value.trim();
-  if (!fecha)        return toast('Elegí una fecha', 'err');
-  if (!sitioId)      return toast('Elegí un sitio', 'err');
-  if (!_asigEmpleadosSeleccionados.length) return toast('Elegí al menos un empleado', 'err');
+  const fecha = _asigModalFechaActual;
+  if (!fecha) return toast('Elegí una fecha', 'err');
 
-  if (_asigEditandoColaId) {
-    // Edición: solo actualiza los empleados del item
-    const item = colaAsignaciones.find(c => c.id === _asigEditandoColaId);
-    if (item) {
-      item.empleadoIds = [..._asigEmpleadosSeleccionados];
-      guardarColaSession();
-      renderCola();
-      renderAsigCalendario();
-      cerrarModalNuevaAsig();
-      toast('Asignación actualizada ✓');
-    }
-    return;
+  // Empleados con sitio elegido en este modal (no incluye confirmados, esos ya están en el Sheet)
+  const pares = Object.entries(_asigSitioPorEmpleado).filter(([eid, sid]) => sid);
+  if (!pares.length) {
+    return toast('No asignaste ningún sitio', 'err');
   }
 
-  // Nuevo item: validar que el sitio no esté ya en la cola para esa fecha
-  const yaExiste = colaAsignaciones.find(c => c.fecha === fecha && c.sitioId === sitioId);
-  if (yaExiste) return toast(`El sitio ${sitioId} ya está en cola para esa fecha`, 'err');
+  // D2: avisar si quedan empleados sin asignar (ni en cola ni confirmados)
+  const cubiertos = new Set([
+    ...Object.keys(_asigEmpConfirmados),
+    ...pares.map(([eid]) => eid)
+  ]);
+  const sinAsignar = empleados.filter(e => !cubiertos.has(e.id));
+  if (sinAsignar.length) {
+    const ok = confirm(`Quedan ${sinAsignar.length} empleado${sinAsignar.length!==1?'s':''} sin asignar para el ${fecha}. ¿Continuar igual?`);
+    if (!ok) return;
+  }
 
-  const colaItem = {
-    id: 'COLA-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
-    fecha,
-    sitioId,
-    empleadoIds: [..._asigEmpleadosSeleccionados]
-  };
-  colaAsignaciones.push(colaItem);
+  // Reconstruir la cola de ESTA fecha: borrar items viejos del día y rearmar agrupando por sitio
+  colaAsignaciones = colaAsignaciones.filter(c => c.fecha !== fecha);
+
+  // Agrupar pares empleado→sitio por sitio (C1)
+  const porSitio = {};
+  pares.forEach(([eid, sid]) => {
+    if (!porSitio[sid]) porSitio[sid] = [];
+    porSitio[sid].push(eid);
+  });
+  Object.entries(porSitio).forEach(([sitioId, empleadoIds]) => {
+    colaAsignaciones.push({
+      id: 'COLA-' + Date.now() + '-' + Math.floor(Math.random() * 100000),
+      fecha,
+      sitioId,
+      empleadoIds
+    });
+  });
+
   guardarColaSession();
   renderCola();
-  renderAsigCalendario();
-  cerrarModalNuevaAsig();
-  toast(`Agregado a la cola: ${sitioId} (${colaItem.empleadoIds.length} empleado${colaItem.empleadoIds.length!==1?'s':''})`);
+  volverDeNuevaAsig();
+  const totalEmp = pares.length;
+  toast(`Cola actualizada: ${totalEmp} empleado${totalEmp!==1?'s':''} en ${Object.keys(porSitio).length} obra${Object.keys(porSitio).length!==1?'s':''} ✓`);
 }
 
 function eliminarItemCola(colaId) {
@@ -4095,7 +4244,7 @@ function renderCola() {
                 <span style="font-size:11px;color:var(--text-light);font-weight:500;">(${item.empleadoIds.length} empleado${item.empleadoIds.length!==1?'s':''})</span>
               </div>
               <div class="cola-item-empleados">
-                ${item.empleadoIds.map(eid => `<span class="cola-emp-chip"><span class="cola-emp-chip-id">${eid}</span>${nombreEmpleado(eid)}</span>`).join('')}
+                ${item.empleadoIds.map(eid => `<span class="cola-emp-chip"><span class="cola-emp-chip-id">${eid}</span>${badgeRelacion(eid)}${nombreEmpleado(eid)}</span>`).join('')}
               </div>
             </div>
             <div class="cola-item-acciones">
@@ -4191,11 +4340,11 @@ function actualizarDashboard() {
     }
   }
 
-  // Ocultar Objetivos y GAP cuando no hay datos
+  // Ocultar Objetivos cuando no hay datos. GAP queda siempre oculto (sección desactivada).
   const objCard = document.getElementById('dash-objetivos-card');
   const gapCard = document.getElementById('dash-gap-card');
   if (objCard) objCard.style.display = sinDatos ? 'none' : '';
-  if (gapCard) gapCard.style.display = sinDatos ? 'none' : '';
+  if (gapCard) gapCard.style.display = 'none';
 
   const facturadas  = lf.filter(l => l.estado === 'Facturado');
   const proyectadas = lf.filter(l => l.estado === 'Proyectado');
@@ -4250,10 +4399,8 @@ function actualizarDashboard() {
           onclick="abrirDetalleCliente('${c.id}')"
           onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 10px 30px rgba(100,110,140,0.15)'"
           onmouseout="this.style.transform='';this.style.boxShadow=''">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-            <span style="display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px;">${dot(c.color)}${c.id}</span>
-            <span style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:${c.color};">${fmt(valFac)}</span>
-          </div>
+          <div style="display:flex;align-items:center;justify-content:center;gap:8px;font-weight:600;font-size:14px;margin-bottom:6px;">${dot(c.color)}${c.id}</div>
+          <div style="text-align:center;font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:${c.color};margin-bottom:12px;">${fmt(valFac)}</div>
           <div style="height:6px;background:rgba(200,205,220,0.3);border-radius:20px;overflow:hidden;margin-bottom:8px;">
             <div style="height:100%;width:${pct}%;background:${c.color};border-radius:20px;transition:.4s ease;"></div>
           </div>
@@ -4266,8 +4413,8 @@ function actualizarDashboard() {
     }
   }
 
-  // GAP acumulado (solo si hay datos)
-  if (!sinDatos) renderGapAcumulado();
+  // GAP acumulado: sección oculta — no se renderiza.
+  // (renderGapAcumulado se conserva por si se reactiva en el futuro)
 }
 
 /* ══ DETALLE CLIENTE ══ */
