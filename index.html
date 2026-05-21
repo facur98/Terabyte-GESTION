@@ -177,6 +177,11 @@
     tr.row-sit-clickable { cursor: pointer; user-select: none; -webkit-user-select: none; }
     tr.row-sit-clickable:hover td { background: rgba(79,128,255,0.10) !important; }
     tr.row-sit-clickable td.col-acciones { cursor: default; }
+
+    /* Sitios globales: fila clickeable y detalle expandido */
+    tr.row-sg-clickable { cursor: pointer; user-select: none; -webkit-user-select: none; }
+    tr.row-sg-clickable:hover td { background: rgba(79,128,255,0.08) !important; }
+    tr.row-sg-clickable td.col-acciones { cursor: default; }
     /* Asegurar que el botón conserve cursor pointer dentro de col-acciones */
     tr.row-sit-clickable td.col-acciones .btn { cursor: pointer; }
 
@@ -367,31 +372,55 @@
     .kc-green  .kpi-bar-fill { background: linear-gradient(90deg,#16a34a,#4ade80); }
 
     .stats-row-5 { display: grid; grid-template-columns: repeat(5,1fr); gap: 14px; margin-bottom: 24px; }
-    /* Cards de KPI: 2×2 fijo, más grandes, contenido centrado */
-    .stats-row-4 { display: grid; grid-template-columns: repeat(2,1fr); gap: 18px; margin-bottom: 24px; }
+    /* Dashboard — Layout horizontal 3 columnas (A2: 25/37/38) */
+    .dash-3col {
+      display: grid; grid-template-columns: 25fr 37fr 38fr; gap: 14px; margin-bottom: 18px;
+      align-items: stretch;
+    }
+    .dash-3col > * { display: flex; flex-direction: column; }
+    .dash-3col .col-stack { gap: 13px; }
+    .dash-3col .col-stack > .kpi-card { flex: 1; }
+    .dash-3col .col-peq > .kpi-card { flex: 1; }
     @media (max-width: 1400px) {
       .stats-row-5 { grid-template-columns: repeat(3,1fr); }
     }
     @media (max-width: 1200px) {
       .stats-row-5 { grid-template-columns: repeat(2,1fr); }
     }
-    @media (max-width: 720px) {
-      .stats-row-4 { grid-template-columns: 1fr; }
+    @media (max-width: 1100px) {
+      /* C2: en pantallas chicas, todo apila a 1 columna */
+      .dash-3col { grid-template-columns: 1fr; }
+      .dash-3col .col-stack > .kpi-card,
+      .dash-3col .col-peq > .kpi-card { flex: none; }
+      .dash-3col .col-objetivos-lista { max-height: none; }
     }
-    /* Cards KPI más grandes y centradas (2×2) */
-    .stats-row-4 .kpi-card {
-      padding: 30px 28px;
-      display: flex; flex-direction: column; align-items: center; text-align: center;
+    /* Cards KPI compactas, contenido centrado */
+    .dash-3col .kpi-card {
+      padding: 20px 22px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
     }
-    .stats-row-4 .kpi-card .kpi-label { font-size: 14px; margin-bottom: 14px; }
-    .stats-row-4 .kpi-card .kpi-value { font-size: 30px; }
-    .stats-row-4 .kpi-card .kpi-sub,
-    .stats-row-4 .kpi-card .kpi-ref { text-align: center; }
-    .stats-row-4 .kpi-card .kpi-bar-bg { width: 100%; margin-top: 16px; }
+    /* PEQ: distribuye contenido con space-between (D1) — label arriba, círculo medio, monto abajo */
+    .dash-3col .col-peq .kpi-card {
+      justify-content: space-between;
+      padding: 26px 22px;
+    }
+    .dash-3col .col-peq .kpi-card .kpi-label { font-size: 15px; margin-bottom: 0; }
+    .dash-3col .kpi-card .kpi-label { font-size: 13px; margin-bottom: 10px; }
+    .dash-3col .kpi-card .kpi-value { font-size: 28px; }
+    .dash-3col .kpi-card .kpi-sub,
+    .dash-3col .kpi-card .kpi-ref { text-align: center; }
+    .dash-3col .kpi-card .kpi-bar-bg { width: 100%; margin-top: 12px; }
 
-    /* ── Círculo de progreso de Cumplimiento PEQ ── */
+    /* Columna Objetivos: header fijo + lista con scroll interno (B2) */
+    .col-objetivos-lista {
+      flex: 1; min-height: 0; overflow-y: auto;
+      display: flex; flex-direction: column; gap: 10px;
+      padding-right: 4px;
+    }
+
+    /* ── Círculo de progreso de Cumplimiento PEQ (G2: 160px) ── */
     .peq-ring-wrap { display: flex; flex-direction: column; align-items: center; gap: 14px; }
-    .peq-ring { position: relative; width: 150px; height: 150px; }
+    .peq-ring { position: relative; width: 160px; height: 160px; }
     .peq-ring svg { transform: rotate(-90deg); }
     .peq-ring-track { fill: none; stroke: rgba(200,205,220,0.35); }
     .peq-ring-fill  { fill: none; stroke-linecap: round; transition: stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1); }
@@ -401,9 +430,11 @@
     }
     .peq-ring-pct {
       font-family: 'Syne', sans-serif; font-weight: 700; line-height: 1;
-      font-size: 34px;
+      font-size: 37px;
     }
-    .peq-ring-cap { font-size: 10.5px; color: var(--text-light); font-weight: 600; margin-top: 3px; letter-spacing: .3px; }
+    .peq-ring-cap { font-size: 11px; color: var(--text-light); font-weight: 600; margin-top: 4px; letter-spacing: .3px; }
+    .peq-monto-label { font-size: 11.5px; color: var(--text-light); font-weight: 600; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 5px; }
+    .peq-monto-valor { font-family: 'Syne', sans-serif; font-size: 33px; font-weight: 700; line-height: 1; color: var(--text-dark); }
 
     /* ── Calendario de asignaciones ── */
     .asig-cal-grid {
@@ -827,13 +858,22 @@
 
   <!-- Grupo: Facturación (colapsable) -->
   <div class="sidebar-section" style="padding-top:14px;">
-    <div class="nav-group-header open" id="grp-facturacion" onclick="toggleNavGroup('facturacion')">
-      <span>Facturación</span>
+    <!-- Dashboard: ítem principal suelto, sin sección agrupadora -->
+    <a class="nav-item active" id="nav-dashboard" onclick="showView('dashboard',this)">
+      <span style="margin-left:6px;">Dashboard</span>
+    </a>
+  </div>
+
+  <div class="sidebar-sep"></div>
+
+  <div class="sidebar-section" style="padding-top:6px;">
+    <div class="nav-group-header open" id="grp-sitios" onclick="toggleNavGroup('sitios')">
+      <span>Sitios</span>
       <span class="nav-group-arrow">▶</span>
     </div>
-    <div class="nav-subitems open" id="sub-facturacion">
-      <a class="nav-subitem active" id="nav-dashboard" onclick="showView('dashboard',this)">Dashboard</a>
-      <a class="nav-subitem" id="nav-sitios" onclick="showView('sitios',this)">Sitios</a>
+    <div class="nav-subitems open" id="sub-sitios">
+      <a class="nav-subitem" id="nav-sitios-globales" onclick="showView('sitios-globales',this)">Sitios globales</a>
+      <a class="nav-subitem" id="nav-sitios" onclick="showView('sitios',this)">PO sitios</a>
       <a class="nav-subitem" id="nav-seguimiento" onclick="showView('seguimiento',this)">
         Seguimiento
         <span class="nav-badge" id="badge-seg">0</span>
@@ -923,23 +963,30 @@
       </div>
     </div>
 
-    <!-- KPI Cards (5 cards: 4 originales + cumplimiento PEQ) -->
-    <div id="dash-kpi-row" class="stats-row-4"></div>
+    <!-- Dashboard: layout horizontal de 3 columnas (PEQ | KPIs stack | Objetivos) -->
+    <div class="dash-3col" id="dash-grid-3col">
+      <!-- Columna 1: PEQ (renderizada por JS) -->
+      <div class="col-peq" id="dash-col-peq"></div>
 
-    <!-- Objetivos por cliente -->
-    <div id="dash-objetivos-card" style="background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid var(--glass-border);border-radius:var(--radius);box-shadow:var(--glass-shadow);padding:28px 32px;position:relative;overflow:hidden;">
-      <div style="position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(79,128,255,0.08),transparent 70%);pointer-events:none;"></div>
-      <div style="position:absolute;bottom:-30px;left:-30px;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle,rgba(45,212,191,0.07),transparent 70%);pointer-events:none;"></div>
-      <div class="card-header" style="margin-bottom:24px;">
-        <div>
-          <div class="card-title" style="font-size:16px;">Objetivos por cliente</div>
-          <div class="card-sub">Facturado acumulado en el mes seleccionado</div>
+      <!-- Columna 2: 3 KPI cards apiladas (renderizadas por JS) -->
+      <div class="col-stack" id="dash-col-stack"></div>
+
+      <!-- Columna 3: Objetivos por cliente -->
+      <div id="dash-objetivos-card" class="col-objetivos" style="background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid var(--glass-border);border-radius:var(--radius);box-shadow:var(--glass-shadow);padding:18px 20px;position:relative;overflow:hidden;">
+        <div style="position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(79,128,255,0.08),transparent 70%);pointer-events:none;"></div>
+        <div style="position:absolute;bottom:-30px;left:-30px;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle,rgba(45,212,191,0.07),transparent 70%);pointer-events:none;"></div>
+        <div class="card-header" style="margin-bottom:14px;justify-content:center;flex-shrink:0;">
+          <div style="text-align:center;">
+            <div class="card-title" style="font-size:15px;">Objetivos por cliente</div>
+            <div class="card-sub">Facturado acumulado en el mes seleccionado</div>
+          </div>
+        </div>
+        <div id="dash-objetivos" class="col-objetivos-lista">
+          <div style="text-align:center;padding:30px 0;color:var(--text-light);font-size:13px;">Sin datos</div>
         </div>
       </div>
-      <div id="dash-objetivos" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;">
-        <div style="text-align:center;padding:30px 0;color:var(--text-light);font-size:13px;">Sin datos</div>
-      </div>
     </div>
+    <!-- (el viejo div #dash-kpi-row se eliminó; el row ahora es dash-grid-3col) -->
 
     <!-- Card GAP acumulado — OCULTA por pedido (la lógica se mantiene por si se reactiva) -->
     <div id="dash-gap-card" style="display:none;background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid var(--glass-border);border-radius:var(--radius);box-shadow:var(--glass-shadow);padding:28px 32px;margin-top:20px;position:relative;overflow:hidden;">
@@ -997,6 +1044,37 @@
           <thead><tr><th>Color</th><th>ID Cliente</th><th>Sitios vinculados</th><th>Acciones</th></tr></thead>
           <tbody id="tabla-clientes">
             <tr><td colspan="4"><div class="empty-state"><span class="es-icon">🏢</span><p>Sin clientes registrados.</p></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SITIOS GLOBALES ═══ -->
+  <div id="view-sitios-globales" class="view">
+    <div class="topbar">
+      <div>
+        <div class="page-title">Sitios <span>globales</span></div>
+        <div style="font-size:13px;color:var(--text-light);margin-top:3px;">Vista agregada de obras e instalaciones</div>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-glass" onclick="sincronizar()" style="font-size:12px;">🔄 Sincronizar</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header" style="flex-wrap:wrap;gap:12px;">
+        <div class="card-title">Sitios sumarizados</div>
+        <div class="sit-filtros-wrap">
+          <input class="form-input" placeholder="Buscar ID..." id="sg-filtro-texto" oninput="aplicarFiltrosSitiosGlobales()" />
+          <div class="ms-wrap" id="sg-filtro-cliente"></div>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ID Sitio</th><th>Cliente</th><th style="text-align:right;">TOTAL</th><th style="width:120px;">Acciones</th></tr></thead>
+          <tbody id="tabla-sitios-globales">
+            <tr><td colspan="4"><div class="empty-state"><span class="es-icon">🌐</span><p>Cargando...</p></div></td></tr>
           </tbody>
         </table>
       </div>
@@ -1638,6 +1716,17 @@
       </div>
     </div>
     <div style="flex:1;overflow-y:auto;padding:28px 36px;">
+      <!-- Filtros del modal (F2: cliente | estado | % | limpiar | contador) -->
+      <div id="kpi-modal-filtros" style="display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap;">
+        <div class="ms-wrap" id="kpi-modal-fil-cliente" style="width:160px;"></div>
+        <div class="ms-wrap" id="kpi-modal-fil-estado" style="width:160px;"></div>
+        <div class="ms-wrap" id="kpi-modal-fil-pct" style="width:120px;"></div>
+        <button id="kpi-modal-fil-limpiar" onclick="kpiModalLimpiarFiltros()"
+          style="display:none;padding:7px 14px;border-radius:8px;border:1px solid rgba(200,205,220,0.5);background:rgba(248,113,113,0.08);color:#dc2626;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;"
+          onmouseover="this.style.background='rgba(248,113,113,0.18)'"
+          onmouseout="this.style.background='rgba(248,113,113,0.08)'">Limpiar</button>
+        <div id="kpi-modal-contador" style="margin-left:auto;font-size:12px;color:var(--text-light);font-weight:500;"></div>
+      </div>
       <table style="width:100%;border-collapse:collapse;font-size:13.5px;">
         <thead>
           <tr>
@@ -1927,6 +2016,7 @@ function showView(name, el) {
   if (name === 'dashboard')    actualizarDashboard();
   if (name === 'clientes')     renderClientes();
   if (name === 'sitios')       { poblarSelect('sit-cliente'); aplicarFiltrosSitios(); }
+  if (name === 'sitios-globales') renderSitiosGlobales();
   if (name === 'seguimiento')  renderSeguimiento();
   if (name === 'asignaciones') renderAsignaciones();
 }
@@ -2471,6 +2561,141 @@ function renderSitios(filtro = '', filtros = null) {
 
 function aplicarFiltrosSitios() { renderSitios(); }
 function filtrarSitios(v) { renderSitios(v); }
+
+/* ══ SITIOS GLOBALES — vista agregada por ID de sitio ══
+   Suma los "Total PO" de todas las filas con el mismo ID, despliega detalle al click.
+*/
+// Set con los IDs actualmente expandidos. E1: una sola fila abierta a la vez.
+let _sgExpandido = null;
+
+function renderSitiosGlobales() {
+  const tbody = document.getElementById('tabla-sitios-globales');
+  if (!tbody) return;
+
+  // Inicializar multiselect de Cliente (solo con clientes que tienen al menos 1 sitio)
+  const clientesEnSitios = [...new Set(sitios.map(s => s.clienteId).filter(Boolean))];
+  const clientesOpts = clientes
+    .filter(c => clientesEnSitios.includes(c.id))
+    .map(c => ({ value: c.id, label: c.id }));
+  msInit('sg-filtro-cliente', clientesOpts, 'Todos los clientes', aplicarFiltrosSitiosGlobales);
+
+  aplicarFiltrosSitiosGlobales();
+}
+
+function aplicarFiltrosSitiosGlobales() {
+  const tbody = document.getElementById('tabla-sitios-globales');
+  if (!tbody) return;
+
+  // Filtros
+  const texto    = (document.getElementById('sg-filtro-texto')?.value || '').toLowerCase().trim();
+  const clientesSel = msGet('sg-filtro-cliente');
+
+  // Agrupar por ID (no hay clientes distintos para mismo ID, decisión A)
+  const mapa = new Map(); // id -> { id, clienteId, filas:[s], total:number }
+  sitios.forEach(s => {
+    if (!s.id) return;
+    if (!mapa.has(s.id)) {
+      mapa.set(s.id, { id: s.id, clienteId: s.clienteId, filas: [], total: 0 });
+    }
+    const g = mapa.get(s.id);
+    g.filas.push(s);
+    g.total += (s.po || 0);
+  });
+
+  // Convertir a array y aplicar filtros
+  let lista = [...mapa.values()];
+  if (texto) {
+    lista = lista.filter(g => g.id.toLowerCase().includes(texto));
+  }
+  if (clientesSel.length) {
+    lista = lista.filter(g => clientesSel.includes(g.clienteId));
+  }
+  // O1: orden alfabético por ID
+  lista.sort((a, b) => a.id.localeCompare(b.id));
+
+  if (!lista.length) {
+    tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state"><span class="es-icon">🌐</span><p>${sitios.length === 0 ? 'Sin sitios registrados.' : 'Sin sitios que coincidan con los filtros.'}</p></div></td></tr>`;
+    return;
+  }
+
+  // Construir filas: una fila resumen + (si está expandida) sub-tabla
+  tbody.innerHTML = lista.map(g => {
+    const cli       = getCli(g.clienteId);
+    const idEsc     = g.id.replace(/'/g, "\\'");
+    const expandida = _sgExpandido === g.id;
+    const arrow     = expandida ? '▼' : '▶';
+
+    const filaResumen = `<tr class="row-sg-clickable" onclick="sgToggleExpandir('${idEsc}')">
+      <td style="font-weight:600;">
+        <span style="display:inline-block;width:12px;color:var(--text-light);font-size:10px;margin-right:6px;transition:transform .15s;">${arrow}</span>
+        ${g.id}
+      </td>
+      <td><span style="display:flex;align-items:center;gap:6px;">${cli ? dot(cli.color) : ''}${g.clienteId}</span></td>
+      <td style="text-align:right;">
+        <span style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;">${fmt(Math.round(g.total))}</span>
+        <span style="font-size:11px;color:var(--text-light);font-weight:500;margin-left:6px;">(${g.filas.length} PO${g.filas.length!==1?'s':''})</span>
+      </td>
+      <td class="col-acciones" onclick="event.stopPropagation()">
+        <button class="btn btn-glass btn-sm" onclick="sgVerEnPOSitios('${idEsc}')" title="Ver en PO sitios" style="font-size:11px;font-weight:600;padding:5px 10px;">Ver en PO</button>
+      </td>
+    </tr>`;
+
+    // Sub-tabla expandida (D1: fondo sutilmente distinto + sangría a la izquierda)
+    let filaDetalle = '';
+    if (expandida) {
+      // S2: columnas del detalle = Provincia · Concepto · N° PO · Total PO · Status · Observación
+      const filasInternas = g.filas.map(s => {
+        const cb = s.concepto === 'Básico' ? 'badge-blue' : 'badge-violet';
+        const st = getSitStatus(s.uid);
+        return `<tr style="background:rgba(240,242,248,0.55);">
+          <td style="padding-left:38px;color:var(--text-mid);font-size:12.5px;">${s.localidad || '—'}</td>
+          <td><span class="badge ${cb}">${s.concepto}</span></td>
+          <td style="font-size:12px;color:var(--text-mid);">${s.poNro || '—'}</td>
+          <td style="font-weight:600;text-align:right;">${s.po ? fmt(s.po) : '—'}</td>
+          <td><span style="display:inline-block;padding:4px 11px;border-radius:20px;font-size:12px;font-weight:600;background:${st.color};color:${st.text};">${st.label}</span></td>
+          <td style="color:var(--text-mid);font-size:12px;">${s.obs || '—'}</td>
+        </tr>`;
+      }).join('');
+
+      filaDetalle = `<tr class="sg-detalle-fila"><td colspan="4" style="padding:0;background:rgba(240,242,248,0.35);">
+        <table style="width:100%;border-collapse:collapse;margin:0;">
+          <thead><tr style="background:rgba(220,225,238,0.55);">
+            <th style="padding-left:38px;font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:var(--text-light);font-weight:600;text-align:left;padding-top:9px;padding-bottom:9px;">Provincia</th>
+            <th style="font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:var(--text-light);font-weight:600;text-align:left;padding:9px 14px;">Concepto</th>
+            <th style="font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:var(--text-light);font-weight:600;text-align:left;padding:9px 14px;">N° PO</th>
+            <th style="font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:var(--text-light);font-weight:600;text-align:right;padding:9px 14px;">Total PO</th>
+            <th style="font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:var(--text-light);font-weight:600;text-align:left;padding:9px 14px;">Status</th>
+            <th style="font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:var(--text-light);font-weight:600;text-align:left;padding:9px 14px;">Observación</th>
+          </tr></thead>
+          <tbody>${filasInternas}</tbody>
+        </table>
+      </td></tr>`;
+    }
+
+    return filaResumen + filaDetalle;
+  }).join('');
+}
+
+function sgToggleExpandir(idSitio) {
+  // E1: una sola fila abierta a la vez
+  _sgExpandido = (_sgExpandido === idSitio) ? null : idSitio;
+  aplicarFiltrosSitiosGlobales();
+}
+
+/* G1 + N1: navegar a PO sitios filtrando por ID, limpiando los otros filtros */
+function sgVerEnPOSitios(idSitio) {
+  const navSit = document.getElementById('nav-sitios');
+  showView('sitios', navSit);
+  // Setear buscador con el ID
+  const txt = document.getElementById('sit-filtro-texto');
+  if (txt) txt.value = idSitio;
+  // Limpiar todos los demás filtros (N1: garantizar que se vean todas las filas de ese ID)
+  msClearAll('sit-filtro-cliente');
+  msClearAll('sit-filtro-provincia');
+  msClearAll('sit-filtro-concepto');
+  msClearAll('sit-filtro-status');
+  aplicarFiltrosSitios();
+}
 
 /* ── Navegación dblclick Sitios → Seguimiento ── */
 function irASeguimientoDesdeSitio(idSitio) {
@@ -3441,45 +3666,104 @@ function kpiCardPEQ(totalFac, clickFn) {
   const hover  = clickFn ? `onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 18px 48px rgba(100,110,140,0.22)'" onmouseout="this.style.transform='';this.style.boxShadow=''"` : '';
 
   // Geometría del anillo SVG
-  const R = 64, CIRC = 2 * Math.PI * R;
+  const R = 68, CIRC = 2 * Math.PI * R;
   const offset = CIRC * (1 - pctAnillo / 100);
 
   return `<div class="kpi-card kc-${tipo}" style="${cursor}" onclick="${clickFn||''}" ${hover}>
     <div class="kpi-label">Cumplimiento PEQ</div>
-    <div class="peq-ring-wrap">
-      <div class="peq-ring">
-        <svg width="150" height="150" viewBox="0 0 150 150">
-          <circle class="peq-ring-track" cx="75" cy="75" r="${R}" stroke-width="13"></circle>
-          <circle class="peq-ring-fill"  cx="75" cy="75" r="${R}" stroke-width="13"
-            stroke="${colorSolido}"
-            stroke-dasharray="${CIRC.toFixed(1)}"
-            stroke-dashoffset="${offset.toFixed(1)}"></circle>
-        </svg>
-        <div class="peq-ring-center">
-          <div class="peq-ring-pct" style="color:${colorSolido};">${pctRedondeado}%</div>
-          <div class="peq-ring-cap">del PEQ</div>
-        </div>
+    <div class="peq-ring">
+      <svg width="160" height="160" viewBox="0 0 160 160">
+        <circle class="peq-ring-track" cx="80" cy="80" r="${R}" stroke-width="13"></circle>
+        <circle class="peq-ring-fill"  cx="80" cy="80" r="${R}" stroke-width="13"
+          stroke="${colorSolido}"
+          stroke-dasharray="${CIRC.toFixed(1)}"
+          stroke-dashoffset="${offset.toFixed(1)}"></circle>
+      </svg>
+      <div class="peq-ring-center">
+        <div class="peq-ring-pct" style="color:${colorSolido};">${pctRedondeado}%</div>
+        <div class="peq-ring-cap">del PEQ</div>
       </div>
-      <div style="text-align:center;">
-        <div class="kpi-sub">${fmt(Math.round(totalFac))} de ${fmt(PEQ)}</div>
-        <div class="kpi-ref">${refTxt}</div>
-      </div>
+    </div>
+    <div style="text-align:center;">
+      <div class="peq-monto-label">Facturado</div>
+      <div class="peq-monto-valor">${fmt(Math.round(totalFac))}</div>
+      <div class="kpi-ref" style="margin-top:8px;">${refTxt}</div>
     </div>
   </div>`;
 }
 
-/* ── MODAL DETALLE KPI ── */
+/* ══ MODAL DETALLE KPI — con filtros (Cliente, Estado, %) ══ */
+
+/* Estado del modal: las líneas originales y el total facturado (para el caso "cliente" que tiene total custom) */
+let _kpiModalState = {
+  lineas:      [],
+  totalCustom: null,    // si no es null, se usa como texto del total (caso abrirDetalleCliente)
+  totalLabel:  ''       // sufijo opcional del total (ej. " facturado")
+};
+
 function irASeguimientoDesdeModalDetalle(idSitio) {
   // Cerrar el modal antes de navegar
   document.getElementById('modal-kpi-detalle').classList.remove('open');
   irASeguimientoDesdeSitio(idSitio);
 }
 
-function abrirDetalleKPI(titulo, subtitulo, lineasFiltradas) {
-  document.getElementById('kpi-modal-title').textContent = titulo;
-  document.getElementById('kpi-modal-sub').textContent   = subtitulo;
+/* Helpers de filtros */
+function _kpiOpcionesPresentes(lineas) {
+  // B2: solo los valores que aparecen en las líneas
+  const clientes = [...new Set(lineas.map(l => l.clienteId).filter(Boolean))].sort();
+  const estados  = [...new Set(lineas.map(l => l.estado).filter(Boolean))].sort();
+  const pcts     = [...new Set(lineas.map(l => l.pct).filter(p => p !== undefined && p !== null && p !== ''))]
+                    .map(p => Number(p))
+                    .filter(p => !isNaN(p))
+                    .sort((a,b) => b - a);   // 100, 80, 70, 30, 20
+  return {
+    cliente: clientes.map(c => ({ value: c, label: c })),
+    estado:  estados.map(e => ({ value: e, label: e })),
+    pct:     pcts.map(p => ({ value: String(p), label: p + '%' }))
+  };
+}
+
+function _kpiAplicarFiltros(lineas) {
+  return lineas.filter(l =>
+    msHas('kpi-modal-fil-cliente', l.clienteId) &&
+    msHas('kpi-modal-fil-estado',  l.estado) &&
+    msHas('kpi-modal-fil-pct',     String(l.pct))
+  );
+}
+
+function _kpiHayFiltrosActivos() {
+  return msGet('kpi-modal-fil-cliente').length > 0
+      || msGet('kpi-modal-fil-estado').length > 0
+      || msGet('kpi-modal-fil-pct').length > 0;
+}
+
+function kpiModalLimpiarFiltros() {
+  msClearAll('kpi-modal-fil-cliente');
+  msClearAll('kpi-modal-fil-estado');
+  msClearAll('kpi-modal-fil-pct');
+  _renderTablaModalKPI();
+}
+
+function _renderTablaModalKPI() {
+  const lineasFiltradas = _kpiAplicarFiltros(_kpiModalState.lineas);
+
+  // C1: total se recalcula con las líneas filtradas
   const total = lineasFiltradas.reduce((a,l) => a + (l.monto||0), 0);
-  document.getElementById('kpi-modal-total').textContent = fmt(Math.round(total));
+  document.getElementById('kpi-modal-total').textContent =
+    fmt(Math.round(total)) + (_kpiModalState.totalLabel || '');
+
+  // D1: contador "Mostrando N de M"
+  const totalSinFiltros = _kpiModalState.lineas.length;
+  const cont = document.getElementById('kpi-modal-contador');
+  if (_kpiHayFiltrosActivos()) {
+    cont.textContent = `Mostrando ${lineasFiltradas.length} de ${totalSinFiltros} línea${totalSinFiltros!==1?'s':''}`;
+  } else {
+    cont.textContent = `${totalSinFiltros} línea${totalSinFiltros!==1?'s':''}`;
+  }
+
+  // E1: botón Limpiar visible solo si hay filtros activos
+  const btnLimpiar = document.getElementById('kpi-modal-fil-limpiar');
+  btnLimpiar.style.display = _kpiHayFiltrosActivos() ? '' : 'none';
 
   const estadoBadge = {
     'Proyectado': '<span style="background:rgba(79,128,255,0.12);color:#3b5fc0;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;">Proyectado</span>',
@@ -3489,31 +3773,64 @@ function abrirDetalleKPI(titulo, subtitulo, lineasFiltradas) {
 
   const tbody = document.getElementById('kpi-modal-tbody');
   if (!lineasFiltradas.length) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:48px;color:var(--text-light);font-size:14px;">Sin líneas para mostrar</td></tr>`;
-  } else {
-    tbody.innerHTML = lineasFiltradas.map((l, i) => {
-      const cli   = getCli(l.clienteId);
-      const sit   = sitios.find(s => s.id === l.sitioId);
-      const poNro = l.poNroLinea || (sit ? sit.poNro : '') || '—';
-      const bg    = i % 2 === 0 ? '' : 'background:rgba(240,242,248,0.4);';
-      const sitId = String(l.sitioId).replace(/'/g, "\\'");
-      return `<tr class="row-detalle-clickable" ondblclick="irASeguimientoDesdeModalDetalle('${sitId}')" style="${bg}border-bottom:1px solid rgba(200,205,220,0.18);">
-        <td style="padding:13px 16px 13px 0;font-weight:700;font-size:14px;">${l.sitioId}</td>
-        <td style="padding:13px 16px;">
-          <span style="display:flex;align-items:center;gap:7px;">
-            ${cli ? dot(cli.color) : ''}${l.clienteId}
-          </span>
-        </td>
-        <td style="padding:13px 16px;text-align:center;">
-          <span style="background:rgba(79,128,255,0.10);color:#3a6bf0;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;">${l.pct}%</span>
-        </td>
-        <td style="padding:13px 16px;color:var(--text-mid);font-size:12px;">${poNro}</td>
-        <td style="padding:13px 0 13px 16px;text-align:right;font-weight:700;font-size:14px;">${fmt(Math.round(l.monto||0))}</td>
-        <td style="padding:13px 0 13px 16px;text-align:center;color:var(--text-mid);font-size:12px;">${mesLabel(l.mes)}</td>
-        <td style="padding:13px 0 13px 16px;text-align:center;">${estadoBadge[l.estado]||l.estado}</td>
-      </tr>`;
-    }).join('');
+    const msg = _kpiHayFiltrosActivos()
+      ? 'Sin líneas que coincidan con los filtros'
+      : 'Sin líneas para mostrar';
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:48px;color:var(--text-light);font-size:14px;">${msg}</td></tr>`;
+    return;
   }
+
+  tbody.innerHTML = lineasFiltradas.map((l, i) => {
+    const cli   = getCli(l.clienteId);
+    const sit   = sitios.find(s => s.id === l.sitioId);
+    const poNro = l.poNroLinea || (sit ? sit.poNro : '') || '—';
+    const bg    = i % 2 === 0 ? '' : 'background:rgba(240,242,248,0.4);';
+    const sitId = String(l.sitioId).replace(/'/g, "\\'");
+    return `<tr class="row-detalle-clickable" ondblclick="irASeguimientoDesdeModalDetalle('${sitId}')" style="${bg}border-bottom:1px solid rgba(200,205,220,0.18);">
+      <td style="padding:13px 16px 13px 0;font-weight:700;font-size:14px;">${l.sitioId}</td>
+      <td style="padding:13px 16px;">
+        <span style="display:flex;align-items:center;gap:7px;">
+          ${cli ? dot(cli.color) : ''}${l.clienteId}
+        </span>
+      </td>
+      <td style="padding:13px 16px;text-align:center;">
+        <span style="background:rgba(79,128,255,0.10);color:#3a6bf0;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;">${l.pct}%</span>
+      </td>
+      <td style="padding:13px 16px;color:var(--text-mid);font-size:12px;">${poNro}</td>
+      <td style="padding:13px 0 13px 16px;text-align:right;font-weight:700;font-size:14px;">${fmt(Math.round(l.monto||0))}</td>
+      <td style="padding:13px 0 13px 16px;text-align:center;color:var(--text-mid);font-size:12px;">${mesLabel(l.mes)}</td>
+      <td style="padding:13px 0 13px 16px;text-align:center;">${estadoBadge[l.estado]||l.estado}</td>
+    </tr>`;
+  }).join('');
+}
+
+function _kpiInicializarFiltros(lineas) {
+  // Cada apertura del modal: los filtros arrancan vacíos (no persisten)
+  const op = _kpiOpcionesPresentes(lineas);
+  // Limpiar selecciones previas antes de inicializar
+  if (window._msState['kpi-modal-fil-cliente']) window._msState['kpi-modal-fil-cliente'].selected.clear();
+  if (window._msState['kpi-modal-fil-estado'])  window._msState['kpi-modal-fil-estado'].selected.clear();
+  if (window._msState['kpi-modal-fil-pct'])     window._msState['kpi-modal-fil-pct'].selected.clear();
+  msInit('kpi-modal-fil-cliente', op.cliente, 'Cliente', _renderTablaModalKPI);
+  msInit('kpi-modal-fil-estado',  op.estado,  'Estado',  _renderTablaModalKPI);
+  msInit('kpi-modal-fil-pct',     op.pct,     '%',       _renderTablaModalKPI);
+}
+
+function abrirDetalleKPI(titulo, subtitulo, lineasFiltradas) {
+  document.getElementById('kpi-modal-title').textContent = titulo;
+  document.getElementById('kpi-modal-sub').textContent   = subtitulo;
+
+  // Guardar estado para los filtros
+  _kpiModalState.lineas      = lineasFiltradas || [];
+  _kpiModalState.totalCustom = null;
+  _kpiModalState.totalLabel  = '';
+
+  // Inicializar filtros con las opciones presentes (B2), arrancan vacíos
+  _kpiInicializarFiltros(_kpiModalState.lineas);
+
+  // Render inicial
+  _renderTablaModalKPI();
+
   document.getElementById('modal-kpi-detalle').classList.add('open');
 }
 
@@ -4349,32 +4666,38 @@ function actualizarDashboard() {
   const facturadas  = lf.filter(l => l.estado === 'Facturado');
   const proyectadas = lf.filter(l => l.estado === 'Proyectado');
   const solicitadas = lf.filter(l => l.estado === 'Solicitado');
+  // Cambio #4: Proyectados + Solicitados = todo lo del mes que NO está facturado
+  const proySol     = lf.filter(l => l.estado === 'Proyectado' || l.estado === 'Solicitado');
 
-  const totalFac  = facturadas.reduce((a,l) => a+l.monto, 0);
-  const totalSol  = solicitadas.reduce((a,l) => a+l.monto, 0);
-  const totalTodo = lf.reduce((a,l) => a+l.monto, 0);
+  const totalFac    = facturadas.reduce((a,l) => a+l.monto, 0);
+  const totalSol    = solicitadas.reduce((a,l) => a+l.monto, 0);
+  const totalProySol= proySol.reduce((a,l) => a+l.monto, 0);
+  const totalTodo   = lf.reduce((a,l) => a+l.monto, 0);
 
   // Guardar lineas en window para acceso desde onclick
   window._dash_lf         = lf;
   window._dash_facturadas = facturadas;
   window._dash_proyectadas= proyectadas;
   window._dash_solicitadas= solicitadas;
+  window._dash_proysol    = proySol;
 
-  // 4 KPI cards: PEQ + 3
-  const row = document.getElementById('dash-kpi-row');
-  if (!row) return;
-  row.className = 'stats-row-4';
-  row.innerHTML =
-    kpiCardPEQ(totalFac, `abrirDetalleKPI('Cumplimiento PEQ','Líneas facturadas del mes',window._dash_facturadas)`) +
-    kpiCard('blue',  'Facturación mensual',
-      fmt(totalFac), 'Líneas facturadas', `${facturadas.length} línea${facturadas.length!==1?'s':''}`,
-      totalTodo > 0 ? Math.round(totalFac/totalTodo*100) : 0,
-      `abrirDetalleKPI('Facturación mensual','Líneas facturadas del mes',window._dash_facturadas)`
-    ) +
+  // KPI cards: PEQ en col-peq + 3 cards apiladas en col-stack
+  // Nota: la card "Facturación mensual" fue eliminada (el dato vive en el círculo del PEQ).
+  const colPeq   = document.getElementById('dash-col-peq');
+  const colStack = document.getElementById('dash-col-stack');
+  if (!colPeq || !colStack) return;
+  colPeq.innerHTML =
+    kpiCardPEQ(totalFac, `abrirDetalleKPI('Cumplimiento PEQ','Líneas facturadas del mes',window._dash_facturadas)`);
+  colStack.innerHTML =
     kpiCard('amber', 'Proyectados',
       fmt(totalTodo), 'Total del mes', `${lf.length} línea${lf.length!==1?'s':''}`,
       100,
       `abrirDetalleKPI('Proyectados','Todas las líneas del mes',window._dash_lf)`
+    ) +
+    kpiCard('blue',  'Proyectados + Solicitados',
+      fmt(totalProySol), 'Pendiente de facturar', `${proySol.length} línea${proySol.length!==1?'s':''}`,
+      totalTodo > 0 ? Math.round(totalProySol/totalTodo*100) : 0,
+      `abrirDetalleKPI('Proyectados + Solicitados','Líneas pendientes de facturar',window._dash_proysol)`
     ) +
     kpiCard('teal',  'Solicitados sin facturar',
       fmt(totalSol), `de ${fmt(totalTodo)} total`, `${solicitadas.length} línea${solicitadas.length!==1?'s':''}`,
@@ -4395,16 +4718,16 @@ function actualizarDashboard() {
         const valFac  = lineasCliente.filter(l => l.estado === 'Facturado').reduce((a,l) => a+l.monto, 0);
         const valTodo = lineasCliente.reduce((a,l) => a+l.monto, 0);
         const pct     = valTodo > 0 ? Math.round(valFac/valTodo*100) : 0;
-        return `<div style="background:rgba(255,255,255,0.35);border:1px solid rgba(255,255,255,0.7);border-radius:14px;padding:18px 20px;cursor:pointer;transition:var(--transition);"
+        return `<div style="background:rgba(255,255,255,0.35);border:1px solid rgba(255,255,255,0.7);border-radius:14px;padding:13px 16px;cursor:pointer;transition:var(--transition);"
           onclick="abrirDetalleCliente('${c.id}')"
           onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 10px 30px rgba(100,110,140,0.15)'"
           onmouseout="this.style.transform='';this.style.boxShadow=''">
-          <div style="display:flex;align-items:center;justify-content:center;gap:8px;font-weight:600;font-size:14px;margin-bottom:6px;">${dot(c.color)}${c.id}</div>
-          <div style="text-align:center;font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:${c.color};margin-bottom:12px;">${fmt(valFac)}</div>
-          <div style="height:6px;background:rgba(200,205,220,0.3);border-radius:20px;overflow:hidden;margin-bottom:8px;">
+          <div style="display:flex;align-items:center;justify-content:center;gap:8px;font-weight:600;font-size:13px;margin-bottom:4px;">${dot(c.color)}${c.id}</div>
+          <div style="text-align:center;font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:${c.color};margin-bottom:9px;">${fmt(valFac)}</div>
+          <div style="height:5px;background:rgba(200,205,220,0.3);border-radius:20px;overflow:hidden;margin-bottom:6px;">
             <div style="height:100%;width:${pct}%;background:${c.color};border-radius:20px;transition:.4s ease;"></div>
           </div>
-          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-light);">
+          <div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--text-light);">
             <span>${pct}% facturado</span>
             <span>de ${fmt(valTodo)} total</span>
           </div>
@@ -4424,48 +4747,23 @@ function abrirDetalleCliente(clienteId) {
   const lf  = mes ? lineas.filter(l => l.mes === mes) : lineas;
   const lineasCliente = lf.filter(l => l.clienteId === clienteId);
 
-  const valFac  = lineasCliente.filter(l => l.estado === 'Facturado').reduce((a,l) => a+l.monto, 0);
-  const valTodo = lineasCliente.reduce((a,l) => a+l.monto, 0);
-  const mesStr  = mes ? mesLabel(mes) : 'todos los meses';
+  const mesStr = mes ? mesLabel(mes) : 'todos los meses';
 
   document.getElementById('kpi-modal-title').innerHTML =
     `${c ? dot(c.color) : ''} <span style="margin-left:6px;">${clienteId}</span>`;
   document.getElementById('kpi-modal-sub').textContent =
     `Detalle de líneas · ${mesStr}`;
-  document.getElementById('kpi-modal-total').textContent = fmt(Math.round(valFac)) + ' facturado';
 
-  const estadoBadge = {
-    'Proyectado': '<span style="background:rgba(79,128,255,0.12);color:#3b5fc0;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;">Proyectado</span>',
-    'Solicitado': '<span style="background:rgba(251,191,36,0.15);color:#b45309;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;">Solicitado</span>',
-    'Facturado':  '<span style="background:rgba(45,212,191,0.15);color:#0d9488;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;">Facturado</span>',
-  };
+  // El total acá es "facturado" (no la suma de todas las líneas) — pero ahora con filtros,
+  // simplifico para que sea coherente: muestra el total de las líneas visibles (suma simple).
+  // El label "facturado" se descarta porque puede no aplicar cuando filtrás por Proyectado/Solicitado.
+  _kpiModalState.lineas      = lineasCliente;
+  _kpiModalState.totalCustom = null;
+  _kpiModalState.totalLabel  = '';
 
-  const tbody = document.getElementById('kpi-modal-tbody');
-  if (!lineasCliente.length) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:48px;color:var(--text-light);font-size:14px;">Sin líneas para ${clienteId} en ${mesStr}</td></tr>`;
-  } else {
-    tbody.innerHTML = lineasCliente.map((l, i) => {
-      const sit   = sitios.find(s => s.id === l.sitioId);
-      const poNro = l.poNroLinea || (sit ? sit.poNro : '') || '—';
-      const bg    = i % 2 === 0 ? '' : 'background:rgba(240,242,248,0.4);';
-      const sitId = String(l.sitioId).replace(/'/g, "\\'");
-      return `<tr class="row-detalle-clickable" ondblclick="irASeguimientoDesdeModalDetalle('${sitId}')" style="${bg}border-bottom:1px solid rgba(200,205,220,0.18);">
-        <td style="padding:13px 16px 13px 0;font-weight:700;font-size:14px;">${l.sitioId}</td>
-        <td style="padding:13px 16px;">
-          <span style="display:flex;align-items:center;gap:7px;">
-            ${c ? dot(c.color) : ''}${l.clienteId}
-          </span>
-        </td>
-        <td style="padding:13px 16px;text-align:center;">
-          <span style="background:rgba(79,128,255,0.10);color:#3a6bf0;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;">${l.pct}%</span>
-        </td>
-        <td style="padding:13px 16px;color:var(--text-mid);font-size:12px;">${poNro}</td>
-        <td style="padding:13px 0 13px 16px;text-align:right;font-weight:700;font-size:14px;">${fmt(Math.round(l.monto||0))}</td>
-        <td style="padding:13px 0 13px 16px;text-align:center;color:var(--text-mid);font-size:12px;">${mesLabel(l.mes)}</td>
-        <td style="padding:13px 0 13px 16px;text-align:center;">${estadoBadge[l.estado]||l.estado}</td>
-      </tr>`;
-    }).join('');
-  }
+  _kpiInicializarFiltros(_kpiModalState.lineas);
+  _renderTablaModalKPI();
+
   document.getElementById('modal-kpi-detalle').classList.add('open');
 }
 
