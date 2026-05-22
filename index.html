@@ -178,10 +178,96 @@
     tr.row-sit-clickable:hover td { background: rgba(79,128,255,0.10) !important; }
     tr.row-sit-clickable td.col-acciones { cursor: default; }
 
+    /* ── Selección múltiple en PO sitios (tandas de proyección) ── */
+    .sit-check-col { width: 38px; text-align: center; cursor: default; }
+    .sit-check {
+      width: 16px; height: 16px; cursor: pointer; accent-color: var(--accent-blue);
+      margin: 0;
+    }
+    .sit-check:disabled { cursor: not-allowed; opacity: .35; }
+    tr.row-sit-clickable.row-seleccionada td { background: rgba(79,128,255,0.10) !important; }
+    /* Barra de acciones masivas — visible cuando hay selección */
+    #sit-bulk-bar {
+      display: none;
+      align-items: center; gap: 14px;
+      padding: 10px 16px;
+      background: rgba(79,128,255,0.10);
+      border: 1px solid rgba(79,128,255,0.25);
+      border-radius: 10px;
+      margin-bottom: 14px;
+      font-size: 13px;
+    }
+    #sit-bulk-bar.visible { display: flex; }
+    #sit-bulk-bar .sit-bulk-count {
+      font-weight: 600; color: var(--accent-blue);
+    }
+    #sit-bulk-bar .sit-bulk-spacer { flex: 1; }
+    /* Modal de tanda */
+    .tanda-row {
+      display: grid; grid-template-columns: 100px 1.2fr 50px 1.2fr 40px;
+      align-items: center; gap: 14px;
+      padding: 14px 18px;
+      background: rgba(255,255,255,0.5);
+      border: 1px solid rgba(200,205,225,0.5);
+      border-radius: 12px;
+      margin-bottom: 12px;
+    }
+    .tanda-row .tanda-label { font-weight: 600; font-size: 14px; color: var(--text-mid); }
+    .tanda-row .tanda-prep  { font-size: 13px; color: var(--text-light); text-align: center; }
+    .tanda-row .form-select { padding: 9px 12px; font-size: 14px; }
+    .tanda-row .tanda-quitar {
+      width: 34px; height: 34px; border-radius: 50%; border: none;
+      background: rgba(248,113,113,0.10); color: #dc2626;
+      cursor: pointer; font-size: 16px; font-weight: 700;
+      display: inline-flex; align-items: center; justify-content: center;
+      transition: var(--transition);
+    }
+    .tanda-row .tanda-quitar:hover { background: rgba(248,113,113,0.25); }
+    .tanda-row .tanda-quitar:disabled { opacity: .3; cursor: not-allowed; }
+    .tanda-suma {
+      padding: 13px 18px; margin-top: 8px;
+      border-radius: 12px; font-size: 13.5px; font-weight: 600;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .tanda-suma.ok  { background: rgba(45,212,191,0.10); color: #0d9488; }
+    .tanda-suma.err { background: rgba(248,113,113,0.10); color: #dc2626; }
+
     /* Sitios globales: fila clickeable y detalle expandido */
     tr.row-sg-clickable { cursor: pointer; user-select: none; -webkit-user-select: none; }
     tr.row-sg-clickable:hover td { background: rgba(79,128,255,0.08) !important; }
     tr.row-sg-clickable td.col-acciones { cursor: default; }
+
+    /* Tabla principal de Sitios globales: columnas distribuidas uniformemente, todo centrado */
+    .tabla-sg { table-layout: fixed; width: 100%; }
+    .tabla-sg > thead th { text-align: center; }
+    .tabla-sg > tbody > tr.row-sg-clickable > td { text-align: center; vertical-align: middle; }
+
+    /* Checkbox "Solo con días asignados" — estética acorde a los filtros multiselect */
+    .sg-check-dias {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 7px 12px;
+      background: rgba(255,255,255,0.45);
+      border: 1px solid rgba(200,205,225,0.5);
+      border-radius: 10px;
+      font-size: 12.5px; font-weight: 500; color: var(--text-mid);
+      cursor: pointer; user-select: none;
+      transition: var(--transition);
+    }
+    .sg-check-dias:hover { background: rgba(255,255,255,0.65); }
+    .sg-check-dias input[type="checkbox"] {
+      width: 14px; height: 14px; cursor: pointer; accent-color: var(--accent-blue);
+      margin: 0;
+    }
+
+    /* Badge azul para columna Días en Sitios globales */
+    .sg-dias-badge {
+      display: inline-block;
+      background: rgba(79,128,255,0.12); color: #3a6bf0;
+      padding: 4px 11px; border-radius: 20px;
+      font-size: 13px; font-weight: 700; font-family: 'Syne', sans-serif;
+      min-width: 34px;
+    }
+    .sg-dias-vacio { color: var(--text-light); font-weight: 500; font-size: 14px; }
     /* Asegurar que el botón conserve cursor pointer dentro de col-acciones */
     tr.row-sit-clickable td.col-acciones .btn { cursor: pointer; }
 
@@ -1068,13 +1154,24 @@
         <div class="sit-filtros-wrap">
           <input class="form-input" placeholder="Buscar ID..." id="sg-filtro-texto" oninput="aplicarFiltrosSitiosGlobales()" />
           <div class="ms-wrap" id="sg-filtro-cliente"></div>
+          <div class="ms-wrap" id="sg-filtro-monto"></div>
+          <label class="sg-check-dias" title="Mostrar solo sitios con al menos 1 día de trabajo">
+            <input type="checkbox" id="sg-filtro-dias" onchange="aplicarFiltrosSitiosGlobales()" />
+            <span>Solo con días asignados</span>
+          </label>
         </div>
       </div>
       <div class="table-wrap">
-        <table>
-          <thead><tr><th>ID Sitio</th><th>Cliente</th><th style="text-align:right;">TOTAL</th><th style="width:120px;">Acciones</th></tr></thead>
+        <table class="tabla-sg">
+          <thead><tr>
+            <th style="text-align:center;width:24%;">ID Sitio</th>
+            <th style="text-align:center;width:21%;">Cliente</th>
+            <th style="text-align:center;width:22%;">TOTAL</th>
+            <th style="text-align:center;width:15%;">Días</th>
+            <th style="text-align:center;width:18%;">Acciones</th>
+          </tr></thead>
           <tbody id="tabla-sitios-globales">
-            <tr><td colspan="4"><div class="empty-state"><span class="es-icon">🌐</span><p>Cargando...</p></div></td></tr>
+            <tr><td colspan="5"><div class="empty-state"><span class="es-icon">🌐</span><p>Cargando...</p></div></td></tr>
           </tbody>
         </table>
       </div>
@@ -1155,11 +1252,21 @@
           <div class="ms-wrap" id="sit-filtro-status"></div>
         </div>
       </div>
+      <!-- Barra de acciones masivas (proyección por tandas) — visible cuando hay selección -->
+      <div id="sit-bulk-bar">
+        <span class="sit-bulk-count"><span id="sit-bulk-count-n">0</span> sitio<span id="sit-bulk-count-s">s</span> seleccionado<span id="sit-bulk-count-s2">s</span></span>
+        <span class="sit-bulk-spacer"></span>
+        <button class="btn btn-primary btn-sm" onclick="abrirModalTanda()">Proyectar tanda</button>
+        <button class="btn btn-glass btn-sm" onclick="limpiarSelSitios()">Limpiar selección</button>
+      </div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>ID Sitio</th><th>Provincia</th><th>Cliente</th><th>Concepto</th><th>N° PO</th><th>Total PO</th><th>Status</th><th>Observación</th><th>Acciones</th></tr></thead>
+          <thead><tr>
+            <th class="sit-check-col"><input type="checkbox" class="sit-check" id="sit-check-all" onclick="toggleSelAllSitios(this)" title="Seleccionar/deseleccionar todos los disponibles" /></th>
+            <th>ID Sitio</th><th>Provincia</th><th>Cliente</th><th>Concepto</th><th>N° PO</th><th>Total PO</th><th>Status</th><th>Observación</th><th>Acciones</th>
+          </tr></thead>
           <tbody id="tabla-sitios">
-            <tr><td colspan="9"><div class="empty-state"><span class="es-icon">📍</span><p>Sin sitios registrados.</p></div></td></tr>
+            <tr><td colspan="10"><div class="empty-state"><span class="es-icon">📍</span><p>Sin sitios registrados.</p></div></td></tr>
           </tbody>
         </table>
       </div>
@@ -1616,6 +1723,28 @@
         onmouseover="this.style.background='rgba(45,212,191,0.25)'"
         onmouseout="this.style.background='rgba(45,212,191,0.12)'"
         title="Confirmar">✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL — Proyección por tandas (selección múltiple en PO sitios) -->
+<div class="modal-overlay" id="modal-tanda">
+  <div class="modal" style="max-width:820px;padding:30px 34px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <div class="modal-title" style="margin:0;">Proyectar tanda</div>
+      <button onclick="cerrarModalTanda()" style="background:none;border:none;cursor:pointer;font-size:22px;color:var(--text-light);line-height:1;">✕</button>
+    </div>
+    <div style="font-size:13px;color:var(--text-light);margin-bottom:22px;">
+      Distribuí <strong style="color:var(--text-mid);">100%</strong> en tandas (% + mes). Aplicará a todos los sitios seleccionados.
+    </div>
+    <div id="modal-tanda-tandas"></div>
+    <div style="margin:14px 0;">
+      <button class="btn btn-glass btn-sm" onclick="agregarTanda()" style="width:100%;justify-content:center;padding:11px;">+ Agregar tanda</button>
+    </div>
+    <div id="modal-tanda-suma" class="tanda-suma err"><span>Suma: 0%</span></div>
+    <div style="display:flex;gap:12px;margin-top:20px;">
+      <button class="btn btn-glass" style="flex:1;justify-content:center;padding:13px;font-size:14px;" onclick="cerrarModalTanda()">Cancelar</button>
+      <button class="btn btn-primary" id="btn-confirmar-tanda" style="flex:1.4;justify-content:center;padding:13px;font-size:14px;font-weight:600;" onclick="confirmarTanda()" disabled>Agregar a la cola</button>
     </div>
   </div>
 </div>
@@ -2525,7 +2654,7 @@ function renderSitios(filtro = '', filtros = null) {
     );
   }
 
-  if (!lista.length) { tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><span class="es-icon">📍</span><p>Sin sitios que coincidan con los filtros.</p></div></td></tr>`; return; }
+  if (!lista.length) { tbody.innerHTML = `<tr><td colspan="10"><div class="empty-state"><span class="es-icon">📍</span><p>Sin sitios que coincidan con los filtros.</p></div></td></tr>`; return; }
   tbody.innerHTML = lista.map(s => {
     const cli = getCli(s.clienteId);
     const cb  = s.concepto === 'Básico' ? 'badge-blue' : 'badge-violet';
@@ -2536,12 +2665,21 @@ function renderSitios(filtro = '', filtros = null) {
       if (iguales.length === 1) return l.sitioId === s.id;
       return l.sitioId === s.id && Math.abs(l.monto - s.po * l.pct / 100) < 1;
     }).reduce((a,l) => a + l.pct, 0);
-    const rowClass = pctFacTotal >= 100 ? 'row-facturado-100 row-sit-clickable' : 'row-sit-clickable';
+    // Disponibilidad para tanda (C1-a): sin nada confirmado en `lineas` Y sin nada en `_proyPendientes`
+    const disponibleTanda = _sitDisponiblePara100(s);
+    const checked = _sitSeleccionados.has(s.uid);
+    const rowClassBase = pctFacTotal >= 100 ? 'row-facturado-100 row-sit-clickable' : 'row-sit-clickable';
+    const rowClass = checked ? rowClassBase + ' row-seleccionada' : rowClassBase;
     return `<tr class="${rowClass}"
       ondblclick="irASeguimientoDesdeSitio('${s.id.replace(/'/g, "\\'")}')"
       onmouseenter="showSitTooltip(event,'${s.uid}')"
       onmousemove="moveSitTooltip(event)"
       onmouseleave="hideSitTooltip()">
+      <td class="sit-check-col" ondblclick="event.stopPropagation()">
+        <input type="checkbox" class="sit-check" ${disponibleTanda ? '' : 'disabled'} ${checked ? 'checked' : ''}
+          onclick="event.stopPropagation();toggleSelSitio('${s.uid}',this.checked)"
+          title="${disponibleTanda ? 'Seleccionar para tanda' : 'Solo sitios con 100% disponible se pueden seleccionar para una tanda'}" />
+      </td>
       <td style="font-weight:600;">${s.id}</td>
       <td>${s.localidad}</td>
       <td><span style="display:flex;align-items:center;gap:6px;">${cli?dot(cli.color):''}${s.clienteId}</span></td>
@@ -2557,16 +2695,247 @@ function renderSitios(filtro = '', filtros = null) {
       </span></td>
     </tr>`;
   }).join('');
+  actualizarBulkBar();
 }
 
 function aplicarFiltrosSitios() { renderSitios(); }
 function filtrarSitios(v) { renderSitios(v); }
+
+/* ══════════════════════════════════════════════════════════════════
+   PROYECCIÓN POR TANDAS (PO sitios)
+   ════════════════════════════════════════════════════════════════════
+   Estado:
+   - _sitSeleccionados: Set<uid> — sitios marcados con checkbox.
+   - _tandas: array de { pct, mes } — tandas configuradas en el modal abierto.
+
+   Reglas:
+   - Solo seleccionables sitios con 100% disponible (C1-a): sin confirmadas en `lineas` y sin pendientes en `_proyPendientes`.
+   - La selección persiste al cambiar filtros (G1).
+   - Modal de tanda: dropdown de %, dropdown de mes (actual + 6 próximos), suma debe ser 100% para confirmar.
+   - Mes repetido permitido (D5), % > 100 bloquea (D4).
+   - Al confirmar: genera N*T líneas Proyectadas y las suma a `_proyPendientes`.
+     Si una combinación (sitio+pct+mes) ya está en cola → la omite y avisa (E1).
+*/
+let _sitSeleccionados = new Set();
+let _tandas = [{ pct: '', mes: '' }];
+
+// Helper: ¿el sitio tiene 100% disponible (sin confirmadas ni en cola)?
+function _sitDisponiblePara100(s) {
+  // Pct ya en líneas confirmadas (mismas reglas que `pctFacTotal` pero para CUALQUIER estado, no solo Facturado)
+  const pctConfirmado = lineas.filter(l => {
+    const iguales = sitios.filter(x => x.id === s.id);
+    if (iguales.length === 1) return l.sitioId === s.id;
+    return l.sitioId === s.id && Math.abs(l.monto - s.po * l.pct / 100) < 1;
+  }).reduce((a,l) => a + l.pct, 0);
+  if (pctConfirmado > 0) return false;
+  // Pct en _proyPendientes
+  const pctPendiente = (_proyPendientes || []).filter(p => p.sitioId === s.id).reduce((a,p) => a + p.pct, 0);
+  if (pctPendiente > 0) return false;
+  return true;
+}
+
+// Helper: cuenta de FECHAS ÚNICAS con asignaciones confirmadas para un ID de sitio (E1).
+// Devuelve un entero (0 si no tiene asignaciones).
+function _diasTrabajadosSitio(idSitio) {
+  if (!idSitio || !Array.isArray(asignaciones) || asignaciones.length === 0) return 0;
+  const fechas = new Set();
+  asignaciones.forEach(a => {
+    if (a.sitioId === idSitio && a.fecha) fechas.add(a.fecha);
+  });
+  return fechas.size;
+}
+
+function toggleSelSitio(uid, checked) {
+  if (checked) _sitSeleccionados.add(uid);
+  else _sitSeleccionados.delete(uid);
+  // Actualizar visual sin re-render completo
+  const fila = document.querySelector(`#tabla-sitios tr td.sit-check-col input[onclick*="${uid}"]`)?.closest('tr');
+  if (fila) fila.classList.toggle('row-seleccionada', checked);
+  actualizarBulkBar();
+  actualizarCheckAll();
+}
+
+function toggleSelAllSitios(cb) {
+  // Toma todas las filas visibles con checkbox habilitado
+  document.querySelectorAll('#tabla-sitios .sit-check:not(:disabled)').forEach(chk => {
+    const uid = (chk.getAttribute('onclick') || '').match(/'([^']+)'/)?.[1];
+    if (!uid) return;
+    chk.checked = cb.checked;
+    if (cb.checked) _sitSeleccionados.add(uid);
+    else _sitSeleccionados.delete(uid);
+    chk.closest('tr')?.classList.toggle('row-seleccionada', cb.checked);
+  });
+  actualizarBulkBar();
+}
+
+function actualizarCheckAll() {
+  const checkAll = document.getElementById('sit-check-all');
+  if (!checkAll) return;
+  const visibles = document.querySelectorAll('#tabla-sitios .sit-check:not(:disabled)');
+  if (!visibles.length) { checkAll.checked = false; checkAll.indeterminate = false; return; }
+  const marcados = [...visibles].filter(c => c.checked).length;
+  if (marcados === 0)               { checkAll.checked = false; checkAll.indeterminate = false; }
+  else if (marcados === visibles.length) { checkAll.checked = true;  checkAll.indeterminate = false; }
+  else                              { checkAll.checked = false; checkAll.indeterminate = true; }
+}
+
+function actualizarBulkBar() {
+  const bar = document.getElementById('sit-bulk-bar');
+  if (!bar) return;
+  const n = _sitSeleccionados.size;
+  if (n === 0) {
+    bar.classList.remove('visible');
+  } else {
+    bar.classList.add('visible');
+    document.getElementById('sit-bulk-count-n').textContent = n;
+    document.getElementById('sit-bulk-count-s').textContent  = n === 1 ? '' : 's';
+    document.getElementById('sit-bulk-count-s2').textContent = n === 1 ? '' : 's';
+  }
+  actualizarCheckAll();
+}
+
+function limpiarSelSitios() {
+  _sitSeleccionados.clear();
+  document.querySelectorAll('#tabla-sitios .sit-check').forEach(c => { c.checked = false; });
+  document.querySelectorAll('#tabla-sitios tr.row-seleccionada').forEach(r => r.classList.remove('row-seleccionada'));
+  actualizarBulkBar();
+}
+
+/* ──── MODAL DE TANDA ──── */
+function abrirModalTanda() {
+  if (_sitSeleccionados.size === 0) return toast('No hay sitios seleccionados.', 'err');
+  // Reset: empieza con 1 tanda (D1)
+  _tandas = [{ pct: '', mes: '' }];
+  renderModalTanda();
+  document.getElementById('modal-tanda').classList.add('open');
+}
+
+function cerrarModalTanda() {
+  document.getElementById('modal-tanda').classList.remove('open');
+}
+
+// Lista de meses disponibles (F1: actual + 6 próximos)
+function _mesesTandaOpts() {
+  const now = new Date();
+  const opts = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+    const ym = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    opts.push({ value: ym, label: mesLabel(ym) });
+  }
+  return opts;
+}
+
+const _PCT_OPTS_TANDA = [100, 80, 70, 30, 20];
+
+function renderModalTanda() {
+  const cont    = document.getElementById('modal-tanda-tandas');
+  const mesOpts = _mesesTandaOpts();
+  cont.innerHTML = _tandas.map((t, i) => {
+    const pctSel = _tandas.map((x,j) => j !== i ? x.pct : null).filter(p => p);
+    const pctOpts = _PCT_OPTS_TANDA.map(p => `<option value="${p}" ${String(t.pct) === String(p) ? 'selected' : ''}>${p}%</option>`).join('');
+    return `<div class="tanda-row">
+      <div class="tanda-label">Tanda ${i+1}</div>
+      <select class="form-select" onchange="setTandaPct(${i}, this.value)">
+        <option value="">— %</option>
+        ${pctOpts}
+      </select>
+      <div class="tanda-prep">en</div>
+      <select class="form-select" onchange="setTandaMes(${i}, this.value)">
+        <option value="">— Mes</option>
+        ${mesOpts.map(m => `<option value="${m.value}" ${t.mes === m.value ? 'selected' : ''}>${m.label}</option>`).join('')}
+      </select>
+      <button class="tanda-quitar" onclick="quitarTanda(${i})" ${_tandas.length === 1 ? 'disabled' : ''} title="Quitar tanda">×</button>
+    </div>`;
+  }).join('');
+  actualizarTandaResumen();
+}
+
+function setTandaPct(idx, val) {
+  _tandas[idx].pct = val ? parseInt(val) : '';
+  actualizarTandaResumen();
+}
+function setTandaMes(idx, val) {
+  _tandas[idx].mes = val;
+  actualizarTandaResumen();
+}
+function agregarTanda() {
+  _tandas.push({ pct: '', mes: '' });
+  renderModalTanda();
+}
+function quitarTanda(idx) {
+  if (_tandas.length === 1) return;
+  _tandas.splice(idx, 1);
+  renderModalTanda();
+}
+
+function actualizarTandaResumen() {
+  const suma = _tandas.reduce((a,t) => a + (parseInt(t.pct) || 0), 0);
+  const sumaEl = document.getElementById('modal-tanda-suma');
+  const btn    = document.getElementById('btn-confirmar-tanda');
+  const todasCompletas = _tandas.every(t => t.pct && t.mes);
+  const sumaOK = suma === 100;
+  const valido = todasCompletas && sumaOK;
+  const nSitios = _sitSeleccionados.size;
+  const nLineas = nSitios * _tandas.length;
+  if (sumaEl) {
+    sumaEl.className = 'tanda-suma ' + (sumaOK ? 'ok' : 'err');
+    sumaEl.innerHTML = `<span>Suma: ${suma}% ${sumaOK ? '✓' : (suma > 100 ? '— supera el 100%' : '— falta ' + (100-suma) + '%')}</span>
+      <span>${valido ? `${nLineas} líneas (${nSitios} sitios × ${_tandas.length} tanda${_tandas.length!==1?'s':''})` : ''}</span>`;
+  }
+  if (btn) {
+    btn.disabled = !valido;
+    btn.style.opacity   = valido ? '' : '.5';
+    btn.style.cursor    = valido ? '' : 'not-allowed';
+  }
+}
+
+function confirmarTanda() {
+  const suma = _tandas.reduce((a,t) => a + (parseInt(t.pct) || 0), 0);
+  if (suma !== 100) return toast('La suma de tandas debe ser 100%.', 'err');
+  if (_tandas.some(t => !t.pct || !t.mes)) return toast('Completá todas las tandas.', 'err');
+
+  let agregadas = 0;
+  let omitidas  = 0;
+  const sitiosUids = [..._sitSeleccionados];
+
+  sitiosUids.forEach(uid => {
+    const s = getSit(uid);
+    if (!s) return;
+    _tandas.forEach(t => {
+      const mes = t.mes;
+      const pct = parseInt(t.pct);
+      // E1: omitir duplicado exacto (sitio + pct + mes)
+      const dup = _proyPendientes.find(p => p.sitioId === s.id && p.pct === pct && p.mes === mes);
+      if (dup) { omitidas++; return; }
+      const monto = (s.po) ? Math.round(s.po * pct / 100) : 0;
+      _proyPendientes.push({
+        id: nuevoId('FAC'), sitioId: s.id, clienteId: s.clienteId,
+        pct, monto, mes,
+        fechaSolicitud: '', fechaFactura: '', nroFactura: '', estado: 'Proyectado'
+      });
+      agregadas++;
+    });
+  });
+
+  cerrarModalTanda();
+  limpiarSelSitios();
+  actualizarBannerProyecciones();
+  renderSitios();
+  if (omitidas > 0) {
+    toast(`${agregadas} líneas agregadas. ${omitidas} duplicadas omitidas.`, 'ok');
+  } else {
+    toast(`${agregadas} líneas agregadas a la cola.`, 'ok');
+  }
+}
 
 /* ══ SITIOS GLOBALES — vista agregada por ID de sitio ══
    Suma los "Total PO" de todas las filas con el mismo ID, despliega detalle al click.
 */
 // Set con los IDs actualmente expandidos. E1: una sola fila abierta a la vez.
 let _sgExpandido = null;
+// Flag para aplicar default "Con monto" solo en el primer render de la sesión
+let _sgDefaultMontoAplicado = false;
 
 function renderSitiosGlobales() {
   const tbody = document.getElementById('tabla-sitios-globales');
@@ -2579,6 +2948,21 @@ function renderSitiosGlobales() {
     .map(c => ({ value: c.id, label: c.id }));
   msInit('sg-filtro-cliente', clientesOpts, 'Todos los clientes', aplicarFiltrosSitiosGlobales);
 
+  // Filtro Con monto / Sin monto. Default en primer render de sesión: solo "Con monto"
+  const montoOpts = [
+    { value: 'con', label: 'Con monto' },
+    { value: 'sin', label: 'Sin monto' }
+  ];
+  msInit('sg-filtro-monto', montoOpts, 'Con/Sin monto', aplicarFiltrosSitiosGlobales);
+  if (!_sgDefaultMontoAplicado) {
+    const st = window._msState?.['sg-filtro-monto'];
+    if (st && st.selected.size === 0) {
+      st.selected.add('con');
+      msRender('sg-filtro-monto');
+    }
+    _sgDefaultMontoAplicado = true;
+  }
+
   aplicarFiltrosSitiosGlobales();
 }
 
@@ -2589,18 +2973,22 @@ function aplicarFiltrosSitiosGlobales() {
   // Filtros
   const texto    = (document.getElementById('sg-filtro-texto')?.value || '').toLowerCase().trim();
   const clientesSel = msGet('sg-filtro-cliente');
+  const montoSel    = msGet('sg-filtro-monto'); // ['con'] | ['sin'] | ['con','sin'] | []
+  const soloConDias = !!document.getElementById('sg-filtro-dias')?.checked;
 
   // Agrupar por ID (no hay clientes distintos para mismo ID, decisión A)
-  const mapa = new Map(); // id -> { id, clienteId, filas:[s], total:number }
+  const mapa = new Map(); // id -> { id, clienteId, filas:[s], total:number, dias:number }
   sitios.forEach(s => {
     if (!s.id) return;
     if (!mapa.has(s.id)) {
-      mapa.set(s.id, { id: s.id, clienteId: s.clienteId, filas: [], total: 0 });
+      mapa.set(s.id, { id: s.id, clienteId: s.clienteId, filas: [], total: 0, dias: 0 });
     }
     const g = mapa.get(s.id);
     g.filas.push(s);
     g.total += (s.po || 0);
   });
+  // Calcular días trabajados por sitio (E1: solo confirmadas, no incluye cola)
+  mapa.forEach(g => { g.dias = _diasTrabajadosSitio(g.id); });
 
   // Convertir a array y aplicar filtros
   let lista = [...mapa.values()];
@@ -2610,11 +2998,23 @@ function aplicarFiltrosSitiosGlobales() {
   if (clientesSel.length) {
     lista = lista.filter(g => clientesSel.includes(g.clienteId));
   }
+  // Filtro Con/Sin monto (A3: sin monto = total ≤ 1, con monto = total > 1)
+  if (montoSel.length) {
+    lista = lista.filter(g => {
+      if (montoSel.includes('con') && g.total > 1) return true;
+      if (montoSel.includes('sin') && g.total <= 1) return true;
+      return false;
+    });
+  }
+  // Filtro "Solo con días asignados"
+  if (soloConDias) {
+    lista = lista.filter(g => g.dias > 0);
+  }
   // O1: orden alfabético por ID
   lista.sort((a, b) => a.id.localeCompare(b.id));
 
   if (!lista.length) {
-    tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state"><span class="es-icon">🌐</span><p>${sitios.length === 0 ? 'Sin sitios registrados.' : 'Sin sitios que coincidan con los filtros.'}</p></div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><span class="es-icon">🌐</span><p>${sitios.length === 0 ? 'Sin sitios registrados.' : 'Sin sitios que coincidan con los filtros.'}</p></div></td></tr>`;
     return;
   }
 
@@ -2627,13 +3027,18 @@ function aplicarFiltrosSitiosGlobales() {
 
     const filaResumen = `<tr class="row-sg-clickable" onclick="sgToggleExpandir('${idEsc}')">
       <td style="font-weight:600;">
-        <span style="display:inline-block;width:12px;color:var(--text-light);font-size:10px;margin-right:6px;transition:transform .15s;">${arrow}</span>
+        <span style="display:inline-block;width:12px;color:var(--text-light);font-size:10px;margin-right:6px;">${arrow}</span>
         ${g.id}
       </td>
-      <td><span style="display:flex;align-items:center;gap:6px;">${cli ? dot(cli.color) : ''}${g.clienteId}</span></td>
-      <td style="text-align:right;">
+      <td>
+        <span style="display:inline-flex;align-items:center;gap:6px;">${cli ? dot(cli.color) : ''}${g.clienteId}</span>
+      </td>
+      <td>
         <span style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;">${fmt(Math.round(g.total))}</span>
         <span style="font-size:11px;color:var(--text-light);font-weight:500;margin-left:6px;">(${g.filas.length} PO${g.filas.length!==1?'s':''})</span>
+      </td>
+      <td>
+        ${g.dias > 0 ? `<span class="sg-dias-badge">${g.dias}</span>` : `<span class="sg-dias-vacio">—</span>`}
       </td>
       <td class="col-acciones" onclick="event.stopPropagation()">
         <button class="btn btn-glass btn-sm" onclick="sgVerEnPOSitios('${idEsc}')" title="Ver en PO sitios" style="font-size:11px;font-weight:600;padding:5px 10px;">Ver en PO</button>
@@ -2657,7 +3062,7 @@ function aplicarFiltrosSitiosGlobales() {
         </tr>`;
       }).join('');
 
-      filaDetalle = `<tr class="sg-detalle-fila"><td colspan="4" style="padding:0;background:rgba(240,242,248,0.35);">
+      filaDetalle = `<tr class="sg-detalle-fila"><td colspan="5" style="padding:0;background:rgba(240,242,248,0.35);">
         <table style="width:100%;border-collapse:collapse;margin:0;">
           <thead><tr style="background:rgba(220,225,238,0.55);">
             <th style="padding-left:38px;font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:var(--text-light);font-weight:600;text-align:left;padding-top:9px;padding-bottom:9px;">Provincia</th>
