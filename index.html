@@ -506,6 +506,36 @@
       padding-right: 4px;
     }
 
+    /* Header del card "Info por cliente": grid 2 columnas alineado con las cards de cliente debajo */
+    .dash-obj-header {
+      display: grid; grid-template-columns: 1fr 30%;
+      gap: 14px; align-items: center;
+      padding: 0 16px;
+    }
+    .dash-obj-header-info { text-align: center; }
+    .dash-obj-header-chip {
+      text-align: center;
+      font-size: 11px; font-weight: 600;
+      color: var(--text-light);
+      text-transform: uppercase; letter-spacing: 0.5px;
+      line-height: 1.4;
+    }
+
+    /* Card de cliente: grid 2 columnas (info + chip centrado vertical) */
+    .dash-cli-card { display: grid; grid-template-columns: 1fr 30%; gap: 14px; align-items: center; }
+    .dash-cli-info { min-width: 0; }
+    .dash-cli-chip-col { display: flex; align-items: center; justify-content: center; }
+    .dash-cli-chip {
+      font-family: 'Syne', sans-serif; font-weight: 700;
+      font-size: 18px;
+      padding: 8px 16px;
+      border-radius: 24px;
+      background: rgba(79,128,255,0.10);
+      color: #3a6bf0;
+      min-width: 64px;
+      text-align: center;
+    }
+
     /* ── Círculo de progreso de Cumplimiento PEQ (G2: 160px) ── */
     .peq-ring-wrap { display: flex; flex-direction: column; align-items: center; gap: 14px; }
     .peq-ring { position: relative; width: 160px; height: 160px; }
@@ -893,6 +923,57 @@
       cursor: pointer; transition: all .2s;
     }
     .banner-cancel:hover { background: rgba(255,255,255,0.15); color: #e2e8f0; }
+
+    /* ════ ANÁLISIS Y DATOS ════ */
+    .an-seg-wrap { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; margin-bottom: 22px; }
+    .an-seg { display: inline-flex; background: rgba(220,225,240,0.45); border-radius: 12px; padding: 4px; gap: 2px; }
+    .an-seg button { border: none; background: transparent; cursor: pointer; padding: 8px 16px; border-radius: 9px; font-family: 'Inter', sans-serif; font-weight: 600; font-size: 12.5px; color: var(--text-mid); transition: var(--transition); }
+    .an-seg button:hover { color: var(--text-dark); }
+    .an-seg button.active { background: #fff; color: var(--accent-blue); box-shadow: 0 2px 8px rgba(79,128,255,0.18); }
+    .an-personalizado { display: none; align-items: center; gap: 8px; font-size: 13px; color: var(--text-mid); }
+    .an-personalizado.visible { display: inline-flex; }
+    .an-personalizado select { padding: 7px 12px; border-radius: 9px; border: 1px solid rgba(200,205,225,0.6); background: #fff; font-family: inherit; font-size: 12.5px; color: var(--text-dark); cursor: pointer; }
+    .an-switch { display: inline-flex; align-items: center; gap: 9px; font-size: 12.5px; font-weight: 600; color: var(--text-mid); cursor: pointer; user-select: none; }
+    .an-switch input { display: none; }
+    .an-sw-track { width: 38px; height: 21px; background: rgba(200,205,225,0.6); border-radius: 12px; position: relative; transition: var(--transition); }
+    .an-sw-knob { position: absolute; top: 2px; left: 2px; width: 17px; height: 17px; background: #fff; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.2); transition: var(--transition); }
+    .an-switch input:checked + .an-sw-track { background: var(--accent-blue); }
+    .an-switch input:checked + .an-sw-track .an-sw-knob { left: 19px; }
+    .an-period-info { margin-left: auto; font-size: 12px; color: var(--text-light); }
+    .an-period-info strong { color: var(--text-mid); font-weight: 600; }
+
+    .an-matrix-wrap { overflow-x: auto; max-height: 520px; overflow-y: auto; border-radius: 12px; border: 1px solid rgba(200,205,225,0.45); background: rgba(255,255,255,0.3); }
+    .an-matrix, .an-deg { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; min-width: 640px; }
+    .an-matrix thead th, .an-deg thead th { background: rgba(220,225,240,0.85); color: var(--text-light); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .7px; padding: 12px 14px; text-align: center; border-bottom: 1px solid rgba(200,205,225,0.45); position: sticky; top: 0; z-index: 3; }
+    .an-matrix thead th:first-child, .an-deg thead th:first-child { position: sticky; left: 0; z-index: 4; }
+    .an-matrix thead th.col-total, .an-deg thead th.col-total { color: var(--accent-blue); background: rgba(79,128,255,0.18); }
+    .an-matrix tr.row-total td { background: rgba(79,128,255,0.10); color: var(--text-dark); font-weight: 700; font-family: 'Syne', sans-serif; border-bottom: 1px solid rgba(200,205,225,0.55); padding: 12px 14px; text-align: center; position: sticky; top: 41px; z-index: 2; }
+    .an-matrix tr.row-total td:first-child { color: var(--accent-blue); position: sticky; left: 0; z-index: 3; background: rgba(79,128,255,0.20); }
+    .an-matrix tr.row-total td.col-total { background: rgba(79,128,255,0.20); color: var(--accent-blue); }
+    .an-matrix tbody td, .an-deg tbody td { padding: 12px 14px; text-align: center; border-bottom: 1px solid rgba(200,205,225,0.25); vertical-align: middle; }
+    .an-matrix tbody td:first-child, .an-deg tbody td:first-child { font-weight: 600; position: sticky; left: 0; background: rgba(255,255,255,0.92); z-index: 1; }
+    .an-matrix tbody td.col-total, .an-deg tbody td.col-total { font-weight: 700; color: var(--accent-blue); font-family: 'Syne', sans-serif; background: rgba(79,128,255,0.06); }
+    .an-matrix tbody tr:last-child td, .an-deg tbody tr:last-child td { border-bottom: none; }
+    .an-deg tr.deg-total td { background: rgba(79,128,255,0.10); font-weight: 700; font-family: 'Syne', sans-serif; }
+    .an-deg tr.deg-total td:first-child { color: var(--accent-blue); position: sticky; left: 0; z-index: 2; background: rgba(79,128,255,0.20); }
+    .an-cell-empty { color: var(--text-light); }
+    .an-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 7px; vertical-align: middle; }
+
+    .an-tramo-stack { display: flex; flex-direction: column; gap: 4px; align-items: center; }
+    .an-tramo { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 12px; white-space: nowrap; }
+    .an-tramo .t-label { font-size: 9.5px; font-weight: 700; color: var(--text-light); min-width: 28px; text-align: right; }
+    .an-tramo .t-monto { font-weight: 600; }
+    .an-tramo .t-cant { font-size: 10px; color: var(--text-light); }
+
+    .an-summary-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 18px; }
+    .an-summary-tile { background: rgba(255,255,255,0.45); border: 1px solid rgba(200,205,225,0.5); border-radius: 12px; padding: 14px 16px; }
+    .an-summary-tile .sl-label { font-size: 11px; color: var(--text-light); font-weight: 600; text-transform: uppercase; letter-spacing: .6px; margin-bottom: 6px; }
+    .an-summary-tile .sl-value { font-family: 'Syne', sans-serif; font-size: 19px; font-weight: 700; color: var(--text-dark); }
+    .an-summary-tile .sl-sub { font-size: 11px; color: var(--text-light); margin-top: 4px; }
+
+    .an-deg-aviso { margin-top: 12px; font-size: 11.5px; color: #b45309; background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.3); border-radius: 9px; padding: 9px 13px; }
+
+    .an-empty { text-align: center; padding: 50px 24px; color: var(--text-light); font-size: 14px; }
   </style>
 </head>
 <body>
@@ -949,6 +1030,10 @@
     <!-- Dashboard: ítem principal suelto, sin sección agrupadora -->
     <a class="nav-item active" id="nav-dashboard" onclick="showView('dashboard',this)">
       <span style="margin-left:6px;">Dashboard</span>
+    </a>
+    <!-- Análisis y datos: ítem principal suelto -->
+    <a class="nav-item" id="nav-analisis" onclick="showView('analisis',this)">
+      <span style="margin-left:6px;">Análisis y datos</span>
     </a>
   </div>
 
@@ -1059,15 +1144,16 @@
       <!-- Columna 2: 3 KPI cards apiladas (renderizadas por JS) -->
       <div class="col-stack" id="dash-col-stack"></div>
 
-      <!-- Columna 3: Objetivos por cliente -->
+      <!-- Columna 3: Info por cliente -->
       <div id="dash-objetivos-card" class="col-objetivos" style="background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid var(--glass-border);border-radius:var(--radius);box-shadow:var(--glass-shadow);padding:18px 20px;position:relative;overflow:hidden;">
         <div style="position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(79,128,255,0.08),transparent 70%);pointer-events:none;"></div>
         <div style="position:absolute;bottom:-30px;left:-30px;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle,rgba(45,212,191,0.07),transparent 70%);pointer-events:none;"></div>
-        <div class="card-header" style="margin-bottom:14px;justify-content:center;flex-shrink:0;">
-          <div style="text-align:center;">
-            <div class="card-title" style="font-size:15px;">Objetivos por cliente</div>
+        <div class="dash-obj-header" style="margin-bottom:14px;flex-shrink:0;">
+          <div class="dash-obj-header-info">
+            <div class="card-title" style="font-size:15px;">Info por cliente</div>
             <div class="card-sub">Facturado acumulado en el mes seleccionado</div>
           </div>
+          <div class="dash-obj-header-chip">% s/ facturado</div>
         </div>
         <div id="dash-objetivos" class="col-objetivos-lista">
           <div style="text-align:center;padding:30px 0;color:var(--text-light);font-size:13px;">Sin datos</div>
@@ -1087,6 +1173,53 @@
         <div id="dash-gap-total" style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;"></div>
       </div>
       <div id="dash-gap-tabla" style="overflow-x:auto;"></div>
+    </div>
+  </div>
+
+  <!-- ═══ ANALISIS Y DATOS ═══ -->
+  <div id="view-analisis" class="view">
+    <div class="topbar">
+      <div>
+        <div class="page-title">Análisis y <span>datos</span></div>
+        <div style="font-size:13px;color:var(--text-light);margin-top:3px;">Distribución de facturación por mes y cliente</div>
+      </div>
+    </div>
+
+    <!-- Card 1: Matriz principal -->
+    <div class="card">
+      <div class="an-seg-wrap">
+        <div class="an-seg" id="an-seg-periodo">
+          <button class="active" data-p="mes" onclick="anSetPeriodo('mes',this)">Mes actual</button>
+          <button data-p="3m" onclick="anSetPeriodo('3m',this)">Últimos 3 meses</button>
+          <button data-p="ytd" onclick="anSetPeriodo('ytd',this)">YTD</button>
+          <button data-p="custom" onclick="anSetPeriodo('custom',this)">Personalizado</button>
+        </div>
+        <div class="an-personalizado" id="an-custom">
+          <span>Desde</span>
+          <select id="an-custom-desde" onchange="anRender()"></select>
+          <span>Hasta</span>
+          <select id="an-custom-hasta" onchange="anRender()"></select>
+        </div>
+        <label class="an-switch">
+          <input type="checkbox" id="an-switch-pct" onchange="anRender()">
+          <span class="an-sw-track"><span class="an-sw-knob"></span></span>
+          <span>% sobre total del mes</span>
+        </label>
+        <div class="an-period-info" id="an-period-info"></div>
+      </div>
+      <div class="an-matrix-wrap" id="an-matrix-wrap">
+        <table class="an-matrix" id="an-matrix"></table>
+      </div>
+      <div class="an-summary-row" id="an-summary"></div>
+    </div>
+
+    <!-- Card 2: Desglose porcentual facturación -->
+    <div class="card">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:16px;">Desglose porcentual facturación</div>
+      <div class="an-matrix-wrap" id="an-deg-wrap">
+        <table class="an-deg" id="an-deg"></table>
+      </div>
+      <div id="an-deg-aviso"></div>
     </div>
   </div>
 
@@ -2173,6 +2306,7 @@ function showView(name, el) {
   if (name === 'clientes')     renderClientes();
   if (name === 'sitios')       { poblarSelect('sit-cliente'); aplicarFiltrosSitios(); }
   if (name === 'sitios-globales') renderSitiosGlobales();
+  if (name === 'analisis')        renderAnalisis();
   if (name === 'seguimiento')  renderSeguimiento();
   if (name === 'asignaciones') renderAsignaciones();
 }
@@ -3034,6 +3168,300 @@ function confirmarTanda() {
 /* ══ SITIOS GLOBALES — vista agregada por ID de sitio ══
    Suma los "Total PO" de todas las filas con el mismo ID, despliega detalle al click.
 */
+/* ══════════════════════════════════════════════════════════════════
+   ANÁLISIS Y DATOS
+   ════════════════════════════════════════════════════════════════════
+   Vista de distribución de facturación por mes y cliente.
+   - Solo cuenta líneas en estado 'Facturado'.
+   - Solo clientes con facturación > 0 en el período.
+   - Toggle período: mes actual / últ. 3 / YTD / personalizado.
+   - Switch Nominal/% (% sobre total del mes; columna TOTAL → % sobre total período).
+   - Card 2: desglose por tramos 100/80/20 (regla A2: solo tramos con datos).
+     Tramos fuera de 100/80/20 (ej. 70/30) → aviso al pie.
+*/
+let _anPeriodo = 'mes';       // 'mes' | '3m' | 'ytd' | 'custom'
+const _AN_TRAMOS = [100, 80, 20];
+
+// Lista de meses (YYYY-MM) que tienen al menos una línea facturada, ordenada asc
+function _anMesesConFacturacion() {
+  const set = new Set();
+  lineas.forEach(l => { if (l.estado === 'Facturado' && l.mes) set.add(l.mes); });
+  return [...set].sort();
+}
+
+// Devuelve los meses del período seleccionado (array de 'YYYY-MM' ordenado asc)
+function _anMesesDelPeriodo() {
+  const hoy = new Date();
+  const mesActual = `${hoy.getFullYear()}-${String(hoy.getMonth()+1).padStart(2,'0')}`;
+  if (_anPeriodo === 'mes') {
+    return [mesActual];
+  }
+  if (_anPeriodo === '3m') {
+    const arr = [];
+    for (let i = 2; i >= 0; i--) {
+      const d = new Date(hoy.getFullYear(), hoy.getMonth() - i, 1);
+      arr.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);
+    }
+    return arr;
+  }
+  if (_anPeriodo === 'ytd') {
+    const arr = [];
+    for (let m = 0; m <= hoy.getMonth(); m++) {
+      arr.push(`${hoy.getFullYear()}-${String(m+1).padStart(2,'0')}`);
+    }
+    return arr;
+  }
+  if (_anPeriodo === 'custom') {
+    const desde = document.getElementById('an-custom-desde')?.value;
+    const hasta = document.getElementById('an-custom-hasta')?.value;
+    if (!desde || !hasta) return [];
+    let [yd, md] = desde.split('-').map(Number);
+    let [yh, mh] = hasta.split('-').map(Number);
+    // Si desde > hasta, los intercambio
+    if (yd*12+md > yh*12+mh) { [yd,md,yh,mh] = [yh,mh,yd,md]; }
+    const arr = [];
+    let y = yd, m = md;
+    while (y*12+m <= yh*12+mh) {
+      arr.push(`${y}-${String(m).padStart(2,'0')}`);
+      m++; if (m > 12) { m = 1; y++; }
+    }
+    return arr;
+  }
+  return [mesActual];
+}
+
+function anSetPeriodo(p, btn) {
+  _anPeriodo = p;
+  document.querySelectorAll('#an-seg-periodo button').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  document.getElementById('an-custom').classList.toggle('visible', p === 'custom');
+  anRender();
+}
+
+function renderAnalisis() {
+  // Poblar los dropdowns de "Personalizado" solo con meses que tienen facturación (I-c)
+  const mesesFact = _anMesesConFacturacion();
+  const selD = document.getElementById('an-custom-desde');
+  const selH = document.getElementById('an-custom-hasta');
+  if (selD && selH) {
+    const opts = mesesFact.map(m => `<option value="${m}">${mesLabel(m)}</option>`).join('');
+    // Conservar selección previa si existe
+    const prevD = selD.value, prevH = selH.value;
+    selD.innerHTML = opts;
+    selH.innerHTML = opts;
+    if (mesesFact.length) {
+      selD.value = prevD && mesesFact.includes(prevD) ? prevD : mesesFact[0];
+      selH.value = prevH && mesesFact.includes(prevH) ? prevH : mesesFact[mesesFact.length-1];
+    }
+  }
+  anRender();
+}
+
+// Construye la data agregada: { meses, clientes:[{id,color,porMes:{mes:monto},total}], totalPorMes, totalGeneral }
+function _anComputeData(meses) {
+  // Filtra facturadas dentro del período
+  const facturadas = lineas.filter(l => l.estado === 'Facturado' && meses.includes(l.mes));
+  // Clientes con facturación > 0 en el período
+  const clientesIds = [...new Set(facturadas.map(l => l.clienteId).filter(Boolean))];
+  const filas = clientesIds.map(cid => {
+    const cli = getCli(cid);
+    const porMes = {};
+    meses.forEach(m => { porMes[m] = 0; });
+    facturadas.filter(l => l.clienteId === cid).forEach(l => { porMes[l.mes] += (l.monto || 0); });
+    const total = Object.values(porMes).reduce((a,b) => a+b, 0);
+    return { id: cid, color: cli ? cli.color : '#94a3b8', porMes, total };
+  }).filter(f => f.total > 0);
+  // Orden por total desc (J2)
+  filas.sort((a,b) => b.total - a.total);
+  // Totales por mes
+  const totalPorMes = {};
+  meses.forEach(m => { totalPorMes[m] = filas.reduce((a,f) => a + f.porMes[m], 0); });
+  const totalGeneral = filas.reduce((a,f) => a + f.total, 0);
+  return { meses, filas, totalPorMes, totalGeneral };
+}
+
+function anRender() {
+  const meses = _anMesesDelPeriodo();
+  const isPct = document.getElementById('an-switch-pct')?.checked;
+
+  // Chip de período
+  const infoEl = document.getElementById('an-period-info');
+  if (infoEl) {
+    if (meses.length === 0) {
+      infoEl.innerHTML = '';
+    } else if (meses.length === 1) {
+      infoEl.innerHTML = `Período: <strong>${mesLabel(meses[0])}</strong> · 1 mes`;
+    } else {
+      infoEl.innerHTML = `Período: <strong>${mesLabel(meses[0])} — ${mesLabel(meses[meses.length-1])}</strong> · ${meses.length} meses`;
+    }
+  }
+
+  const data = _anComputeData(meses);
+
+  _anRenderMatriz(data, isPct);
+  _anRenderSummary(data);
+  _anRenderDesglose(meses);
+}
+
+function _anRenderMatriz(data, isPct) {
+  const tabla = document.getElementById('an-matrix');
+  if (!tabla) return;
+  const { meses, filas, totalPorMes, totalGeneral } = data;
+
+  if (!filas.length) {
+    tabla.innerHTML = `<tbody><tr><td class="an-empty">Sin facturación en el período seleccionado.</td></tr></tbody>`;
+    return;
+  }
+
+  // Header
+  let thead = `<thead><tr><th>Cliente</th>`;
+  meses.forEach(m => { thead += `<th>${mesLabel(m)}</th>`; });
+  thead += `<th class="col-total">Total</th></tr></thead>`;
+
+  // Celda según modo
+  const celdaMes = (monto, mes) => {
+    if (!monto || monto <= 0) return `<span class="an-cell-empty">—</span>`;
+    if (!isPct) return fmt(Math.round(monto));
+    const den = totalPorMes[mes] || 0;
+    if (den <= 0) return `<span class="an-cell-empty">—</span>`;
+    const p = monto / den * 100;
+    return p < 1 ? '&lt;1%' : Math.round(p) + '%';
+  };
+  const celdaTotal = (monto) => {
+    if (!monto || monto <= 0) return `<span class="an-cell-empty">—</span>`;
+    if (!isPct) return fmt(Math.round(monto));
+    if (totalGeneral <= 0) return `<span class="an-cell-empty">—</span>`;
+    const p = monto / totalGeneral * 100;
+    return p < 1 ? '&lt;1%' : Math.round(p) + '%';
+  };
+
+  // Fila TOTAL (siempre nominal)
+  let body = `<tbody><tr class="row-total"><td>TOTAL</td>`;
+  meses.forEach(m => { body += `<td>${totalPorMes[m] > 0 ? fmt(Math.round(totalPorMes[m])) : '<span class="an-cell-empty">—</span>'}</td>`; });
+  body += `<td class="col-total">${fmt(Math.round(totalGeneral))}</td></tr>`;
+
+  // Filas de cliente
+  filas.forEach(f => {
+    body += `<tr><td><span class="an-dot" style="background:${f.color};"></span>${f.id}</td>`;
+    meses.forEach(m => { body += `<td>${celdaMes(f.porMes[m], m)}</td>`; });
+    body += `<td class="col-total">${celdaTotal(f.total)}</td></tr>`;
+  });
+  body += `</tbody>`;
+
+  tabla.innerHTML = thead + body;
+}
+
+function _anRenderSummary(data) {
+  const cont = document.getElementById('an-summary');
+  if (!cont) return;
+  const { meses, filas, totalPorMes, totalGeneral } = data;
+  if (!filas.length) { cont.innerHTML = ''; return; }
+
+  // Mejor mes
+  let mejorMes = null, mejorMonto = -1;
+  meses.forEach(m => { if (totalPorMes[m] > mejorMonto) { mejorMonto = totalPorMes[m]; mejorMes = m; } });
+  const pctMejorMes = totalGeneral > 0 ? Math.round(mejorMonto/totalGeneral*100) : 0;
+  // Top cliente (filas ya ordenadas desc)
+  const top = filas[0];
+  const pctTop = totalGeneral > 0 ? Math.round(top.total/totalGeneral*100) : 0;
+
+  cont.innerHTML = `
+    <div class="an-summary-tile">
+      <div class="sl-label">Facturación total</div>
+      <div class="sl-value">${fmt(Math.round(totalGeneral))}</div>
+      <div class="sl-sub">${meses.length} mes${meses.length!==1?'es':''} · ${filas.length} cliente${filas.length!==1?'s':''} con facturación</div>
+    </div>
+    <div class="an-summary-tile">
+      <div class="sl-label">Mejor mes</div>
+      <div class="sl-value">${mejorMes ? mesLabel(mejorMes) : '—'}</div>
+      <div class="sl-sub">${fmt(Math.round(mejorMonto))} · ${pctMejorMes}% del período</div>
+    </div>
+    <div class="an-summary-tile">
+      <div class="sl-label">Top cliente</div>
+      <div class="sl-value">${top.id}</div>
+      <div class="sl-sub">${fmt(Math.round(top.total))} · ${pctTop}% del período</div>
+    </div>`;
+}
+
+function _anRenderDesglose(meses) {
+  const tabla = document.getElementById('an-deg');
+  const avisoEl = document.getElementById('an-deg-aviso');
+  if (!tabla) return;
+
+  const facturadas = lineas.filter(l => l.estado === 'Facturado' && meses.includes(l.mes));
+  const clientesIds = [...new Set(facturadas.map(l => l.clienteId).filter(Boolean))];
+
+  // Pre-calcular total por cliente para ordenar igual que la matriz (desc)
+  const totalCli = {};
+  clientesIds.forEach(cid => {
+    totalCli[cid] = facturadas.filter(l => l.clienteId === cid).reduce((a,l) => a+(l.monto||0), 0);
+  });
+  const filasIds = clientesIds.filter(cid => totalCli[cid] > 0).sort((a,b) => totalCli[b] - totalCli[a]);
+
+  if (!filasIds.length) {
+    tabla.innerHTML = `<tbody><tr><td class="an-empty">Sin facturación en el período seleccionado.</td></tr></tbody>`;
+    if (avisoEl) avisoEl.innerHTML = '';
+    return;
+  }
+
+  // Helper: para un subconjunto de líneas, arma el stack de tramos {100,80,20} con monto + IDs únicos
+  const tramoStack = (lns) => {
+    const partes = [];
+    _AN_TRAMOS.forEach(t => {
+      const lnsT = lns.filter(l => Number(l.pct) === t);
+      const monto = lnsT.reduce((a,l) => a+(l.monto||0), 0);
+      if (monto > 0) {
+        const sitiosUnicos = new Set(lnsT.map(l => l.sitioId)).size; // C-a: IDs únicos
+        partes.push(`<div class="an-tramo"><span class="t-label">${t}%</span><span class="t-monto">${fmt(Math.round(monto))}</span><span class="t-cant">· ${sitiosUnicos}</span></div>`);
+      }
+    });
+    if (!partes.length) return `<span class="an-cell-empty">—</span>`;
+    return `<div class="an-tramo-stack">${partes.join('')}</div>`;
+  };
+
+  // Header
+  let thead = `<thead><tr><th>Cliente</th>`;
+  meses.forEach(m => { thead += `<th>${mesLabel(m)}</th>`; });
+  thead += `<th class="col-total">Total período</th></tr></thead>`;
+
+  // Fila TOTAL
+  let body = `<tbody><tr class="deg-total"><td>TOTAL</td>`;
+  meses.forEach(m => {
+    const lns = facturadas.filter(l => l.mes === m);
+    body += `<td>${tramoStack(lns)}</td>`;
+  });
+  body += `<td class="col-total">${tramoStack(facturadas)}</td></tr>`;
+
+  // Filas de cliente
+  filasIds.forEach(cid => {
+    const cli = getCli(cid);
+    const color = cli ? cli.color : '#94a3b8';
+    body += `<tr><td><span class="an-dot" style="background:${color};"></span>${cid}</td>`;
+    meses.forEach(m => {
+      const lns = facturadas.filter(l => l.clienteId === cid && l.mes === m);
+      body += `<td>${tramoStack(lns)}</td>`;
+    });
+    const lnsTot = facturadas.filter(l => l.clienteId === cid);
+    body += `<td class="col-total">${tramoStack(lnsTot)}</td></tr>`;
+  });
+  body += `</tbody>`;
+  tabla.innerHTML = thead + body;
+
+  // Aviso al pie: líneas en tramos NO contemplados (fuera de 100/80/20)
+  if (avisoEl) {
+    const fuera = facturadas.filter(l => !_AN_TRAMOS.includes(Number(l.pct)));
+    if (fuera.length) {
+      const montoFuera = fuera.reduce((a,l) => a+(l.monto||0), 0);
+      const tramosFuera = [...new Set(fuera.map(l => Number(l.pct)))].sort((a,b)=>b-a);
+      avisoEl.className = 'an-deg-aviso';
+      avisoEl.innerHTML = `⚠️ Este desglose solo considera los tramos 100% / 80% / 20%. No se muestran ${fmt(Math.round(montoFuera))} en tramos ${tramosFuera.map(t=>t+'%').join(' / ')} (${fuera.length} línea${fuera.length!==1?'s':''}), por lo que la suma puede no coincidir con la facturación total de arriba.`;
+    } else {
+      avisoEl.className = '';
+      avisoEl.innerHTML = '';
+    }
+  }
+}
+
 // Set con los IDs actualmente expandidos. E1: una sola fila abierta a la vez.
 let _sgExpandido = null;
 // Flag para aplicar default "Con monto" solo en el primer render de la sesión
@@ -4313,16 +4741,35 @@ function _renderTablaModalKPI() {
   }).join('');
 }
 
-function _kpiInicializarFiltros(lineas) {
-  // Cada apertura del modal: los filtros arrancan vacíos (no persisten)
-  const op = _kpiOpcionesPresentes(lineas);
+function _kpiInicializarFiltros(lineas, opciones) {
+  // Cada apertura del modal: los filtros arrancan vacíos (no persisten),
+  // salvo que `opciones.defaultEstados` indique estados a pre-seleccionar.
+  // `opciones.hideCliente`: oculta el wrap del filtro Cliente (caso modal de cliente).
+  const op  = _kpiOpcionesPresentes(lineas);
+  const opt = opciones || {};
+
   // Limpiar selecciones previas antes de inicializar
   if (window._msState['kpi-modal-fil-cliente']) window._msState['kpi-modal-fil-cliente'].selected.clear();
   if (window._msState['kpi-modal-fil-estado'])  window._msState['kpi-modal-fil-estado'].selected.clear();
   if (window._msState['kpi-modal-fil-pct'])     window._msState['kpi-modal-fil-pct'].selected.clear();
+
+  // Mostrar / ocultar el wrap del filtro Cliente según opciones
+  const wrapCliente = document.getElementById('kpi-modal-fil-cliente');
+  if (wrapCliente) wrapCliente.style.display = opt.hideCliente ? 'none' : '';
+
   msInit('kpi-modal-fil-cliente', op.cliente, 'Cliente', _renderTablaModalKPI);
   msInit('kpi-modal-fil-estado',  op.estado,  'Estado',  _renderTablaModalKPI);
   msInit('kpi-modal-fil-pct',     op.pct,     '%',       _renderTablaModalKPI);
+
+  // Aplicar default de estados si se pidió, pero solo los que estén presentes en las líneas
+  if (Array.isArray(opt.defaultEstados) && opt.defaultEstados.length) {
+    const st = window._msState['kpi-modal-fil-estado'];
+    if (st) {
+      const presentes = new Set(op.estado.map(o => o.value));
+      opt.defaultEstados.forEach(e => { if (presentes.has(e)) st.selected.add(e); });
+      msRender('kpi-modal-fil-estado');
+    }
+  }
 }
 
 function abrirDetalleKPI(titulo, subtitulo, lineasFiltradas) {
@@ -5214,7 +5661,7 @@ function actualizarDashboard() {
       `abrirDetalleKPI('Solicitados sin facturar','Líneas en estado Solicitado',window._dash_solicitadas)`
     );
 
-  // Objetivos por cliente (solo si hay datos)
+  // Info por cliente (solo si hay datos)
   const obj = document.getElementById('dash-objetivos');
   if (!sinDatos && obj) {
     // Solo clientes con al menos 1 línea en el mes
@@ -5222,23 +5669,35 @@ function actualizarDashboard() {
     if (!clientesConActividad.length) {
       obj.innerHTML = `<div style="text-align:center;padding:30px 0;color:var(--text-light);font-size:13px;">Sin clientes con proyecciones para este mes</div>`;
     } else {
+      // Total facturado global del mes (todos los clientes con actividad) — para el chip "% sobre total facturado"
+      const totalFacGlobal = clientesConActividad.reduce((a, c) => {
+        return a + lf.filter(l => l.clienteId === c.id && l.estado === 'Facturado').reduce((b, l) => b + l.monto, 0);
+      }, 0);
       obj.innerHTML = clientesConActividad.map(c => {
         const lineasCliente = lf.filter(l => l.clienteId === c.id);
         const valFac  = lineasCliente.filter(l => l.estado === 'Facturado').reduce((a,l) => a+l.monto, 0);
         const valTodo = lineasCliente.reduce((a,l) => a+l.monto, 0);
         const pct     = valTodo > 0 ? Math.round(valFac/valTodo*100) : 0;
-        return `<div style="background:rgba(255,255,255,0.35);border:1px solid rgba(255,255,255,0.7);border-radius:14px;padding:13px 16px;cursor:pointer;transition:var(--transition);"
+        // % sobre el facturado global (todos los clientes). Si total global es 0 → "—"
+        const pctTot  = totalFacGlobal > 0 ? Math.round(valFac/totalFacGlobal*100) : null;
+        const chipTot = pctTot !== null ? `${pctTot}%` : '—';
+        return `<div class="dash-cli-card" style="background:rgba(255,255,255,0.35);border:1px solid rgba(255,255,255,0.7);border-radius:14px;padding:13px 16px;cursor:pointer;transition:var(--transition);"
           onclick="abrirDetalleCliente('${c.id}')"
           onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 10px 30px rgba(100,110,140,0.15)'"
           onmouseout="this.style.transform='';this.style.boxShadow=''">
-          <div style="display:flex;align-items:center;justify-content:center;gap:8px;font-weight:600;font-size:13px;margin-bottom:4px;">${dot(c.color)}${c.id}</div>
-          <div style="text-align:center;font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:${c.color};margin-bottom:9px;">${fmt(valFac)}</div>
-          <div style="height:5px;background:rgba(200,205,220,0.3);border-radius:20px;overflow:hidden;margin-bottom:6px;">
-            <div style="height:100%;width:${pct}%;background:${c.color};border-radius:20px;transition:.4s ease;"></div>
+          <div class="dash-cli-info">
+            <div style="display:flex;align-items:center;justify-content:center;gap:8px;font-weight:600;font-size:13px;margin-bottom:4px;">${dot(c.color)}${c.id}</div>
+            <div style="text-align:center;font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:${c.color};margin-bottom:11px;">${fmt(valFac)}</div>
+            <div style="height:5px;background:rgba(200,205,220,0.3);border-radius:20px;overflow:hidden;">
+              <div style="height:100%;width:${pct}%;background:${c.color};border-radius:20px;transition:.4s ease;"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--text-light);margin-top:6px;">
+              <span>${pct}% facturado</span>
+              <span>de ${fmt(valTodo)} total</span>
+            </div>
           </div>
-          <div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--text-light);">
-            <span>${pct}% facturado</span>
-            <span>de ${fmt(valTodo)} total</span>
+          <div class="dash-cli-chip-col">
+            <span class="dash-cli-chip" title="% del facturado total del mes">${chipTot}</span>
           </div>
         </div>`;
       }).join('');
@@ -5270,7 +5729,10 @@ function abrirDetalleCliente(clienteId) {
   _kpiModalState.totalCustom = null;
   _kpiModalState.totalLabel  = '';
 
-  _kpiInicializarFiltros(_kpiModalState.lineas);
+  _kpiInicializarFiltros(_kpiModalState.lineas, {
+    hideCliente: true,
+    defaultEstados: ['Proyectado', 'Solicitado']
+  });
   _renderTablaModalKPI();
 
   document.getElementById('modal-kpi-detalle').classList.add('open');
