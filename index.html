@@ -270,6 +270,11 @@
     .sg-dias-clickable { cursor: pointer; transition: var(--transition); }
     .sg-dias-clickable:hover { background: rgba(79,128,255,0.22); transform: scale(1.05); }
     .sg-dias-vacio { color: var(--text-light); font-weight: 500; font-size: 14px; }
+    /* Headers clickeables (orden multi-columna) en Sitios globales — TOTAL y Días */
+    .tabla-sg th.sg-th-sortable { cursor: pointer; user-select: none; -webkit-user-select: none; transition: var(--transition); }
+    .tabla-sg th.sg-th-sortable:hover { background: rgba(79,128,255,0.08); }
+    .sg-sort-ind { display: inline-block; margin-left: 6px; font-size: 11px; color: #3a6bf0; font-weight: 700; vertical-align: middle; }
+    .sg-sort-ind sup { font-size: 9px; margin-left: 2px; color: var(--text-light); font-weight: 600; }
     /* Asegurar que el botón conserve cursor pointer dentro de col-acciones */
     tr.row-sit-clickable td.col-acciones .btn { cursor: pointer; }
 
@@ -1301,8 +1306,8 @@
           <thead><tr>
             <th style="text-align:center;width:24%;">ID Sitio</th>
             <th style="text-align:center;width:21%;">Cliente</th>
-            <th style="text-align:center;width:22%;">TOTAL</th>
-            <th style="text-align:center;width:15%;">Días</th>
+            <th class="sg-th-sortable" style="text-align:center;width:22%;" onclick="sgToggleOrden('total', event.shiftKey)" title="Click para ordenar. Shift+click para acumular.">TOTAL<span class="sg-sort-ind" id="sg-sort-ind-total"></span></th>
+            <th class="sg-th-sortable" style="text-align:center;width:15%;" onclick="sgToggleOrden('dias', event.shiftKey)" title="Click para ordenar. Shift+click para acumular.">Días<span class="sg-sort-ind" id="sg-sort-ind-dias"></span></th>
             <th style="text-align:center;width:18%;">Acciones</th>
           </tr></thead>
           <tbody id="tabla-sitios-globales">
@@ -3466,6 +3471,9 @@ function _anRenderDesglose(meses) {
 let _sgExpandido = null;
 // Flag para aplicar default "Con monto" solo en el primer render de la sesión
 let _sgDefaultMontoAplicado = false;
+// Orden multi-columna para Sitios globales (cols 'total' y 'dias').
+// Array de objetos { col, dir } en orden de prioridad. Vacío = default alfabético asc por ID.
+let _sgOrden = [];
 
 function renderSitiosGlobales() {
   const tbody = document.getElementById('tabla-sitios-globales');
@@ -3540,8 +3548,19 @@ function aplicarFiltrosSitiosGlobales() {
   if (soloConDias) {
     lista = lista.filter(g => g.dias > 0);
   }
-  // O1: orden alfabético por ID
-  lista.sort((a, b) => a.id.localeCompare(b.id));
+  // Orden: aplica _sgOrden (multi-columna), con desempate alfabético asc por ID.
+  // Si _sgOrden está vacío, queda el default alfabético asc.
+  lista.sort((a, b) => {
+    for (const o of _sgOrden) {
+      const va = o.col === 'total' ? a.total : a.dias;
+      const vb = o.col === 'total' ? b.total : b.dias;
+      const diff = va - vb;
+      if (diff !== 0) return o.dir === 'asc' ? diff : -diff;
+    }
+    return a.id.localeCompare(b.id);
+  });
+  // Pintar indicadores ▲/▼/¹² en headers según _sgOrden
+  _sgPintarHeaders();
 
   if (!lista.length) {
     tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><span class="es-icon">🌐</span><p>${sitios.length === 0 ? 'Sin sitios registrados.' : 'Sin sitios que coincidan con los filtros.'}</p></div></td></tr>`;
@@ -3617,6 +3636,44 @@ function sgToggleExpandir(idSitio) {
   // E1: una sola fila abierta a la vez
   _sgExpandido = (_sgExpandido === idSitio) ? null : idSitio;
   aplicarFiltrosSitiosGlobales();
+}
+
+/* Orden multi-columna TOTAL/Días — A1 (3 estados) + C1 (flecha solo si activo) + B2/T1 (acumulable con shift) + P1 (numerito de prioridad) */
+function sgToggleOrden(col, isShift) {
+  const idx = _sgOrden.findIndex(o => o.col === col);
+  if (isShift) {
+    // Shift+click: cicla esta columna conservando el resto del orden
+    if (idx === -1) {
+      _sgOrden.push({ col, dir: 'asc' });
+    } else if (_sgOrden[idx].dir === 'asc') {
+      _sgOrden[idx].dir = 'desc';
+    } else {
+      _sgOrden.splice(idx, 1);
+    }
+  } else {
+    // Click normal (T1): cicla esta columna y descarta las otras
+    if (idx === -1) {
+      _sgOrden = [{ col, dir: 'asc' }];
+    } else if (_sgOrden[idx].dir === 'asc') {
+      _sgOrden = [{ col, dir: 'desc' }];
+    } else {
+      _sgOrden = [];
+    }
+  }
+  aplicarFiltrosSitiosGlobales();
+}
+
+function _sgPintarHeaders() {
+  ['total', 'dias'].forEach(col => {
+    const el = document.getElementById('sg-sort-ind-' + col);
+    if (!el) return;
+    const idx = _sgOrden.findIndex(o => o.col === col);
+    if (idx === -1) { el.innerHTML = ''; return; }
+    const flecha = _sgOrden[idx].dir === 'asc' ? '▲' : '▼';
+    // P1: numerito de prioridad solo si hay más de 1 columna activa
+    const sup = _sgOrden.length > 1 ? `<sup>${idx + 1}</sup>` : '';
+    el.innerHTML = flecha + sup;
+  });
 }
 
 /* G1 + N1: navegar a PO sitios filtrando por ID, limpiando los otros filtros */
