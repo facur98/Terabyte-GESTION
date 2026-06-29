@@ -232,34 +232,199 @@
     .tanda-suma.ok  { background: rgba(45,212,191,0.10); color: #0d9488; }
     .tanda-suma.err { background: rgba(248,113,113,0.10); color: #dc2626; }
 
-    /* Sitios globales: fila clickeable y detalle expandido */
-    tr.row-sg-clickable { cursor: pointer; user-select: none; -webkit-user-select: none; }
-    tr.row-sg-clickable:hover td { background: rgba(79,128,255,0.08) !important; }
-    tr.row-sg-clickable td.col-acciones { cursor: default; }
+    /* ═══════════════════════════════════════════════
+       SITIOS GLOBALES — vista de paneo general por sitio
+       ═══════════════════════════════════════════════ */
 
-    /* Tabla principal de Sitios globales: columnas distribuidas uniformemente, todo centrado */
-    .tabla-sg { table-layout: fixed; width: 100%; }
-    .tabla-sg > thead th { text-align: center; }
-    .tabla-sg > tbody > tr.row-sg-clickable > td { text-align: center; vertical-align: middle; }
+    /* Tabs (segmented control) */
+    .sg-tabs-wrap {
+      background: var(--glass); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+      border: 1px solid var(--glass-border); border-radius: var(--radius);
+      padding: 7px; box-shadow: var(--glass-shadow); margin-bottom: 14px;
+      display: flex; gap: 4px;
+    }
+    .sg-tab {
+      flex: 1;
+      background: transparent; border: none;
+      padding: 11px 18px; border-radius: 12px;
+      font-size: 13px; font-weight: 600; color: var(--text-mid);
+      font-family: inherit; cursor: pointer;
+      transition: var(--transition);
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .sg-tab:hover { background: rgba(255,255,255,0.5); color: var(--text-dark); }
+    .sg-tab.active {
+      background: linear-gradient(135deg, var(--accent-blue), #6a91ff);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(79,128,255,0.35);
+    }
+    .sg-tab.active:hover { background: linear-gradient(135deg, var(--accent-blue), #6a91ff); }
+    .sg-tab-count {
+      background: rgba(255,255,255,0.25); color: inherit;
+      padding: 2px 8px; border-radius: 10px;
+      font-size: 11px; font-weight: 700; min-width: 24px; text-align: center;
+    }
+    .sg-tab:not(.active) .sg-tab-count {
+      background: rgba(150,160,190,0.18); color: var(--text-mid);
+    }
 
-    /* Checkbox "Solo con días asignados" — estética acorde a los filtros multiselect */
-    .sg-check-dias {
-      display: inline-flex; align-items: center; gap: 7px;
-      padding: 7px 12px;
-      background: rgba(255,255,255,0.45);
-      border: 1px solid rgba(200,205,225,0.5);
-      border-radius: 10px;
-      font-size: 12.5px; font-weight: 500; color: var(--text-mid);
-      cursor: pointer; user-select: none;
+    /* Filtros */
+    .sg-filtros-card {
+      background: var(--glass); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+      border: 1px solid var(--glass-border); border-radius: var(--radius);
+      padding: 12px 16px; box-shadow: var(--glass-shadow); margin-bottom: 16px;
+      display: flex; flex-wrap: wrap; gap: 9px; align-items: center;
+      position: relative; z-index: 50;
+    }
+    .sg-filtro-texto-input { min-width: 130px; max-width: 160px; padding: 5px 9px; font-size: 11.5px; }
+    .sg-filtro-spacer { flex: 1; }
+    .sg-filtros-card .ms-btn { padding: 5px 9px; font-size: 11.5px; }
+    .sg-filtro-check {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 9px; cursor: pointer;
+      background: rgba(255,255,255,0.7); border: 1px solid rgba(200,205,225,0.5);
+      border-radius: var(--radius-sm);
+      font-size: 11.5px; color: var(--text-dark); font-family: inherit;
+      transition: var(--transition); user-select: none;
+    }
+    .sg-filtro-check:hover { background: rgba(255,255,255,0.9); }
+    .sg-filtro-check input[type="checkbox"] {
+      width: 13px; height: 13px; accent-color: var(--accent-blue);
+      cursor: pointer; margin: 0;
+    }
+    .sg-filtro-check input[type="checkbox"]:checked + span { color: var(--accent-blue); font-weight: 600; }
+
+    /* Lista de filas */
+    .sg-lista {
+      background: var(--glass); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+      border: 1px solid var(--glass-border); border-radius: var(--radius);
+      box-shadow: var(--glass-shadow); overflow: hidden;
+      position: relative; z-index: 1;
+    }
+    .sg-head {
+      display: grid;
+      grid-template-columns: 4px 1.4fr 1.2fr 1.1fr 1.4fr 0.7fr 1.4fr 90px;
+      gap: 12px; padding: 12px 18px;
+      font-size: 10.5px; font-weight: 700; color: var(--text-light);
+      text-transform: uppercase; letter-spacing: 0.7px;
+      border-bottom: 1px solid rgba(200,205,225,0.4);
+      background: rgba(255,255,255,0.30);
+    }
+    .sg-head > div { display: flex; align-items: center; }
+    .sg-head .col-act { justify-content: flex-end; }
+    .sg-head-sort {
+      cursor: pointer; transition: color .12s ease;
+      user-select: none; -webkit-user-select: none;
+      gap: 5px;
+    }
+    .sg-head-sort:hover { color: var(--accent-blue); }
+    .sg-head-sort.sort-active { color: var(--accent-blue); }
+    .sg-head-sort .sort-arrow {
+      display: inline-block; width: 9px; font-size: 9px; line-height: 1;
+      opacity: 0; color: var(--accent-blue);
+    }
+    .sg-head-sort.sort-active .sort-arrow { opacity: 1; }
+    .sg-head-sort.sort-active.sort-asc  .sort-arrow::before { content: '▲'; }
+    .sg-head-sort.sort-active.sort-desc .sort-arrow::before { content: '▼'; }
+
+    .sg-row {
+      display: grid;
+      grid-template-columns: 4px 1.4fr 1.2fr 1.1fr 1.4fr 0.7fr 1.4fr 90px;
+      gap: 12px; padding: 14px 18px;
+      align-items: center;
+      border-bottom: 1px solid rgba(200,205,225,0.25);
       transition: var(--transition);
     }
-    .sg-check-dias:hover { background: rgba(255,255,255,0.65); }
-    .sg-check-dias input[type="checkbox"] {
-      width: 14px; height: 14px; cursor: pointer; accent-color: var(--accent-blue);
-      margin: 0;
+    .sg-row:last-child { border-bottom: none; }
+    .sg-row:hover { background: rgba(79,128,255,0.06); }
+
+    .sg-row-marker { width: 4px; height: 36px; border-radius: 2px; background: transparent; }
+    .sg-row.activo .sg-row-marker {
+      background: linear-gradient(180deg, #2dd4bf, #0d9488);
+      box-shadow: 0 0 8px rgba(45,212,191,0.4);
     }
 
-    /* Badge azul para columna Días en Sitios globales */
+    .sg-cli-wrap { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .sg-cli-row { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--text-mid); font-weight: 500; }
+    .sg-id { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 17px; color: var(--text-dark); letter-spacing: -0.3px; }
+
+    .sg-monto-wrap { display: flex; flex-direction: column; gap: 2px; }
+    .sg-monto-big { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 16px; color: var(--text-dark); }
+    .sg-monto-sub { font-size: 11px; color: var(--text-light); }
+
+    /* Chip de facturación con color según rango */
+    .sg-fac-chip {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 5px 14px; border-radius: 20px;
+      font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px;
+      letter-spacing: 0.2px; min-width: 56px;
+    }
+    .sg-fac-chip-0   { background: rgba(150,160,190,0.18); color: var(--text-light); }
+    .sg-fac-chip-20  { background: rgba(56,189,248,0.20); color: #0284c7; }
+    .sg-fac-chip-80  { background: rgba(251,191,36,0.20); color: #b45309; }
+    .sg-fac-chip-100 { background: rgba(45,212,191,0.18); color: #0d9488; }
+
+    /* Columna Días: número grande */
+    .sg-dias-num {
+      font-family: 'Syne', sans-serif; font-weight: 700; font-size: 18px;
+      color: var(--text-dark); line-height: 1;
+    }
+    .sg-dias-num-sub { font-size: 10px; color: var(--text-light); font-weight: 500; margin-top: 3px; }
+    .sg-dias-vacio { color: var(--text-light); font-size: 14px; }
+
+    .sg-cuad {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 10px; border-radius: 20px;
+      font-size: 11.5px; font-weight: 700; letter-spacing: 0.2px;
+      max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .sg-cuad-propia      { background: rgba(56,189,248,0.20); color: #0284c7; }
+    .sg-cuad-contratista { background: rgba(217,70,239,0.16); color: #c026d3; }
+    .sg-cuad-mixta       { background: rgba(248,113,113,0.18); color: #dc2626; border: 1px dashed rgba(248,113,113,0.55); }
+    .sg-cuad-sin         { background: rgba(150,160,190,0.18); color: var(--text-light); }
+    .sg-cuad-terminado   { background: rgba(45,212,191,0.15); color: #0d9488; }
+    .sg-cuad i { font-size: 9.5px; }
+
+    .sg-act-wrap { display: flex; flex-direction: column; gap: 2px; }
+    .sg-act-stats { font-size: 12.5px; color: var(--text-dark); font-weight: 600; }
+    .sg-act-stats b { font-family: 'Syne', sans-serif; font-weight: 700; }
+    .sg-act-sub { font-size: 10.5px; color: var(--text-light); }
+    .sg-act-sub.hoy { color: #0d9488; font-weight: 700; }
+
+    .sg-acts { display: flex; gap: 5px; justify-content: flex-end; }
+    .sg-act-btn {
+      width: 30px; height: 30px; border-radius: 8px;
+      background: rgba(255,255,255,0.65); border: 1px solid rgba(200,205,225,0.5);
+      cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+      color: var(--text-mid); font-size: 12px; transition: var(--transition);
+    }
+    .sg-act-btn:hover { background: rgba(79,128,255,0.12); color: var(--accent-blue); border-color: rgba(79,128,255,0.3); }
+    .sg-act-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .sg-act-btn:disabled:hover { background: rgba(255,255,255,0.65); color: var(--text-mid); border-color: rgba(200,205,225,0.5); }
+
+    .sg-empty { padding: 60px 20px; text-align: center; color: var(--text-light); }
+    .sg-empty-icon { font-size: 40px; margin-bottom: 12px; opacity: 0.6; }
+
+    .sg-footer {
+      padding: 11px 18px;
+      font-size: 11.5px; color: var(--text-light);
+      background: rgba(255,255,255,0.30); border-top: 1px solid rgba(200,205,225,0.4);
+    }
+    .sg-btn-limpiar {
+      background: rgba(248,113,113,0.10);
+      color: #dc2626;
+      border: 1px solid rgba(248,113,113,0.30);
+      border-radius: var(--radius-sm);
+      padding: 6px 12px;
+      font-size: 11.5px; font-weight: 600;
+      cursor: pointer; font-family: inherit;
+      transition: var(--transition);
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .sg-btn-limpiar:hover { background: rgba(248,113,113,0.18); }
+    .sg-btn-limpiar::before { content: '✕'; font-weight: 700; font-size: 10px; }
+
+    /* Badges del modal de días (sg-modal). Conservados para el modal abrirModalSgDias. */
     .sg-dias-badge {
       display: inline-block;
       background: rgba(79,128,255,0.12); color: #3a6bf0;
@@ -267,14 +432,7 @@
       font-size: 13px; font-weight: 700; font-family: 'Syne', sans-serif;
       min-width: 34px;
     }
-    .sg-dias-clickable { cursor: pointer; transition: var(--transition); }
-    .sg-dias-clickable:hover { background: rgba(79,128,255,0.22); transform: scale(1.05); }
-    .sg-dias-vacio { color: var(--text-light); font-weight: 500; font-size: 14px; }
-    /* Headers clickeables (orden multi-columna) en Sitios globales — TOTAL y Días */
-    .tabla-sg th.sg-th-sortable { cursor: pointer; user-select: none; -webkit-user-select: none; transition: var(--transition); }
-    .tabla-sg th.sg-th-sortable:hover { background: rgba(79,128,255,0.08); }
-    .sg-sort-ind { display: inline-block; margin-left: 6px; font-size: 11px; color: #3a6bf0; font-weight: 700; vertical-align: middle; }
-    .sg-sort-ind sup { font-size: 9px; margin-left: 2px; color: var(--text-light); font-weight: 600; }
+
     /* Asegurar que el botón conserve cursor pointer dentro de col-acciones */
     tr.row-sit-clickable td.col-acciones .btn { cursor: pointer; }
 
@@ -599,7 +757,9 @@
       padding: 1px 7px; border-radius: 20px; font-size: 10.5px; font-weight: 700;
       width: fit-content;
     }
-    .asig-cal-info .pill.teal { background: rgba(45,212,191,0.14); color: #0d9488; }
+    .asig-cal-info .pill.teal  { background: rgba(45,212,191,0.14); color: #0d9488; }
+    .asig-cal-info .pill.amber { background: rgba(251,191,36,0.18); color: #b45309; }
+    .asig-cal-info .pill.warn  { background: rgba(234,179,8,0.18);  color: #a16207; border: 1px dashed rgba(234,179,8,0.55); padding: 0px 6px; }
 
     /* ── Autocomplete (selector de sitio) ── */
     .ac-wrap { position: relative; }
@@ -725,6 +885,92 @@
       transition: var(--transition);
     }
     .asig-emp-clear:hover { background: rgba(248,113,113,0.25); }
+
+    /* ── Estados especiales: botones rápidos en la fila del empleado ── */
+    .asig-emp-quick {
+      flex: 0 0 auto; display: inline-flex; align-items: center; gap: 4px;
+    }
+    .asig-quick-btn {
+      width: 28px; height: 28px; border-radius: 8px;
+      border: 1px solid rgba(200,205,225,0.55);
+      background: rgba(255,255,255,0.6);
+      display: inline-flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: var(--transition);
+      color: var(--text-mid); font-size: 12px;
+    }
+    .asig-quick-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 3px 8px rgba(40,50,80,0.10);
+    }
+    .asig-quick-btn.quick-deposito:hover   { background: rgba(251,191,36,0.20);  color: #b45309; border-color: rgba(251,191,36,0.45); }
+    .asig-quick-btn.quick-vacaciones:hover { background: rgba(168,85,247,0.18);  color: #7c3aed; border-color: rgba(168,85,247,0.45); }
+    .asig-quick-btn.quick-ausente:hover    { background: rgba(248,113,113,0.18); color: #dc2626; border-color: rgba(248,113,113,0.45); }
+
+    /* Chip de estado especial dentro de la fila (reemplaza el input del sitio) */
+    .asig-emp-esp-chip {
+      flex: 1; display: inline-flex; align-items: center; gap: 7px;
+      padding: 6px 13px; border-radius: 20px;
+      font-size: 12.5px; font-weight: 700; letter-spacing: 0.2px;
+      max-width: fit-content;
+    }
+    .asig-emp-esp-chip i { font-size: 11px; }
+    .asig-emp-esp-chip.est-deposito   { background: rgba(251,191,36,0.20);  color: #b45309; }
+    .asig-emp-esp-chip.est-vacaciones { background: rgba(168,85,247,0.18);  color: #7c3aed; }
+    .asig-emp-esp-chip.est-ausente    { background: rgba(248,113,113,0.18); color: #dc2626; }
+
+    /* Divider y cards distintivas en la columna derecha (Nueva asignación) */
+    .nasig-divider {
+      font-size: 10.5px; font-weight: 700; color: var(--text-light);
+      text-transform: uppercase; letter-spacing: 0.8px;
+      padding: 14px 0 6px;
+      border-top: 1px dashed rgba(200,205,225,0.55);
+      margin-top: 6px;
+    }
+    .nasig-esp-card { border-width: 1.5px; }
+    .nasig-esp-deposito   { border-color: rgba(251,191,36,0.45)  !important; background: rgba(251,191,36,0.08)  !important; }
+    .nasig-esp-vacaciones { border-color: rgba(168,85,247,0.45)  !important; background: rgba(168,85,247,0.08)  !important; }
+    .nasig-esp-ausente    { border-color: rgba(248,113,113,0.45) !important; background: rgba(248,113,113,0.08) !important; }
+    .nasig-esp-id {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 3px 11px; border-radius: 20px;
+      font-size: 12.5px; font-weight: 700; letter-spacing: 0.3px;
+    }
+    .nasig-esp-card.nasig-esp-deposito   .nasig-esp-id { background: rgba(251,191,36,0.20);  color: #b45309; }
+    .nasig-esp-card.nasig-esp-vacaciones .nasig-esp-id { background: rgba(168,85,247,0.20);  color: #7c3aed; }
+    .nasig-esp-card.nasig-esp-ausente    .nasig-esp-id { background: rgba(248,113,113,0.20); color: #dc2626; }
+
+    /* Bloques de estados especiales en el modal del día */
+    .asig-dia-divider {
+      font-size: 10.5px; font-weight: 700; color: var(--text-light);
+      text-transform: uppercase; letter-spacing: 0.8px;
+      padding: 10px 0 4px;
+      border-top: 1px dashed rgba(200,205,225,0.55);
+      margin-top: 4px;
+    }
+    .asig-dia-esp-bloque {
+      border-radius: 12px; overflow: hidden;
+      border: 1.5px solid rgba(200,205,225,0.5);
+    }
+    .asig-dia-esp-deposito   { background: rgba(251,191,36,0.08);  border-color: rgba(251,191,36,0.45); }
+    .asig-dia-esp-vacaciones { background: rgba(168,85,247,0.08);  border-color: rgba(168,85,247,0.45); }
+    .asig-dia-esp-ausente    { background: rgba(248,113,113,0.08); border-color: rgba(248,113,113,0.45); }
+    .asig-dia-esp-head {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 15px;
+    }
+    .asig-dia-esp-label {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 3px 12px; border-radius: 20px;
+      font-size: 13px; font-weight: 700; letter-spacing: 0.3px;
+    }
+    .asig-dia-esp-deposito   .asig-dia-esp-label { background: rgba(251,191,36,0.20);  color: #b45309; }
+    .asig-dia-esp-vacaciones .asig-dia-esp-label { background: rgba(168,85,247,0.20);  color: #7c3aed; }
+    .asig-dia-esp-ausente    .asig-dia-esp-label { background: rgba(248,113,113,0.20); color: #dc2626; }
+    .asig-dia-esp-count { font-size: 11px; color: var(--text-light); font-weight: 500; }
+    .asig-dia-esp-emps {
+      display: flex; flex-wrap: wrap; gap: 6px;
+      padding: 0 15px 14px;
+    }
     .asig-emp-resumen {
       display: flex; gap: 14px; align-items: center;
       font-size: 12px; margin-bottom: 12px;
@@ -948,36 +1194,19 @@
     .an-period-info strong { color: var(--text-mid); font-weight: 600; }
 
     .an-matrix-wrap { overflow-x: auto; max-height: 520px; overflow-y: auto; border-radius: 12px; border: 1px solid rgba(200,205,225,0.45); background: rgba(255,255,255,0.3); }
-    .an-matrix, .an-deg { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; min-width: 640px; }
-    .an-matrix thead th, .an-deg thead th { background: rgba(220,225,240,0.85); color: var(--text-light); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .7px; padding: 12px 14px; text-align: center; border-bottom: 1px solid rgba(200,205,225,0.45); position: sticky; top: 0; z-index: 3; }
-    .an-matrix thead th:first-child, .an-deg thead th:first-child { position: sticky; left: 0; z-index: 4; }
-    .an-matrix thead th.col-total, .an-deg thead th.col-total { color: var(--accent-blue); background: rgba(79,128,255,0.18); }
+    .an-matrix { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; min-width: 640px; }
+    .an-matrix thead th { background: rgba(220,225,240,0.85); color: var(--text-light); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .7px; padding: 12px 14px; text-align: center; border-bottom: 1px solid rgba(200,205,225,0.45); position: sticky; top: 0; z-index: 3; }
+    .an-matrix thead th:first-child { position: sticky; left: 0; z-index: 4; }
+    .an-matrix thead th.col-total { color: var(--accent-blue); background: rgba(79,128,255,0.18); }
     .an-matrix tr.row-total td { background: rgba(79,128,255,0.10); color: var(--text-dark); font-weight: 700; font-family: 'Syne', sans-serif; border-bottom: 1px solid rgba(200,205,225,0.55); padding: 12px 14px; text-align: center; position: sticky; top: 41px; z-index: 2; }
     .an-matrix tr.row-total td:first-child { color: var(--accent-blue); position: sticky; left: 0; z-index: 3; background: rgba(79,128,255,0.20); }
     .an-matrix tr.row-total td.col-total { background: rgba(79,128,255,0.20); color: var(--accent-blue); }
-    .an-matrix tbody td, .an-deg tbody td { padding: 12px 14px; text-align: center; border-bottom: 1px solid rgba(200,205,225,0.25); vertical-align: middle; }
-    .an-matrix tbody td:first-child, .an-deg tbody td:first-child { font-weight: 600; position: sticky; left: 0; background: rgba(255,255,255,0.92); z-index: 1; }
-    .an-matrix tbody td.col-total, .an-deg tbody td.col-total { font-weight: 700; color: var(--accent-blue); font-family: 'Syne', sans-serif; background: rgba(79,128,255,0.06); }
-    .an-matrix tbody tr:last-child td, .an-deg tbody tr:last-child td { border-bottom: none; }
-    .an-deg tr.deg-total td { background: rgba(79,128,255,0.10); font-weight: 700; font-family: 'Syne', sans-serif; }
-    .an-deg tr.deg-total td:first-child { color: var(--accent-blue); position: sticky; left: 0; z-index: 2; background: rgba(79,128,255,0.20); }
+    .an-matrix tbody td { padding: 12px 14px; text-align: center; border-bottom: 1px solid rgba(200,205,225,0.25); vertical-align: middle; }
+    .an-matrix tbody td:first-child { font-weight: 600; position: sticky; left: 0; background: rgba(255,255,255,0.92); z-index: 1; }
+    .an-matrix tbody td.col-total { font-weight: 700; color: var(--accent-blue); font-family: 'Syne', sans-serif; background: rgba(79,128,255,0.06); }
+    .an-matrix tbody tr:last-child td { border-bottom: none; }
     .an-cell-empty { color: var(--text-light); }
     .an-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 7px; vertical-align: middle; }
-
-    .an-tramo-stack { display: flex; flex-direction: column; gap: 4px; align-items: center; }
-    .an-tramo { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 12px; white-space: nowrap; }
-    .an-tramo .t-label { font-size: 9.5px; font-weight: 700; color: var(--text-light); min-width: 28px; text-align: right; }
-    .an-tramo .t-monto { font-weight: 600; }
-    .an-tramo .t-cant { font-size: 10px; color: var(--text-light); }
-
-    .an-summary-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 18px; }
-    .an-summary-tile { background: rgba(255,255,255,0.45); border: 1px solid rgba(200,205,225,0.5); border-radius: 12px; padding: 14px 16px; }
-    .an-summary-tile .sl-label { font-size: 11px; color: var(--text-light); font-weight: 600; text-transform: uppercase; letter-spacing: .6px; margin-bottom: 6px; }
-    .an-summary-tile .sl-value { font-family: 'Syne', sans-serif; font-size: 19px; font-weight: 700; color: var(--text-dark); }
-    .an-summary-tile .sl-sub { font-size: 11px; color: var(--text-light); margin-top: 4px; }
-
-    .an-deg-aviso { margin-top: 12px; font-size: 11.5px; color: #b45309; background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.3); border-radius: 9px; padding: 9px 13px; }
-
     .an-empty { text-align: center; padding: 50px 24px; color: var(--text-light); font-size: 14px; }
   </style>
 </head>
@@ -1071,8 +1300,8 @@
     </div>
   </div>
 
-  <!-- Grupo: Datos (colapsable) -->
-  <div class="sidebar-section" style="padding-top:6px;">
+  <!-- Grupo: Datos (colapsable) — OCULTO -->
+  <div class="sidebar-section" style="padding-top:6px;display:none;">
     <div class="nav-group-header" id="grp-datos" onclick="toggleNavGroup('datos')">
       <span>Datos</span>
       <span class="nav-group-arrow">▶</span>
@@ -1082,9 +1311,9 @@
     </div>
   </div>
 
-  <div class="sidebar-sep"></div>
+  <div class="sidebar-sep" style="display:none;"></div>
 
-  <div class="sidebar-section" style="padding-top:6px;">
+  <div class="sidebar-section" style="padding-top:6px;display:none;">
     <div class="sidebar-section-label">Próximamente</div>
     <a class="nav-subitem" style="opacity:.35;cursor:not-allowed;">Inventario</a>
   </div>
@@ -1215,16 +1444,6 @@
       <div class="an-matrix-wrap" id="an-matrix-wrap">
         <table class="an-matrix" id="an-matrix"></table>
       </div>
-      <div class="an-summary-row" id="an-summary"></div>
-    </div>
-
-    <!-- Card 2: Desglose porcentual facturación -->
-    <div class="card">
-      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:16px;">Desglose porcentual facturación</div>
-      <div class="an-matrix-wrap" id="an-deg-wrap">
-        <table class="an-deg" id="an-deg"></table>
-      </div>
-      <div id="an-deg-aviso"></div>
     </div>
   </div>
 
@@ -1281,40 +1500,53 @@
     <div class="topbar">
       <div>
         <div class="page-title">Sitios <span>globales</span></div>
-        <div style="font-size:13px;color:var(--text-light);margin-top:3px;">Vista agregada de obras e instalaciones</div>
+        <div style="font-size:13px;color:var(--text-light);margin-top:3px;">Paneo general del estado de cada sitio</div>
       </div>
       <div class="topbar-actions">
         <button class="btn btn-glass" onclick="sincronizar()" style="font-size:12px;">🔄 Sincronizar</button>
       </div>
     </div>
 
-    <div class="card">
-      <div class="card-header" style="flex-wrap:wrap;gap:12px;">
-        <div class="card-title">Sitios sumarizados</div>
-        <div class="sit-filtros-wrap">
-          <input class="form-input" placeholder="Buscar ID..." id="sg-filtro-texto" oninput="aplicarFiltrosSitiosGlobales()" />
-          <div class="ms-wrap" id="sg-filtro-cliente"></div>
-          <div class="ms-wrap" id="sg-filtro-monto"></div>
-          <label class="sg-check-dias" title="Mostrar solo sitios con al menos 1 día de trabajo">
-            <input type="checkbox" id="sg-filtro-dias" onchange="aplicarFiltrosSitiosGlobales()" />
-            <span>Solo con días asignados</span>
-          </label>
-        </div>
+    <!-- Tabs -->
+    <div class="sg-tabs-wrap">
+      <button class="sg-tab" data-tab="todos" onclick="sgSetTab('todos')">Todos <span class="sg-tab-count" id="sg-tab-cnt-todos">0</span></button>
+      <button class="sg-tab active" data-tab="activos" onclick="sgSetTab('activos')">Activos <span class="sg-tab-count" id="sg-tab-cnt-activos">0</span></button>
+      <button class="sg-tab" data-tab="sin" onclick="sgSetTab('sin')">Sin arrancar <span class="sg-tab-count" id="sg-tab-cnt-sin">0</span></button>
+      <button class="sg-tab" data-tab="fac" onclick="sgSetTab('fac')">Facturados <span class="sg-tab-count" id="sg-tab-cnt-fac">0</span></button>
+    </div>
+
+    <!-- Filtros -->
+    <div class="sg-filtros-card">
+      <input class="form-input sg-filtro-texto-input" placeholder="ID..." id="sg-filtro-texto" oninput="aplicarFiltrosSitiosGlobales()" maxlength="20" />
+      <div class="ms-wrap" id="sg-filtro-cliente"></div>
+      <div class="ms-wrap" id="sg-filtro-cuadrilla"></div>
+      <div class="ms-wrap" id="sg-filtro-contratista" style="display:none;"></div>
+      <div class="ms-wrap" id="sg-filtro-pct"></div>
+      <div class="ms-wrap" id="sg-filtro-monto"></div>
+      <label class="sg-filtro-check" title="Mostrar solo sitios con al menos un día asignado">
+        <input type="checkbox" id="sg-filtro-dias" checked onchange="aplicarFiltrosSitiosGlobales()" />
+        <span>Con días</span>
+      </label>
+      <div class="sg-filtro-spacer"></div>
+      <button class="sg-btn-limpiar" id="sg-btn-limpiar" onclick="sgLimpiarTodosFiltros()" style="display:none;">Limpiar filtros</button>
+    </div>
+
+    <!-- Lista de filas -->
+    <div class="sg-lista">
+      <div class="sg-head">
+        <div></div>
+        <div class="sg-head-sort" data-key="id"    onclick="sgSetSort('id')"><span>Cliente / Sitio</span><span class="sort-arrow"></span></div>
+        <div class="sg-head-sort" data-key="monto" onclick="sgSetSort('monto')"><span>PO · Total</span><span class="sort-arrow"></span></div>
+        <div class="sg-head-sort" data-key="fac"   onclick="sgSetSort('fac')"><span>Facturación</span><span class="sort-arrow"></span></div>
+        <div class="sg-head-sort" data-key="cuad"  onclick="sgSetSort('cuad')"><span>Cuadrilla</span><span class="sort-arrow"></span></div>
+        <div class="sg-head-sort" data-key="dias"  onclick="sgSetSort('dias')"><span>Días</span><span class="sort-arrow"></span></div>
+        <div class="sg-head-sort" data-key="ult"   onclick="sgSetSort('ult')"><span>Actividad</span><span class="sort-arrow"></span></div>
+        <div class="col-act">Acciones</div>
       </div>
-      <div class="table-wrap">
-        <table class="tabla-sg">
-          <thead><tr>
-            <th style="text-align:center;width:24%;">ID Sitio</th>
-            <th style="text-align:center;width:21%;">Cliente</th>
-            <th class="sg-th-sortable" style="text-align:center;width:22%;" onclick="sgToggleOrden('total', event.shiftKey)" title="Click para ordenar. Shift+click para acumular.">TOTAL<span class="sg-sort-ind" id="sg-sort-ind-total"></span></th>
-            <th class="sg-th-sortable" style="text-align:center;width:15%;" onclick="sgToggleOrden('dias', event.shiftKey)" title="Click para ordenar. Shift+click para acumular.">Días<span class="sg-sort-ind" id="sg-sort-ind-dias"></span></th>
-            <th style="text-align:center;width:18%;">Acciones</th>
-          </tr></thead>
-          <tbody id="tabla-sitios-globales">
-            <tr><td colspan="5"><div class="empty-state"><span class="es-icon">🌐</span><p>Cargando...</p></div></td></tr>
-          </tbody>
-        </table>
+      <div id="sg-lista-body">
+        <div class="sg-empty"><div class="sg-empty-icon">🌐</div><p>Cargando...</p></div>
       </div>
+      <div class="sg-footer" id="sg-footer-info">—</div>
     </div>
   </div>
 
@@ -2355,7 +2587,9 @@ function msRender(id) {
   const st   = window._msState[id];
   if (!wrap || !st) return;
   const selCount = st.selected.size;
-  const btnLabel = selCount === 0 ? st.placeholder : `${selCount} seleccionado${selCount === 1 ? '' : 's'}`;
+  // Siempre mostrar el placeholder/label como texto del botón.
+  // Si hay selección, el estilo azul+bold se aplica vía la clase .ms-has-sel.
+  const btnLabel = st.placeholder;
   const optsHtml = st.options.map(o => {
     const isSel = st.selected.has(String(o.value));
     return `<label class="ms-option" onclick="event.stopPropagation()">
@@ -2894,8 +3128,8 @@ function _sitDisponiblePara100(s) {
     return l.sitioId === s.id && Math.abs(l.monto - s.po * l.pct / 100) < 1;
   }).reduce((a,l) => a + l.pct, 0);
   if (pctConfirmado > 0) return false;
-  // Pct en _proyPendientes
-  const pctPendiente = (_proyPendientes || []).filter(p => p.sitioId === s.id).reduce((a,p) => a + p.pct, 0);
+  // Pct en _proyPendientes (la cola guarda sitioId = uid con "||")
+  const pctPendiente = (_proyPendientes || []).filter(p => p.sitioId === s.uid).reduce((a,p) => a + p.pct, 0);
   if (pctPendiente > 0) return false;
   return true;
 }
@@ -3146,12 +3380,12 @@ function confirmarTanda() {
     _tandas.forEach(t => {
       const mes = t.mes;
       const pct = parseInt(t.pct);
-      // E1: omitir duplicado exacto (sitio + pct + mes)
-      const dup = _proyPendientes.find(p => p.sitioId === s.id && p.pct === pct && p.mes === mes);
+      // E1: omitir duplicado exacto (sitio + pct + mes) — usar UID para distinguir POs del mismo ID corto
+      const dup = _proyPendientes.find(p => p.sitioId === s.uid && p.pct === pct && p.mes === mes);
       if (dup) { omitidas++; return; }
       const monto = (s.po) ? Math.round(s.po * pct / 100) : 0;
       _proyPendientes.push({
-        id: nuevoId('FAC'), sitioId: s.id, clienteId: s.clienteId,
+        id: nuevoId('FAC'), sitioId: s.uid, clienteId: s.clienteId,
         pct, monto, mes,
         fechaSolicitud: '', fechaFactura: '', nroFactura: '', estado: 'Proyectado'
       });
@@ -3185,7 +3419,6 @@ function confirmarTanda() {
      Tramos fuera de 100/80/20 (ej. 70/30) → aviso al pie.
 */
 let _anPeriodo = 'mes';       // 'mes' | '3m' | 'ytd' | 'custom'
-const _AN_TRAMOS = [100, 80, 20];
 
 // Lista de meses (YYYY-MM) que tienen al menos una línea facturada, ordenada asc
 function _anMesesConFacturacion() {
@@ -3304,8 +3537,6 @@ function anRender() {
   const data = _anComputeData(meses);
 
   _anRenderMatriz(data, isPct);
-  _anRenderSummary(data);
-  _anRenderDesglose(meses);
 }
 
 function _anRenderMatriz(data, isPct) {
@@ -3356,142 +3587,189 @@ function _anRenderMatriz(data, isPct) {
   tabla.innerHTML = thead + body;
 }
 
-function _anRenderSummary(data) {
-  const cont = document.getElementById('an-summary');
-  if (!cont) return;
-  const { meses, filas, totalPorMes, totalGeneral } = data;
-  if (!filas.length) { cont.innerHTML = ''; return; }
+/* ══════════════════════════════════════════════════════════════════
+   SITIOS GLOBALES — vista de paneo general por sitio
+   ════════════════════════════════════════════════════════════════════
+   - Cada sitio (ID único) es una fila visual con su estado.
+   - 4 KPIs globales arriba (no afectados por tabs/filtros).
+   - Tabs (Todos / Activos / Sin arrancar / Facturados) — default "Activos".
+   - Filtros: texto, cliente, tipo de cuadrilla, contratista, % facturado, con/sin monto.
+   - Tabs + filtros AND estricto (si no matchea → empty state).
+*/
 
-  // Mejor mes
-  let mejorMes = null, mejorMonto = -1;
-  meses.forEach(m => { if (totalPorMes[m] > mejorMonto) { mejorMonto = totalPorMes[m]; mejorMes = m; } });
-  const pctMejorMes = totalGeneral > 0 ? Math.round(mejorMonto/totalGeneral*100) : 0;
-  // Top cliente (filas ya ordenadas desc)
-  const top = filas[0];
-  const pctTop = totalGeneral > 0 ? Math.round(top.total/totalGeneral*100) : 0;
+let _sgTab = 'activos';            // 'todos' | 'activos' | 'sin' | 'fac'
+let _sgSortKey = 'id';     // 'id' | 'monto' | 'fac' | 'cuad' | 'dias' | 'ult'
+let _sgSortDir = 'asc';    // 'asc' | 'desc'
+let _sgDefaultMontoAplicado = false;
+let _sgDefaultPctAplicado   = false;
 
-  cont.innerHTML = `
-    <div class="an-summary-tile">
-      <div class="sl-label">Facturación total</div>
-      <div class="sl-value">${fmt(Math.round(totalGeneral))}</div>
-      <div class="sl-sub">${meses.length} mes${meses.length!==1?'es':''} · ${filas.length} cliente${filas.length!==1?'s':''} con facturación</div>
-    </div>
-    <div class="an-summary-tile">
-      <div class="sl-label">Mejor mes</div>
-      <div class="sl-value">${mejorMes ? mesLabel(mejorMes) : '—'}</div>
-      <div class="sl-sub">${fmt(Math.round(mejorMonto))} · ${pctMejorMes}% del período</div>
-    </div>
-    <div class="an-summary-tile">
-      <div class="sl-label">Top cliente</div>
-      <div class="sl-value">${top.id}</div>
-      <div class="sl-sub">${fmt(Math.round(top.total))} · ${pctTop}% del período</div>
-    </div>`;
+// ── Helpers de cálculo ────────────────────────────────────────────
+
+function _sgFechaMaxAsignaciones() {
+  if (!Array.isArray(asignaciones) || !asignaciones.length) return null;
+  let max = '';
+  for (const a of asignaciones) {
+    if (a.fecha && a.fecha > max) max = a.fecha;
+  }
+  return max || null;
 }
 
-function _anRenderDesglose(meses) {
-  const tabla = document.getElementById('an-deg');
-  const avisoEl = document.getElementById('an-deg-aviso');
-  if (!tabla) return;
+function _sgEsActivo(idSitio, fechaMax) {
+  if (!fechaMax || !idSitio) return false;
+  return asignaciones.some(a => a.sitioId === idSitio && a.fecha === fechaMax);
+}
 
-  const facturadas = lineas.filter(l => l.estado === 'Facturado' && meses.includes(l.mes));
-  const clientesIds = [...new Set(facturadas.map(l => l.clienteId).filter(Boolean))];
+function _sgFacturadoSitio(idSitio, totalSitio) {
+  const lineasFac = lineas.filter(l => l.sitioId === idSitio && l.estado === 'Facturado');
+  const monto = lineasFac.reduce((a, l) => a + (l.monto || 0), 0);
+  const pct   = totalSitio > 0 ? Math.min(100, (monto / totalSitio) * 100) : 0;
+  return { monto, pct };
+}
 
-  // Pre-calcular total por cliente para ordenar igual que la matriz (desc)
-  const totalCli = {};
-  clientesIds.forEach(cid => {
-    totalCli[cid] = facturadas.filter(l => l.clienteId === cid).reduce((a,l) => a+(l.monto||0), 0);
-  });
-  const filasIds = clientesIds.filter(cid => totalCli[cid] > 0).sort((a,b) => totalCli[b] - totalCli[a]);
+function _sgPersonasUnicasSitio(idSitio) {
+  const ids = new Set();
+  asignaciones.forEach(a => { if (a.sitioId === idSitio) ids.add(a.empleadoId); });
+  return ids.size;
+}
 
-  if (!filasIds.length) {
-    tabla.innerHTML = `<tbody><tr><td class="an-empty">Sin facturación en el período seleccionado.</td></tr></tbody>`;
-    if (avisoEl) avisoEl.innerHTML = '';
-    return;
-  }
-
-  // Helper: para un subconjunto de líneas, arma el stack de tramos {100,80,20} con monto + IDs únicos
-  const tramoStack = (lns) => {
-    const partes = [];
-    _AN_TRAMOS.forEach(t => {
-      const lnsT = lns.filter(l => Number(l.pct) === t);
-      const monto = lnsT.reduce((a,l) => a+(l.monto||0), 0);
-      if (monto > 0) {
-        const sitiosUnicos = new Set(lnsT.map(l => l.sitioId)).size; // C-a: IDs únicos
-        partes.push(`<div class="an-tramo"><span class="t-label">${t}%</span><span class="t-monto">${fmt(Math.round(monto))}</span><span class="t-cant">· ${sitiosUnicos}</span></div>`);
-      }
-    });
-    if (!partes.length) return `<span class="an-cell-empty">—</span>`;
-    return `<div class="an-tramo-stack">${partes.join('')}</div>`;
-  };
-
-  // Header
-  let thead = `<thead><tr><th>Cliente</th>`;
-  meses.forEach(m => { thead += `<th>${mesLabel(m)}</th>`; });
-  thead += `<th class="col-total">Total período</th></tr></thead>`;
-
-  // Fila TOTAL
-  let body = `<tbody><tr class="deg-total"><td>TOTAL</td>`;
-  meses.forEach(m => {
-    const lns = facturadas.filter(l => l.mes === m);
-    body += `<td>${tramoStack(lns)}</td>`;
-  });
-  body += `<td class="col-total">${tramoStack(facturadas)}</td></tr>`;
-
-  // Filas de cliente
-  filasIds.forEach(cid => {
-    const cli = getCli(cid);
-    const color = cli ? cli.color : '#94a3b8';
-    body += `<tr><td><span class="an-dot" style="background:${color};"></span>${cid}</td>`;
-    meses.forEach(m => {
-      const lns = facturadas.filter(l => l.clienteId === cid && l.mes === m);
-      body += `<td>${tramoStack(lns)}</td>`;
-    });
-    const lnsTot = facturadas.filter(l => l.clienteId === cid);
-    body += `<td class="col-total">${tramoStack(lnsTot)}</td></tr>`;
-  });
-  body += `</tbody>`;
-  tabla.innerHTML = thead + body;
-
-  // Aviso al pie: líneas en tramos NO contemplados (fuera de 100/80/20)
-  if (avisoEl) {
-    const fuera = facturadas.filter(l => !_AN_TRAMOS.includes(Number(l.pct)));
-    if (fuera.length) {
-      const montoFuera = fuera.reduce((a,l) => a+(l.monto||0), 0);
-      const tramosFuera = [...new Set(fuera.map(l => Number(l.pct)))].sort((a,b)=>b-a);
-      avisoEl.className = 'an-deg-aviso';
-      avisoEl.innerHTML = `⚠️ Este desglose solo considera los tramos 100% / 80% / 20%. No se muestran ${fmt(Math.round(montoFuera))} en tramos ${tramosFuera.map(t=>t+'%').join(' / ')} (${fuera.length} línea${fuera.length!==1?'s':''}), por lo que la suma puede no coincidir con la facturación total de arriba.`;
-    } else {
-      avisoEl.className = '';
-      avisoEl.innerHTML = '';
+function _sgPrimeraActividad(idSitio) {
+  let min = '';
+  for (const a of asignaciones) {
+    if (a.sitioId === idSitio && a.fecha) {
+      if (!min || a.fecha < min) min = a.fecha;
     }
   }
+  return min || null;
+}
+function _sgUltimaActividad(idSitio) {
+  let max = '';
+  for (const a of asignaciones) {
+    if (a.sitioId === idSitio && a.fecha) {
+      if (a.fecha > max) max = a.fecha;
+    }
+  }
+  return max || null;
 }
 
-// Set con los IDs actualmente expandidos. E1: una sola fila abierta a la vez.
-let _sgExpandido = null;
-// Flag para aplicar default "Con monto" solo en el primer render de la sesión
-let _sgDefaultMontoAplicado = false;
-// Orden multi-columna para Sitios globales (cols 'total' y 'dias').
-// Array de objetos { col, dir } en orden de prioridad. Vacío = default alfabético asc por ID.
-let _sgOrden = [];
+function _sgContratistasDeSitio(idSitio) {
+  const nombres = new Set();
+  asignaciones.forEach(a => {
+    if (a.sitioId !== idSitio) return;
+    const e = empleados.find(x => x.id === a.empleadoId);
+    if (e && String(e.relacion).toUpperCase() === 'C') {
+      nombres.add(e.nombre || e.id);
+    }
+  });
+  return nombres;
+}
+
+function _sgTipoCuadrilla(idSitio, pctFacturado) {
+  const asigs = asignaciones.filter(a => a.sitioId === idSitio);
+  if (!asigs.length) {
+    // Sin asignaciones: si está 100% facturado, es un sitio legacy terminado (anterior a la hoja ASIGNACIONES)
+    if (typeof pctFacturado === 'number' && pctFacturado >= 99.5) {
+      return { tipo: 'terminado', label: 'TERMINADO' };
+    }
+    return { tipo: 'sin', label: 'SIN ARRANCAR' };
+  }
+  let hayPropio = false, hayContratista = false;
+  const contratistas = new Set();
+  asigs.forEach(a => {
+    const e = empleados.find(x => x.id === a.empleadoId);
+    if (!e) return;
+    const r = String(e.relacion).toUpperCase();
+    if (r === 'P') hayPropio = true;
+    else if (r === 'C') { hayContratista = true; contratistas.add(e.nombre || e.id); }
+  });
+  if (hayPropio && hayContratista) return { tipo: 'mixta', label: 'MIXTA — REVISAR' };
+  if (hayPropio)                   return { tipo: 'propia', label: 'PROPIA' };
+  if (hayContratista) {
+    if (contratistas.size === 1) {
+      const n = [...contratistas][0];
+      return { tipo: 'contratista', label: n, contratistaNombre: n };
+    }
+    // Varios contratistas distintos en el mismo sitio: sigue siendo de tipo 'contratista'
+    return { tipo: 'contratista', label: 'VARIOS' };
+  }
+  return { tipo: 'sin', label: 'SIN DEFINIR' };
+}
+
+const _SG_MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+function _sgFormatoFechaCorta(fecha) {
+  if (!fecha) return '—';
+  const [y, m, d] = fecha.split('-').map(Number);
+  return `${d} ${_SG_MESES[m-1]}`;
+}
+function _sgFormatoHaceDias(fecha) {
+  if (!fecha) return '—';
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  const [y, m, d] = fecha.split('-').map(Number);
+  const f = new Date(y, m-1, d); f.setHours(0,0,0,0);
+  const diff = Math.round((hoy - f) / 86400000);
+  if (diff === 0) return 'hoy';
+  if (diff === 1) return 'ayer';
+  if (diff > 0 && diff < 30) return `hace ${diff} días`;
+  return _sgFormatoFechaCorta(fecha);
+}
+
+function _sgPctACategoria(pct) {
+  if (pct <= 0.5)  return '0';
+  if (pct >= 99.5) return '100';
+  if (pct <= 50)   return '20';
+  return '80';
+}
+
+
+// ── Render principal ──────────────────────────────────────────────
 
 function renderSitiosGlobales() {
-  const tbody = document.getElementById('tabla-sitios-globales');
-  if (!tbody) return;
+  const cont = document.getElementById('sg-lista-body');
+  if (!cont) return;
 
-  // Inicializar multiselect de Cliente (solo con clientes que tienen al menos 1 sitio)
+  // Multiselect Cliente
   const clientesEnSitios = [...new Set(sitios.map(s => s.clienteId).filter(Boolean))];
   const clientesOpts = clientes
     .filter(c => clientesEnSitios.includes(c.id))
     .map(c => ({ value: c.id, label: c.id }));
-  msInit('sg-filtro-cliente', clientesOpts, 'Todos los clientes', aplicarFiltrosSitiosGlobales);
+  msInit('sg-filtro-cliente', clientesOpts, 'Clientes', aplicarFiltrosSitiosGlobales);
 
-  // Filtro Con monto / Sin monto. Default en primer render de sesión: solo "Con monto"
-  const montoOpts = [
+  // Multiselect Cuadrilla — solo 2 opciones (Propia o Contratista).
+  // "Sin arrancar" y "Terminado" se acceden vía los tabs / desactivando "Con días".
+  // "Mixta" se detecta internamente como alerta (badge rojo) pero no se filtra desde acá.
+  msInit('sg-filtro-cuadrilla', [
+    { value: 'propia',      label: 'Propia' },
+    { value: 'contratista', label: 'Contratista' }
+  ], 'Cuadrilla', () => { sgToggleContratistaWrap(); aplicarFiltrosSitiosGlobales(); });
+
+  // Multiselect Contratista específico (dinámico desde empleados) — visible solo si "Contratista" está en Cuadrilla
+  const contratistasNombres = empleados
+    .filter(e => String(e.relacion).toUpperCase() === 'C')
+    .map(e => e.nombre || e.id);
+  const contratistasOpts = [...new Set(contratistasNombres)].sort().map(n => ({ value: n, label: n }));
+  msInit('sg-filtro-contratista', contratistasOpts, 'Contratista', aplicarFiltrosSitiosGlobales);
+  sgToggleContratistaWrap();
+
+  // Multiselect % Facturado — default oculta 100%
+  msInit('sg-filtro-pct', [
+    { value: '0',   label: '0%' },
+    { value: '20',  label: '20%' },
+    { value: '80',  label: '80%' },
+    { value: '100', label: '100%' }
+  ], '% Fact', aplicarFiltrosSitiosGlobales);
+  if (!_sgDefaultPctAplicado) {
+    const st = window._msState?.['sg-filtro-pct'];
+    if (st && st.selected.size === 0) {
+      st.selected.add('0'); st.selected.add('20'); st.selected.add('80');
+      msRender('sg-filtro-pct');
+    }
+    _sgDefaultPctAplicado = true;
+  }
+
+  // Multiselect Monto — default "Con monto"
+  msInit('sg-filtro-monto', [
     { value: 'con', label: 'Con monto' },
     { value: 'sin', label: 'Sin monto' }
-  ];
-  msInit('sg-filtro-monto', montoOpts, 'Con/Sin monto', aplicarFiltrosSitiosGlobales);
+  ], 'Monto', aplicarFiltrosSitiosGlobales);
   if (!_sgDefaultMontoAplicado) {
     const st = window._msState?.['sg-filtro-monto'];
     if (st && st.selected.size === 0) {
@@ -3504,176 +3782,286 @@ function renderSitiosGlobales() {
   aplicarFiltrosSitiosGlobales();
 }
 
+/* Muestra/oculta el filtro Contratista según si "Contratista" está seleccionado en Cuadrilla */
+function sgToggleContratistaWrap() {
+  const wrap = document.getElementById('sg-filtro-contratista');
+  if (!wrap) return;
+  const cuadSel = msGet('sg-filtro-cuadrilla');
+  const visible = cuadSel.includes('contratista');
+  wrap.style.display = visible ? '' : 'none';
+  // Si se oculta y tenía selecciones, limpiarlas (sino siguen filtrando en silencio)
+  if (!visible) {
+    const st = window._msState?.['sg-filtro-contratista'];
+    if (st && st.selected.size > 0) {
+      st.selected.clear();
+      msRender('sg-filtro-contratista');
+    }
+  }
+}
+
+function sgSetTab(tab) {
+  _sgTab = tab;
+  document.querySelectorAll('.sg-tab').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === tab);
+  });
+  // Si el usuario va al tab "Sin arrancar", desmarcar automáticamente el checkbox "Con días"
+  // (sino sería siempre lista vacía: Sin arrancar = dias === 0, Con días = dias > 0)
+  if (tab === 'sin') {
+    const chk = document.getElementById('sg-filtro-dias');
+    if (chk && chk.checked) chk.checked = false;
+  }
+  aplicarFiltrosSitiosGlobales();
+}
+
+/* Click en un header de columna: toggle asc/desc si ya está activo, o setea asc default si no */
+function sgSetSort(key) {
+  if (_sgSortKey === key) {
+    _sgSortDir = (_sgSortDir === 'asc') ? 'desc' : 'asc';
+  } else {
+    _sgSortKey = key;
+    _sgSortDir = 'asc';
+  }
+  _sgRefrescarSortUI();
+  aplicarFiltrosSitiosGlobales();
+}
+
+/* Refresca el indicador visual de los headers (clase activa + flecha) */
+function _sgRefrescarSortUI() {
+  document.querySelectorAll('.sg-head-sort').forEach(el => {
+    el.classList.remove('sort-active', 'sort-asc', 'sort-desc');
+    if (el.dataset.key === _sgSortKey) {
+      el.classList.add('sort-active');
+      el.classList.add(_sgSortDir === 'asc' ? 'sort-asc' : 'sort-desc');
+    }
+  });
+}
+
 function aplicarFiltrosSitiosGlobales() {
-  const tbody = document.getElementById('tabla-sitios-globales');
-  if (!tbody) return;
+  const cont = document.getElementById('sg-lista-body');
+  if (!cont) return;
 
-  // Filtros
-  const texto    = (document.getElementById('sg-filtro-texto')?.value || '').toLowerCase().trim();
-  const clientesSel = msGet('sg-filtro-cliente');
-  const montoSel    = msGet('sg-filtro-monto'); // ['con'] | ['sin'] | ['con','sin'] | []
-  const soloConDias = !!document.getElementById('sg-filtro-dias')?.checked;
-
-  // Agrupar por ID (no hay clientes distintos para mismo ID, decisión A)
-  const mapa = new Map(); // id -> { id, clienteId, filas:[s], total:number, dias:number }
+  // Construir mapa de sitios agregados (un objeto por ID corto único)
+  const mapa = new Map();
   sitios.forEach(s => {
     if (!s.id) return;
     if (!mapa.has(s.id)) {
-      mapa.set(s.id, { id: s.id, clienteId: s.clienteId, filas: [], total: 0, dias: 0 });
+      mapa.set(s.id, { id: s.id, clienteId: s.clienteId, filas: [], total: 0 });
     }
     const g = mapa.get(s.id);
     g.filas.push(s);
     g.total += (s.po || 0);
   });
-  // Calcular días trabajados por sitio (E1: solo confirmadas, no incluye cola)
-  mapa.forEach(g => { g.dias = _diasTrabajadosSitio(g.id); });
 
-  // Convertir a array y aplicar filtros
-  let lista = [...mapa.values()];
-  if (texto) {
-    lista = lista.filter(g => g.id.toLowerCase().includes(texto));
-  }
-  if (clientesSel.length) {
-    lista = lista.filter(g => clientesSel.includes(g.clienteId));
-  }
-  // Filtro Con/Sin monto (A3: sin monto = total ≤ 1, con monto = total > 1)
+  const fechaMax = _sgFechaMaxAsignaciones();
+  mapa.forEach(g => {
+    g.fac          = _sgFacturadoSitio(g.id, g.total);
+    g.dias         = _diasTrabajadosSitio(g.id);
+    g.personas     = _sgPersonasUnicasSitio(g.id);
+    g.cuadrilla    = _sgTipoCuadrilla(g.id, g.fac.pct);
+    g.contratistas = _sgContratistasDeSitio(g.id);
+    g.activo       = _sgEsActivo(g.id, fechaMax);
+    g.primera      = _sgPrimeraActividad(g.id);
+    g.ultima       = _sgUltimaActividad(g.id);
+    g.pctCat       = _sgPctACategoria(g.fac.pct);
+  });
+  const todos = [...mapa.values()];
+
+  const $ = id => document.getElementById(id);
+
+  // ── Contadores de tabs (sobre el universo total) ──
+  const cntTodos   = todos.length;
+  const cntActivos = todos.filter(g => g.activo).length;
+  const cntSin     = todos.filter(g => g.cuadrilla.tipo === 'sin').length;
+  const cntFac     = todos.filter(g => g.pctCat === '100').length;
+  if ($('sg-tab-cnt-todos'))   $('sg-tab-cnt-todos').textContent   = cntTodos;
+  if ($('sg-tab-cnt-activos')) $('sg-tab-cnt-activos').textContent = cntActivos;
+  if ($('sg-tab-cnt-sin'))     $('sg-tab-cnt-sin').textContent     = cntSin;
+  if ($('sg-tab-cnt-fac'))     $('sg-tab-cnt-fac').textContent     = cntFac;
+
+  // ── Aplicar tab ──
+  let lista = [...todos];
+  if (_sgTab === 'activos')   lista = lista.filter(g => g.activo);
+  else if (_sgTab === 'sin')  lista = lista.filter(g => g.cuadrilla.tipo === 'sin');
+  else if (_sgTab === 'fac')  lista = lista.filter(g => g.pctCat === '100');
+
+  // Universo del tab (antes de filtros) — sirve para informar cuántos quedan ocultos
+  const universoTab = lista.length;
+
+  // ── Aplicar filtros ──
+  const texto       = (document.getElementById('sg-filtro-texto')?.value || '').toLowerCase().trim();
+  const clientesSel = msGet('sg-filtro-cliente');
+  const cuadSel     = msGet('sg-filtro-cuadrilla');
+  const contrSel    = msGet('sg-filtro-contratista');
+  const pctSel      = msGet('sg-filtro-pct');
+  const montoSel    = msGet('sg-filtro-monto');
+  const conDiasChk  = document.getElementById('sg-filtro-dias');
+  const filtroConDias = conDiasChk ? conDiasChk.checked : false;
+
+  if (texto)              lista = lista.filter(g => g.id.toLowerCase().includes(texto));
+  if (clientesSel.length) lista = lista.filter(g => clientesSel.includes(g.clienteId));
+  if (cuadSel.length)     lista = lista.filter(g => cuadSel.includes(g.cuadrilla.tipo));
+  if (contrSel.length)    lista = lista.filter(g => [...g.contratistas].some(n => contrSel.includes(n)));
+  if (pctSel.length)      lista = lista.filter(g => pctSel.includes(g.pctCat));
+  if (filtroConDias)      lista = lista.filter(g => g.dias > 0);
   if (montoSel.length) {
     lista = lista.filter(g => {
-      if (montoSel.includes('con') && g.total > 1) return true;
+      if (montoSel.includes('con') && g.total > 1)  return true;
       if (montoSel.includes('sin') && g.total <= 1) return true;
       return false;
     });
   }
-  // Filtro "Solo con días asignados"
-  if (soloConDias) {
-    lista = lista.filter(g => g.dias > 0);
-  }
-  // Orden: aplica _sgOrden (multi-columna), con desempate alfabético asc por ID.
-  // Si _sgOrden está vacío, queda el default alfabético asc.
-  lista.sort((a, b) => {
-    for (const o of _sgOrden) {
-      const va = o.col === 'total' ? a.total : a.dias;
-      const vb = o.col === 'total' ? b.total : b.dias;
-      const diff = va - vb;
-      if (diff !== 0) return o.dir === 'asc' ? diff : -diff;
-    }
-    return a.id.localeCompare(b.id);
-  });
-  // Pintar indicadores ▲/▼/¹² en headers según _sgOrden
-  _sgPintarHeaders();
 
+  // ── Ordenar (por header clickeable) ──
+  const compBase = {
+    id:    (a, b) => a.id.localeCompare(b.id),
+    monto: (a, b) => (a.total - b.total)               || a.id.localeCompare(b.id),
+    fac:   (a, b) => (a.fac.pct - b.fac.pct)           || a.id.localeCompare(b.id),
+    cuad:  (a, b) => a.cuadrilla.label.localeCompare(b.cuadrilla.label) || a.id.localeCompare(b.id),
+    dias:  (a, b) => (a.dias - b.dias)                 || a.id.localeCompare(b.id),
+    ult:   (a, b) => (a.ultima || '').localeCompare(b.ultima || '') || a.id.localeCompare(b.id)
+  };
+  const baseCmp = compBase[_sgSortKey] || compBase.id;
+  const cmp = (_sgSortDir === 'desc')
+    ? (a, b) => -baseCmp(a, b)
+    : baseCmp;
+  lista.sort(cmp);
+  _sgRefrescarSortUI();
+
+  // ── Footer + botón Limpiar ──
+  const hayFiltros = _sgHayFiltrosAplicados();
+  const btnLimpiar = $('sg-btn-limpiar');
+  if (btnLimpiar) btnLimpiar.style.display = hayFiltros ? 'inline-flex' : 'none';
+
+  const labelTab = _sgLabelTab(_sgTab);
+
+  // ── Render ──
   if (!lista.length) {
-    tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><span class="es-icon">🌐</span><p>${sitios.length === 0 ? 'Sin sitios registrados.' : 'Sin sitios que coincidan con los filtros.'}</p></div></td></tr>`;
+    let msg = sitios.length === 0
+      ? 'Sin sitios registrados.'
+      : 'Sin sitios que coincidan con la combinación actual.';
+    if (_sgTab === 'fac' && pctSel.length && !pctSel.includes('100')) {
+      msg = 'Sin sitios facturados al 100% — revisá el filtro "% Facturado".';
+    }
+    cont.innerHTML = `<div class="sg-empty"><div class="sg-empty-icon">🌐</div><p>${msg}</p></div>`;
+    if ($('sg-footer-info')) {
+      const ocultos = universoTab;
+      $('sg-footer-info').textContent = hayFiltros && ocultos > 0
+        ? `Mostrando 0 de ${universoTab} ${labelTab} · ${ocultos} oculto${ocultos!==1?'s':''} por filtros aplicados`
+        : `Mostrando 0 ${labelTab}`;
+    }
     return;
   }
 
-  // Construir filas: una fila resumen + (si está expandida) sub-tabla
-  tbody.innerHTML = lista.map(g => {
-    const cli       = getCli(g.clienteId);
-    const idEsc     = g.id.replace(/'/g, "\\'");
-    const expandida = _sgExpandido === g.id;
-    const arrow     = expandida ? '▼' : '▶';
-
-    const filaResumen = `<tr class="row-sg-clickable" onclick="sgToggleExpandir('${idEsc}')">
-      <td style="font-weight:600;">
-        <span style="display:inline-block;width:12px;color:var(--text-light);font-size:10px;margin-right:6px;">${arrow}</span>
-        ${g.id}
-      </td>
-      <td>
-        <span style="display:inline-flex;align-items:center;gap:6px;">${cli ? dot(cli.color) : ''}${g.clienteId}</span>
-      </td>
-      <td>
-        <span style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;">${fmt(Math.round(g.total))}</span>
-        <span style="font-size:11px;color:var(--text-light);font-weight:500;margin-left:6px;">(${g.filas.length} PO${g.filas.length!==1?'s':''})</span>
-      </td>
-      <td>
-        ${g.dias > 0
-          ? `<span class="sg-dias-badge sg-dias-clickable" onclick="event.stopPropagation();abrirModalSgDias('${idEsc}')" title="Ver detalle de días trabajados">${g.dias}</span>`
-          : `<span class="sg-dias-vacio">—</span>`}
-      </td>
-      <td class="col-acciones" onclick="event.stopPropagation()">
-        <button class="btn btn-glass btn-sm" onclick="sgVerEnPOSitios('${idEsc}')" title="Ver en PO sitios" style="font-size:11px;font-weight:600;padding:5px 10px;">Ver en PO</button>
-      </td>
-    </tr>`;
-
-    // Sub-tabla expandida (D1: fondo sutilmente distinto + sangría a la izquierda)
-    let filaDetalle = '';
-    if (expandida) {
-      // S2: columnas del detalle = Provincia · Concepto · N° PO · Total PO · Status · Observación
-      const filasInternas = g.filas.map(s => {
-        const cb = s.concepto === 'Básico' ? 'badge-blue' : 'badge-violet';
-        const st = getSitStatus(s.uid);
-        return `<tr style="background:rgba(240,242,248,0.55);">
-          <td style="padding-left:38px;color:var(--text-mid);font-size:12.5px;">${s.localidad || '—'}</td>
-          <td><span class="badge ${cb}">${s.concepto}</span></td>
-          <td style="font-size:12px;color:var(--text-mid);">${s.poNro || '—'}</td>
-          <td style="font-weight:600;text-align:right;">${s.po ? fmt(s.po) : '—'}</td>
-          <td><span style="display:inline-block;padding:4px 11px;border-radius:20px;font-size:12px;font-weight:600;background:${st.color};color:${st.text};">${st.label}</span></td>
-          <td style="color:var(--text-mid);font-size:12px;">${s.obs || '—'}</td>
-        </tr>`;
-      }).join('');
-
-      filaDetalle = `<tr class="sg-detalle-fila"><td colspan="5" style="padding:0;background:rgba(240,242,248,0.35);">
-        <table style="width:100%;border-collapse:collapse;margin:0;">
-          <thead><tr style="background:rgba(220,225,238,0.55);">
-            <th style="padding-left:38px;font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:var(--text-light);font-weight:600;text-align:left;padding-top:9px;padding-bottom:9px;">Provincia</th>
-            <th style="font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:var(--text-light);font-weight:600;text-align:left;padding:9px 14px;">Concepto</th>
-            <th style="font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:var(--text-light);font-weight:600;text-align:left;padding:9px 14px;">N° PO</th>
-            <th style="font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:var(--text-light);font-weight:600;text-align:right;padding:9px 14px;">Total PO</th>
-            <th style="font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:var(--text-light);font-weight:600;text-align:left;padding:9px 14px;">Status</th>
-            <th style="font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:var(--text-light);font-weight:600;text-align:left;padding:9px 14px;">Observación</th>
-          </tr></thead>
-          <tbody>${filasInternas}</tbody>
-        </table>
-      </td></tr>`;
-    }
-
-    return filaResumen + filaDetalle;
-  }).join('');
-}
-
-function sgToggleExpandir(idSitio) {
-  // E1: una sola fila abierta a la vez
-  _sgExpandido = (_sgExpandido === idSitio) ? null : idSitio;
-  aplicarFiltrosSitiosGlobales();
-}
-
-/* Orden multi-columna TOTAL/Días — A1 (3 estados) + C1 (flecha solo si activo) + B2/T1 (acumulable con shift) + P1 (numerito de prioridad) */
-function sgToggleOrden(col, isShift) {
-  const idx = _sgOrden.findIndex(o => o.col === col);
-  if (isShift) {
-    // Shift+click: cicla esta columna conservando el resto del orden
-    if (idx === -1) {
-      _sgOrden.push({ col, dir: 'asc' });
-    } else if (_sgOrden[idx].dir === 'asc') {
-      _sgOrden[idx].dir = 'desc';
+  cont.innerHTML = lista.map(g => _sgRenderFila(g)).join('');
+  if ($('sg-footer-info')) {
+    const ocultos = universoTab - lista.length;
+    if (hayFiltros && ocultos > 0) {
+      $('sg-footer-info').textContent = `Mostrando ${lista.length} de ${universoTab} ${labelTab} · ${ocultos} oculto${ocultos!==1?'s':''} por filtros aplicados`;
     } else {
-      _sgOrden.splice(idx, 1);
-    }
-  } else {
-    // Click normal (T1): cicla esta columna y descarta las otras
-    if (idx === -1) {
-      _sgOrden = [{ col, dir: 'asc' }];
-    } else if (_sgOrden[idx].dir === 'asc') {
-      _sgOrden = [{ col, dir: 'desc' }];
-    } else {
-      _sgOrden = [];
+      $('sg-footer-info').textContent = `Mostrando ${lista.length} ${labelTab}`;
     }
   }
+}
+
+// Devuelve el label del tab en plural, para usar en el footer
+function _sgLabelTab(tab) {
+  if (tab === 'activos') return 'sitios activos';
+  if (tab === 'sin')     return 'sitios sin arrancar';
+  if (tab === 'fac')     return 'sitios facturados';
+  return 'sitios';
+}
+
+// ¿Hay al menos un filtro con selección? (texto, multiselect o checkbox marcado)
+function _sgHayFiltrosAplicados() {
+  const texto = (document.getElementById('sg-filtro-texto')?.value || '').trim();
+  if (texto) return true;
+  if (msGet('sg-filtro-cliente').length)     return true;
+  if (msGet('sg-filtro-cuadrilla').length)   return true;
+  if (msGet('sg-filtro-contratista').length) return true;
+  if (msGet('sg-filtro-pct').length)         return true;
+  if (msGet('sg-filtro-monto').length)       return true;
+  const chkDias = document.getElementById('sg-filtro-dias');
+  if (chkDias && chkDias.checked) return true;
+  return false;
+}
+
+// Limpia todos los filtros (incluido los defaults) y refresca la lista.
+function sgLimpiarTodosFiltros() {
+  const txt = document.getElementById('sg-filtro-texto');
+  if (txt) txt.value = '';
+  msClearAll('sg-filtro-cliente');
+  msClearAll('sg-filtro-cuadrilla');
+  msClearAll('sg-filtro-contratista');
+  msClearAll('sg-filtro-pct');
+  msClearAll('sg-filtro-monto');
+  const chkDias = document.getElementById('sg-filtro-dias');
+  if (chkDias) chkDias.checked = false;
   aplicarFiltrosSitiosGlobales();
 }
 
-function _sgPintarHeaders() {
-  ['total', 'dias'].forEach(col => {
-    const el = document.getElementById('sg-sort-ind-' + col);
-    if (!el) return;
-    const idx = _sgOrden.findIndex(o => o.col === col);
-    if (idx === -1) { el.innerHTML = ''; return; }
-    const flecha = _sgOrden[idx].dir === 'asc' ? '▲' : '▼';
-    // P1: numerito de prioridad solo si hay más de 1 columna activa
-    const sup = _sgOrden.length > 1 ? `<sup>${idx + 1}</sup>` : '';
-    el.innerHTML = flecha + sup;
-  });
+function _sgRenderFila(g) {
+  const cli   = getCli(g.clienteId);
+  const idEsc = g.id.replace(/'/g, "\\'");
+  const activoClass = g.activo ? ' activo' : '';
+  const ultLbl   = g.ultima ? _sgFormatoHaceDias(g.ultima) : '';
+  const ultClass = (g.ultima && ultLbl === 'hoy') ? 'hoy' : '';
+
+  const cuad = g.cuadrilla;
+  let cuadIcon = 'fa-hourglass-start';
+  if (cuad.tipo === 'propia')           cuadIcon = 'fa-helmet-safety';
+  else if (cuad.tipo === 'contratista') cuadIcon = 'fa-people-group';
+  else if (cuad.tipo === 'mixta')       cuadIcon = 'fa-triangle-exclamation';
+  else if (cuad.tipo === 'terminado')   cuadIcon = 'fa-flag-checkered';
+
+  // Sección Actividad: sin contar días (eso va a su propia columna)
+  let actHtml;
+  if (cuad.tipo === 'sin') {
+    actHtml = `<div class="sg-act-wrap"><div class="sg-act-sub" style="font-style:italic;">Aún sin asignaciones</div></div>`;
+  } else if (cuad.tipo === 'terminado') {
+    actHtml = `<div class="sg-act-wrap"><div class="sg-act-sub" style="font-style:italic;">Sin registro de asignaciones (legacy)</div></div>`;
+  } else {
+    const inicio = g.primera ? `Inicio: ${_sgFormatoFechaCorta(g.primera)} · ` : '';
+    actHtml = `<div class="sg-act-wrap">
+      <div class="sg-act-stats"><b>${g.personas}</b> persona${g.personas!==1?'s':''}</div>
+      <div class="sg-act-sub ${ultClass}">${inicio}Último: ${ultLbl}</div>
+    </div>`;
+  }
+
+  // Sección Facturación: chip con color según categoría (0/20/80/100)
+  const pctMostrar = Math.round(g.fac.pct);
+  const chipCat = g.pctCat; // '0' | '20' | '80' | '100'
+  const facHtml = `<div><span class="sg-fac-chip sg-fac-chip-${chipCat}">${pctMostrar}%</span></div>`;
+
+  // Sección Días: número grande o '—' si 0
+  const diasHtml = g.dias > 0
+    ? `<div><div class="sg-dias-num">${g.dias}</div></div>`
+    : `<div><span class="sg-dias-vacio">—</span></div>`;
+
+  const diasDisabled = g.dias > 0 ? '' : 'disabled';
+  const diasOnclick  = g.dias > 0 ? `onclick="abrirModalSgDias('${idEsc}')"` : '';
+  const diasTitle    = g.dias > 0 ? 'Ver días trabajados' : 'Sin días registrados';
+
+  return `<div class="sg-row${activoClass}">
+    <div class="sg-row-marker"></div>
+    <div class="sg-cli-wrap">
+      <div class="sg-cli-row">${cli ? dot(cli.color) : ''}<span>${g.clienteId || '—'}</span></div>
+      <div class="sg-id">${g.id}</div>
+    </div>
+    <div class="sg-monto-wrap">
+      <div class="sg-monto-big">${g.total > 0 ? fmt(Math.round(g.total)) : '—'}</div>
+      <div class="sg-monto-sub">${g.filas.length} PO${g.filas.length!==1?'s':''}</div>
+    </div>
+    ${facHtml}
+    <div>
+      <span class="sg-cuad sg-cuad-${cuad.tipo}"><i class="fa-solid ${cuadIcon}"></i> ${cuad.label}</span>
+    </div>
+    ${diasHtml}
+    ${actHtml}
+    <div class="sg-acts">
+      <button class="sg-act-btn" onclick="sgVerEnPOSitios('${idEsc}')" title="Ver en PO sitios"><i class="fa-solid fa-arrow-right"></i></button>
+      <button class="sg-act-btn" ${diasDisabled} ${diasOnclick} title="${diasTitle}"><i class="fa-solid fa-calendar-days"></i></button>
+    </div>
+  </div>`;
 }
 
 /* G1 + N1: navegar a PO sitios filtrando por ID, limpiando los otros filtros */
@@ -3934,21 +4322,38 @@ async function ejecutarTraspaso() {
   cerrarModal();
   setLoading(true);
   const pendientes = [..._proyPendientes];
-  let ok = 0, err = 0;
-  const promises = pendientes.map(p =>
-    apiPost('INSERT', 'FACTURACION', {
-      ID: p.id, SITIO_ID: p.sitioId, CLIENTE_ID: p.clienteId,
-      PCT: p.pct, MONTO: p.monto, MES: p.mes,
-      FECHA_SOLICITUD: '', FECHA_FACTURA: '', NRO_FACTURA: '', ESTADO: 'Proyectado'
-    }).then(() => { lineas.push(p); ok++; }).catch(() => { err++; })
-  );
-  await Promise.all(promises);
-  _proyPendientes = err > 0 ? _proyPendientes.slice(ok) : [];
-  actualizarBannerProyecciones();
-  renderSitios(); renderSeguimiento(); actualizarDashboard(); actualizarBadge();
-  setLoading(false);
-  if (err === 0) { toast(`${ok} línea${ok!==1?'s':''} traspasada${ok!==1?'s':''} a Seguimiento ✓`); setTimeout(autoSync, 1000); }
-  else toast(`${ok} OK, ${err} con error. Intentá de nuevo.`, 'err');
+  const rows = pendientes.map(p => ({
+    ID: p.id, SITIO_ID: p.sitioId, CLIENTE_ID: p.clienteId,
+    PCT: p.pct, MONTO: p.monto, MES: p.mes,
+    FECHA_SOLICITUD: '', FECHA_FACTURA: '', NRO_FACTURA: '', ESTADO: 'Proyectado'
+  }));
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'BULK_INSERT', sheet: 'FACTURACION', rows })
+    });
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error || 'Error en BULK_INSERT');
+
+    // Normalizar al formato del resto del estado local (ID corto + poNroLinea separado)
+    pendientes.forEach(p => {
+      const tieneUid = String(p.sitioId).includes('||');
+      lineas.push({
+        ...p,
+        sitioId:    tieneUid ? p.sitioId.split('||')[0] : p.sitioId,
+        poNroLinea: tieneUid ? p.sitioId.split('||')[1] : ''
+      });
+    });
+    _proyPendientes = [];
+    actualizarBannerProyecciones();
+    renderSitios(); renderSeguimiento(); actualizarDashboard(); actualizarBadge();
+    toast(`${pendientes.length} línea${pendientes.length!==1?'s':''} traspasada${pendientes.length!==1?'s':''} a Seguimiento ✓`);
+    setTimeout(autoSync, 1000);
+  } catch (e) {
+    toast(`Error en el traspaso: ${e.message}. La cola queda intacta para reintentar.`, 'err');
+  } finally {
+    setLoading(false);
+  }
 }
 
 function descartarProyecciones() {
@@ -4928,14 +5333,21 @@ function renderAsigCalendario() {
     }
     const fechaStr = `${añoCell}-${String(mesCell+1).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
     const items = porFecha.get(fechaStr) || [];
-    const obrasDelDia    = new Set(items.map(a => a.sitioId));
-    const empleadosDelDia = new Set(items.map(a => a.empleadoId));
+    const itemsReales = items.filter(a => !esEstadoEspecial(a.sitioId));
+    const itemsEsp    = items.filter(a =>  esEstadoEspecial(a.sitioId));
+    const obrasDelDia    = new Set(itemsReales.map(a => a.sitioId));
+    const empleadosObras = new Set(itemsReales.map(a => a.empleadoId));
+    const empleadosEsp   = new Set(itemsEsp.map(a => a.empleadoId));
     const tieneData = items.length > 0;
+    // Empleados con CUALQUIER registro ese día (sitio real o estado especial)
+    const empleadosAsignados = new Set(items.map(a => a.empleadoId));
+    // Sin asignar = empleados totales del sistema sin registro ese día (los con estado especial cuentan como asignados)
+    const sinAsignar = tieneData ? Math.max(0, empleados.length - empleadosAsignados.size) : 0;
 
-    // Estadísticas mes en curso (sin contar outside)
+    // Estadísticas mes en curso (solo obras reales, los estados especiales no cuentan como actividad)
     if (!outside) {
       totalObrasMes += obrasDelDia.size;
-      empleadosDelDia.forEach(e => totalEmpleadosUnicosMes.add(e));
+      empleadosObras.forEach(e => totalEmpleadosUnicosMes.add(e));
     }
 
     const diaSemana = new Date(añoCell, mesCell, dia).getDay(); // 0=Dom, 6=Sáb
@@ -4951,13 +5363,19 @@ function renderAsigCalendario() {
     const clickHandler = (tieneData && !outside) ? ` onclick="abrirModalAsigDia('${fechaStr}')"` : '';
     let infoHtml = '';
     if (tieneData && !outside) {
-      const obrasLbl = obrasDelDia.size === 1 ? '1 obra' : `${obrasDelDia.size} obras`;
-      const empLbl   = empleadosDelDia.size === 1 ? '1 emp.' : `${empleadosDelDia.size} emp.`;
-      infoHtml = `
-        <div class="asig-cal-info">
-          <span class="pill">${obrasLbl}</span>
-          <span class="pill teal">${empLbl}</span>
-        </div>`;
+      let pills = '';
+      if (obrasDelDia.size > 0) {
+        const obrasLbl = obrasDelDia.size === 1 ? '1 obra' : `${obrasDelDia.size} obras`;
+        const empLbl   = empleadosObras.size === 1 ? '1 emp.' : `${empleadosObras.size} emp.`;
+        pills += `<span class="pill">${obrasLbl}</span><span class="pill teal">${empLbl}</span>`;
+      }
+      if (empleadosEsp.size > 0) {
+        pills += `<span class="pill amber">${empleadosEsp.size} esp.</span>`;
+      }
+      if (sinAsignar > 0) {
+        pills += `<span class="pill warn" title="${sinAsignar} empleado${sinAsignar!==1?'s':''} sin asignar para este día">${sinAsignar} S/A</span>`;
+      }
+      infoHtml = `<div class="asig-cal-info">${pills}</div>`;
     }
     html += `<div class="${classes.join(' ')}"${clickHandler}>
       <div class="asig-cal-daynum">${dia}</div>
@@ -5010,25 +5428,39 @@ function renderModalAsigDia() {
     porSitio.get(a.sitioId).push(a);
   });
 
-  const obrasCount = porSitio.size;
-  const empleadosCount = new Set(items.map(a => a.empleadoId)).size;
-  document.getElementById('asig-dia-sub').textContent = `${obrasCount} obra${obrasCount!==1?'s':''} · ${empleadosCount} empleado${empleadosCount!==1?'s':''}`;
+  // Separar sitios reales de estados especiales (los especiales van al pie)
+  const sitiosTodos  = [...porSitio.keys()];
+  const sitiosReales = sitiosTodos.filter(sid => !esEstadoEspecial(sid));
+  const estadosEsp   = sitiosTodos.filter(sid =>  esEstadoEspecial(sid))
+                                  .sort((a, b) => Object.keys(ESTADOS_ESPECIALES).indexOf(a) - Object.keys(ESTADOS_ESPECIALES).indexOf(b));
+
+  const obrasCount = sitiosReales.length;
+  const empleadosObras = new Set(items.filter(a => !esEstadoEspecial(a.sitioId)).map(a => a.empleadoId)).size;
+  const empleadosEspCount = new Set(items.filter(a => esEstadoEspecial(a.sitioId)).map(a => a.empleadoId)).size;
+  let subText = `${obrasCount} obra${obrasCount!==1?'s':''} · ${empleadosObras} empleado${empleadosObras!==1?'s':''}`;
+  if (empleadosEspCount > 0) subText += ` · ${empleadosEspCount} en estado especial`;
+  document.getElementById('asig-dia-sub').textContent = subText;
 
   const cont = document.getElementById('asig-dia-contenido');
   const bloques = [];
-  porSitio.forEach((asigs, sitioId) => {
+
+  // Helper para renderizar chips de empleado
+  const empChips = (asigs) => asigs.map(a => {
+    const emp = empleados.find(e => e.id === a.empleadoId);
+    const nombre = emp ? emp.nombre : a.empleadoId;
+    return `<span style="display:inline-flex;align-items:center;gap:6px;background:rgba(200,205,225,0.30);color:var(--text-mid);padding:4px 6px 4px 11px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid rgba(200,205,225,0.5);">
+      <span style="font-size:10px;color:var(--text-light);font-weight:500;">${a.empleadoId}</span>${badgeRelacion(a.empleadoId)}${nombre}
+      <button class="chip-x" title="Quitar este empleado" onclick="eliminarAsignacionConfirmada('${a.id.replace(/'/g, "\\'")}')"
+        style="background:rgba(248,113,113,0.10);border:none;border-radius:50%;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:#dc2626;font-size:11px;font-weight:700;line-height:1;padding:0;transition:var(--transition);"
+        onmouseover="this.style.background='rgba(248,113,113,0.25)'"
+        onmouseout="this.style.background='rgba(248,113,113,0.10)'">×</button>
+    </span>`;
+  }).join(' ');
+
+  // Bloques de obras reales (acordeón)
+  sitiosReales.forEach(sitioId => {
+    const asigs = porSitio.get(sitioId);
     const abierta = (_asigDiaObraAbierta === sitioId);
-    const empleadosHtml = asigs.map(a => {
-      const emp = empleados.find(e => e.id === a.empleadoId);
-      const nombre = emp ? emp.nombre : a.empleadoId;
-      return `<span style="display:inline-flex;align-items:center;gap:6px;background:rgba(200,205,225,0.30);color:var(--text-mid);padding:4px 6px 4px 11px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid rgba(200,205,225,0.5);">
-        <span style="font-size:10px;color:var(--text-light);font-weight:500;">${a.empleadoId}</span>${badgeRelacion(a.empleadoId)}${nombre}
-        <button class="chip-x" title="Quitar este empleado de esta obra" onclick="eliminarAsignacionConfirmada('${a.id.replace(/'/g, "\\'")}')"
-          style="background:rgba(248,113,113,0.10);border:none;border-radius:50%;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:#dc2626;font-size:11px;font-weight:700;line-height:1;padding:0;transition:var(--transition);"
-          onmouseover="this.style.background='rgba(248,113,113,0.25)'"
-          onmouseout="this.style.background='rgba(248,113,113,0.10)'">×</button>
-      </span>`;
-    }).join(' ');
     const sidEsc = sitioId.replace(/'/g, "\\'");
     bloques.push(`
       <div style="background:rgba(255,255,255,0.45);border:1px solid rgba(200,205,225,0.5);border-radius:12px;overflow:hidden;">
@@ -5038,10 +5470,31 @@ function renderModalAsigDia() {
           <span style="font-size:11px;color:var(--text-light);font-weight:500;">${asigs.length} empleado${asigs.length!==1?'s':''}</span>
           <button class="btn btn-rose btn-sm" title="Eliminar la obra completa de este día" style="margin-left:auto;" onclick="event.stopPropagation();eliminarObraConfirmada('${sidEsc}')"><i class="fa-solid fa-trash"></i></button>
         </div>
-        ${abierta ? `<div style="display:flex;flex-wrap:wrap;gap:6px;padding:0 15px 14px;">${empleadosHtml}</div>` : ''}
+        ${abierta ? `<div style="display:flex;flex-wrap:wrap;gap:6px;padding:0 15px 14px;">${empChips(asigs)}</div>` : ''}
       </div>
     `);
   });
+
+  // Bloques de estados especiales (siempre abiertos, al pie)
+  if (estadosEsp.length) {
+    bloques.push(`<div class="asig-dia-divider">Estados especiales</div>`);
+    estadosEsp.forEach(sitioId => {
+      const asigs = porSitio.get(sitioId);
+      const meta = ESTADOS_ESPECIALES[sitioId];
+      const sidEsc = sitioId.replace(/'/g, "\\'");
+      bloques.push(`
+        <div class="asig-dia-esp-bloque asig-dia-esp-${meta.cls}">
+          <div class="asig-dia-esp-head">
+            <span class="asig-dia-esp-label"><i class="fa-solid ${meta.icon}"></i> ${meta.label.toUpperCase()}</span>
+            <span class="asig-dia-esp-count">${asigs.length} empleado${asigs.length!==1?'s':''}</span>
+            <button class="btn btn-rose btn-sm" title="Eliminar este estado del día" style="margin-left:auto;" onclick="eliminarObraConfirmada('${sidEsc}')"><i class="fa-solid fa-trash"></i></button>
+          </div>
+          <div class="asig-dia-esp-emps">${empChips(asigs)}</div>
+        </div>
+      `);
+    });
+  }
+
   cont.innerHTML = bloques.length
     ? `<div style="display:flex;flex-direction:column;gap:8px;">${bloques.join('')}</div>`
     : '<div style="padding:30px;text-align:center;color:var(--text-light);">Sin datos</div>';
@@ -5193,12 +5646,30 @@ function asignacionesDeLaFecha(fechaStr) {
    - _asigEmpConfirmados:    { empleadoId: sitioId } — ya confirmados ese día (bloqueados)
    - _acFilaAbierta:         empleadoId de la fila cuyo autocomplete está desplegado, o null
    - _acFilaActivoIdx:       índice de navegación con teclado en el panel abierto
+
+   Estados especiales (no son sitios reales):
+   - SITIO_ID reservado en ASIGNACIONES. NO afectan días/personas/cuadrilla de sitios reales.
 */
+const ESTADOS_ESPECIALES = {
+  '__DEPOSITO__':   { label: 'Depósito',   labelCorto: 'Dep', icon: 'fa-warehouse',      cls: 'deposito'  },
+  '__VACACIONES__': { label: 'Vacaciones', labelCorto: 'Vac', icon: 'fa-umbrella-beach', cls: 'vacaciones'},
+  '__AUSENTE__':    { label: 'Ausente',    labelCorto: 'Aus', icon: 'fa-circle-xmark',   cls: 'ausente'   }
+};
+function esEstadoEspecial(sid) { return !!ESTADOS_ESPECIALES[sid]; }
+
 let _asigModalFechaActual = null;
 let _asigSitioPorEmpleado = {};
 let _asigEmpConfirmados   = {};
 let _acFilaAbierta        = null;
 let _acFilaActivoIdx      = -1;
+
+/* Asignar (o reasignar) un estado especial al empleado. Sobreescribe si tenía algo. */
+function asignarEstadoEspecial(empId, sid) {
+  if (!esEstadoEspecial(sid)) return;
+  _asigSitioPorEmpleado[empId] = sid;
+  if (_acFilaAbierta) cerrarAcFila(_acFilaAbierta);
+  renderModalEmpleados();
+}
 
 /* ── Abrir la vista "Nueva asignación" para una fecha ── */
 function abrirVistaNuevaAsig(fechaPre) {
@@ -5273,28 +5744,52 @@ function renderModalEmpleados() {
     const sitioElegido    = _asigSitioPorEmpleado[e.id] || '';
     const estaConfirmado  = !!confirmadoSitio;
     const tieneSitio      = estaConfirmado || !!sitioElegido;
+    const esEspConfirmado = estaConfirmado && esEstadoEspecial(confirmadoSitio);
+    const esEspElegido    = !estaConfirmado && esEstadoEspecial(sitioElegido);
     if (tieneSitio) asignados++;
 
     let filaClase = 'asig-emp-fila';
     if (estaConfirmado)      filaClase += ' confirmada';
     else if (!sitioElegido)  filaClase += ' sin-asignar';
 
+    // Chip de estado especial reutilizable
+    const chipEstadoEsp = (sid) => {
+      const meta = ESTADOS_ESPECIALES[sid];
+      return `<span class="asig-emp-esp-chip est-${meta.cls}"><i class="fa-solid ${meta.icon}"></i> ${meta.label}</span>`;
+    };
+
     let estadoHtml, controlHtml;
     if (estaConfirmado) {
-      estadoHtml = `<span class="asig-emp-estado st-conf">Confirmado</span>`;
-      controlHtml = `<input class="asig-emp-input" value="${confirmadoSitio}" disabled />`;
+      estadoHtml  = `<span class="asig-emp-estado st-conf">Confirmado</span>`;
+      controlHtml = esEspConfirmado
+        ? chipEstadoEsp(confirmadoSitio)
+        : `<input class="asig-emp-input" value="${confirmadoSitio}" disabled />`;
     } else if (sitioElegido) {
-      estadoHtml = `<span class="asig-emp-estado st-ok">Asignado</span>`;
-      controlHtml = `
-        <input class="asig-emp-input" value="${sitioElegido}" readonly
-          onclick="abrirAcFila('${e.id}')" style="cursor:pointer;" />
-        <button class="asig-emp-clear" title="Quitar sitio" onclick="limpiarSitioEmpleado('${e.id}')">×</button>`;
+      estadoHtml  = `<span class="asig-emp-estado st-ok">Asignado</span>`;
+      if (esEspElegido) {
+        controlHtml = `
+          ${chipEstadoEsp(sitioElegido)}
+          <button class="asig-emp-clear" title="Quitar" onclick="limpiarSitioEmpleado('${e.id}')">×</button>`;
+      } else {
+        controlHtml = `
+          <input class="asig-emp-input" value="${sitioElegido}" readonly
+            onclick="abrirAcFila('${e.id}')" style="cursor:pointer;" />
+          <button class="asig-emp-clear" title="Quitar sitio" onclick="limpiarSitioEmpleado('${e.id}')">×</button>`;
+      }
     } else {
-      estadoHtml = `<span class="asig-emp-estado st-sin">Sin asignar</span>`;
+      estadoHtml  = `<span class="asig-emp-estado st-sin">Sin asignar</span>`;
       controlHtml = `
         <input class="asig-emp-input" id="ac-fila-input-${e.id}" placeholder="Tipeá el sitio..." autocomplete="off"
           oninput="onAcFilaInput('${e.id}')" onkeydown="onAcFilaKeydown(event,'${e.id}')" />`;
     }
+
+    // Botones rápidos para estados especiales (solo si NO está confirmado)
+    const quickHtml = estaConfirmado ? '' : `
+      <div class="asig-emp-quick">
+        <button type="button" class="asig-quick-btn quick-deposito"   title="Asignar a Depósito"   onclick="asignarEstadoEspecial('${e.id}','__DEPOSITO__')"><i class="fa-solid fa-warehouse"></i></button>
+        <button type="button" class="asig-quick-btn quick-vacaciones" title="Marcar Vacaciones"    onclick="asignarEstadoEspecial('${e.id}','__VACACIONES__')"><i class="fa-solid fa-umbrella-beach"></i></button>
+        <button type="button" class="asig-quick-btn quick-ausente"    title="Marcar Ausente"       onclick="asignarEstadoEspecial('${e.id}','__AUSENTE__')"><i class="fa-solid fa-circle-xmark"></i></button>
+      </div>`;
 
     return `
       <div class="${filaClase}" data-emp="${e.id}">
@@ -5306,6 +5801,7 @@ function renderModalEmpleados() {
           ${controlHtml}
           <div class="ac-panel" id="ac-fila-panel-${e.id}"></div>
         </div>
+        ${quickHtml}
         ${estadoHtml}
       </div>`;
   }).join('');
@@ -5339,14 +5835,18 @@ function renderObrasCards() {
     asegurar(sid); porSitio[sid].nuevos.push(eid);
   });
 
-  const sitiosOrden = Object.keys(porSitio).sort((a, b) => a.localeCompare(b));
+  const sitiosTodos = Object.keys(porSitio);
+  const sitiosReales = sitiosTodos.filter(sid => !esEstadoEspecial(sid)).sort((a, b) => a.localeCompare(b));
+  const estadosEsp   = sitiosTodos.filter(sid =>  esEstadoEspecial(sid))
+                                  .sort((a, b) => Object.keys(ESTADOS_ESPECIALES).indexOf(a) - Object.keys(ESTADOS_ESPECIALES).indexOf(b));
 
-  if (!sitiosOrden.length) {
+  if (!sitiosReales.length && !estadosEsp.length) {
     cont.innerHTML = '<div class="nasig-cards-empty">Asigná empleados para ver las obras del día.</div>';
     return;
   }
 
-  cont.innerHTML = sitiosOrden.map(sid => {
+  // Render de un bloque (común para sitios y estados especiales)
+  const renderBloque = (sid, esEsp) => {
     const grupo = porSitio[sid];
     const totalEmp = grupo.confirmados.length + grupo.nuevos.length;
     const chipConf = grupo.confirmados.map(eid =>
@@ -5357,15 +5857,36 @@ function renderObrasCards() {
       `<span class="nasig-emp-chip nuevo">
         <span class="chip-emp-id">${eid}</span>${badgeRelacion(eid)}${nombreEmpleado(eid)}</span>`
     ).join('');
+
+    let tituloHtml;
+    let cardClase = 'nasig-obra-card';
+    if (esEsp) {
+      const meta = ESTADOS_ESPECIALES[sid];
+      cardClase += ` nasig-esp-card nasig-esp-${meta.cls}`;
+      tituloHtml = `<span class="nasig-obra-id nasig-esp-id"><i class="fa-solid ${meta.icon}"></i> ${meta.label.toUpperCase()}</span>`;
+    } else {
+      tituloHtml = `<span class="nasig-obra-id">${sid}</span>`;
+    }
+
     return `
-      <div class="nasig-obra-card">
+      <div class="${cardClase}">
         <div class="nasig-obra-titulo">
-          <span class="nasig-obra-id">${sid}</span>
+          ${tituloHtml}
           <span class="nasig-obra-count">${totalEmp} empleado${totalEmp!==1?'s':''}</span>
         </div>
         <div class="nasig-obra-emps">${chipConf}${chipNuevo}</div>
       </div>`;
-  }).join('');
+  };
+
+  let html = '';
+  if (sitiosReales.length) {
+    html += sitiosReales.map(sid => renderBloque(sid, false)).join('');
+  }
+  if (estadosEsp.length) {
+    html += `<div class="nasig-divider">Estados especiales</div>`;
+    html += estadosEsp.map(sid => renderBloque(sid, true)).join('');
+  }
+  cont.innerHTML = html;
 }
 
 /* ── Autocomplete por fila ── */
