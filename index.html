@@ -760,6 +760,48 @@
     .asig-cal-info .pill.teal  { background: rgba(45,212,191,0.14); color: #0d9488; }
     .asig-cal-info .pill.amber { background: rgba(251,191,36,0.18); color: #b45309; }
     .asig-cal-info .pill.warn  { background: rgba(234,179,8,0.18);  color: #a16207; border: 1px dashed rgba(234,179,8,0.55); padding: 0px 6px; }
+    .asig-cal-info .pill.impr  { background: rgba(251,191,36,0.85); color: #4a2c00; border: 1px solid rgba(180,83,9,0.45); }
+
+    /* ── IMPREVISTOS (día con problema, por sitio) ── */
+    /* Botón de marcado presente en la card de "Obras del día" y en el modal de detalle */
+    .imp-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: rgba(200,205,225,0.28); color: var(--text-mid);
+      border: 1px solid rgba(200,205,225,0.55); border-radius: 20px;
+      padding: 4px 11px; font-size: 11px; font-weight: 700; cursor: pointer;
+      font-family: 'DM Sans', sans-serif; transition: var(--transition); white-space: nowrap;
+    }
+    .imp-btn:hover { background: rgba(251,191,36,0.20); color: #b45309; border-color: rgba(251,191,36,0.5); }
+    .imp-btn.on {
+      background: rgba(251,191,36,0.22); color: #b45309; border-color: rgba(251,191,36,0.6);
+    }
+    .imp-btn.on:hover { background: rgba(251,191,36,0.34); }
+
+    /* Chip ámbar de imprevisto — usado en el modal de días trabajados de Sitios globales */
+    .imp-chip {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: rgba(251,191,36,0.20); color: #b45309;
+      border: 1px solid rgba(251,191,36,0.45); border-radius: 20px;
+      padding: 3px 10px; font-size: 11px; font-weight: 700; cursor: help; white-space: nowrap;
+    }
+    .imp-chip-none { color: var(--text-light); font-size: 12px; }
+
+    /* Card de obra con imprevisto en la vista "Nueva asignación" */
+    .nasig-obra-card.con-imprevisto {
+      border-color: rgba(251,191,36,0.55);
+      background: rgba(251,191,36,0.07);
+    }
+    /* Bloque de obra con imprevisto en el modal de detalle del día */
+    .asig-dia-obra.con-imprevisto {
+      border-color: rgba(251,191,36,0.55) !important;
+      background: rgba(251,191,36,0.07) !important;
+    }
+    /* Fila de motivo dentro del modal de imprevisto */
+    .imp-motivo-nota {
+      font-size: 11.5px; color: #b45309; font-weight: 600;
+      display: flex; align-items: center; gap: 6px; margin-top: 8px;
+    }
+    .imp-motivo-obs { font-weight: 500; color: var(--text-mid); font-style: italic; }
 
     /* ── Autocomplete (selector de sitio) ── */
     .ac-wrap { position: relative; }
@@ -1799,6 +1841,46 @@
   </div>
 </div>
 
+<!-- Modal: Marcar imprevisto (por día + sitio) -->
+<div class="modal-overlay" id="modal-imprevisto">
+  <div class="modal" style="max-width:520px;padding:28px 30px;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:4px;">
+      <div>
+        <div class="modal-title" style="margin:0;">Estado de la jornada</div>
+        <div id="imp-sub" style="font-size:12.5px;color:var(--text-light);margin-top:5px;">—</div>
+      </div>
+      <button onclick="cerrarModalImprevisto()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--text-light);line-height:1;">✕</button>
+    </div>
+
+    <!-- Selector normal / imprevisto -->
+    <div style="display:flex;gap:10px;margin:20px 0 4px;">
+      <button type="button" class="imp-tipo-btn" id="imp-tipo-normal" onclick="impSetTipo('normal')"
+        style="flex:1;padding:13px;border-radius:12px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:var(--transition);">
+        Día normal
+      </button>
+      <button type="button" class="imp-tipo-btn" id="imp-tipo-imprevisto" onclick="impSetTipo('imprevisto')"
+        style="flex:1;padding:13px;border-radius:12px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:var(--transition);">
+        Con imprevisto
+      </button>
+    </div>
+
+    <!-- Campos visibles solo si es imprevisto -->
+    <div id="imp-campos" style="display:none;margin-top:18px;">
+      <label class="form-label" style="display:block;margin-bottom:5px;">Motivo</label>
+      <select class="form-input" id="imp-motivo" style="width:100%;"></select>
+
+      <label class="form-label" style="display:block;margin:14px 0 5px;">Observación <span style="color:var(--text-light);font-weight:400;">(opcional)</span></label>
+      <textarea class="form-input" id="imp-observacion" rows="3" maxlength="300"
+        placeholder="Detalle de lo que pasó..." style="width:100%;resize:vertical;font-family:'DM Sans',sans-serif;"></textarea>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:22px;">
+      <button class="btn btn-glass" style="flex:1;" onclick="cerrarModalImprevisto()">Cancelar</button>
+      <button class="btn btn-primary" style="flex:1;" id="imp-btn-guardar" onclick="guardarImprevisto()">Guardar</button>
+    </div>
+  </div>
+</div>
+
 <!-- Banner flotante — proyecciones pendientes -->
 <div id="banner-proyecciones">
   <div class="banner-badge" id="banner-count">0</div>
@@ -2108,6 +2190,7 @@
         <div id="sg-dias-sub" style="font-size:13px;color:var(--text-light);margin-top:5px;"></div>
       </div>
       <div style="display:flex;align-items:center;gap:10px;">
+        <span id="sg-dias-impr" style="display:none;background:rgba(251,191,36,0.20);color:#b45309;border:1px solid rgba(251,191,36,0.45);padding:6px 13px;border-radius:20px;font-size:12px;font-weight:600;white-space:nowrap;"></span>
         <span id="sg-dias-personas" style="background:rgba(79,128,255,0.10);color:#3a6bf0;padding:6px 13px;border-radius:20px;font-size:12px;font-weight:600;white-space:nowrap;"></span>
         <button onclick="cerrarModalSgDias()" style="background:none;border:none;cursor:pointer;font-size:22px;color:var(--text-light);line-height:1;">✕</button>
       </div>
@@ -2279,7 +2362,7 @@
 // ═══════════════════════════════════════════════════════
 //  CONFIGURACIÓN
 // ═══════════════════════════════════════════════════════
-const API_URL = 'https://script.google.com/macros/s/AKfycbww-0XO0ZOZmjjkWJuQaDBafgb1d9wJ6Oof81kdp6Sxt5fWt3cRbuPdPkMjaYTQvaM_/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbyxgXEVU4WY_hzXA_D301F33wYgbO8RUQ9qFmuM74QYA2lLGdvSO0CTYqjpvEYuZhhX/exec';
 
 // PEQ — objetivo mensual fijo
 const PEQ = 90000000;
@@ -2378,6 +2461,8 @@ function setLoading(on) {
 // ═══════════════════════════════════════════════════════
 let clientes = [], sitios = [], lineas = [];
 let empleados = [], asignaciones = [];
+// Imprevistos por día+sitio (hoja INCIDENCIAS). Ausencia de fila = día normal.
+let incidencias = [];
 // Cola virtual de asignaciones pendientes de confirmar (persistida en sessionStorage)
 let colaAsignaciones = [];
 
@@ -2478,6 +2563,20 @@ async function cargarTodo() {
       usuarioCarga:  get(r, 'USUARIO_CARGA')
     })).filter(a => a.id && a.fecha && a.sitioId && a.empleadoId);
 
+    /* ── INCIDENCIAS (días con imprevisto, por sitio) ──
+       `data.incidencias` puede venir undefined si el backend todavía no está
+       redeployado con la hoja nueva. El `|| []` mantiene el front funcionando. */
+    incidencias = (data.incidencias || []).map(r => ({
+      id:           String(get(r, 'ID') || '').trim(),
+      fecha:        normFecha(get(r, 'FECHA')),
+      sitioId:      String(get(r, 'SITIO_ID') || '').trim(),
+      tipo:         String(get(r, 'TIPO') || '').trim().toUpperCase() || 'IMPREVISTO',
+      motivo:       get(r, 'MOTIVO'),
+      observacion:  get(r, 'OBSERVACION'),
+      usuarioCarga: get(r, 'USUARIO_CARGA'),
+      creadoAt:     get(r, 'CREADO_AT')
+    })).filter(x => x.id && x.fecha && x.sitioId);
+
     /* ── Restaurar cola virtual desde sessionStorage si existe ── */
     try {
       const colaGuardada = sessionStorage.getItem('terabyte_cola_asignaciones');
@@ -2563,6 +2662,191 @@ function fechaCorta(f) {
 const getCli  = id => clientes.find(c => c.id === id);
 const getSit  = uid => sitios.find(s => s.uid === uid) || sitios.find(s => s.id === uid);
 const dot     = color => `<span class="client-dot" style="background:${color}"></span>`;
+
+/* ══════════════════════════════════════════════════════════════════
+   IMPREVISTOS (hoja INCIDENCIAS)
+   ══════════════════════════════════════════════════════════════════
+   Modelo:
+   - 1 fila = 1 sitio real que tuvo un imprevisto en 1 día (FECHA + SITIO_ID).
+   - AUSENCIA DE FILA = día normal. Marcar "normal" equivale a DELETE.
+   - Unicidad (FECHA + SITIO_ID) garantizada por el front (criterio VS2).
+   - Los estados especiales (__DEPOSITO__ / __VACACIONES__ / __AUSENTE__) NO
+     admiten imprevisto: no son sitios reales.
+   - Se persiste al instante (no pasa por la cola virtual), porque la incidencia
+     es un registro independiente de las asignaciones. Esto evita tocar el
+     camino crítico de confirmarCola().
+*/
+const MOTIVOS_IMPREVISTO = [
+  'Clima',
+  'Falta de materiales',
+  'Sin acceso al sitio',
+  'Corte de energía',
+  'Falla de equipo / herramienta',
+  'Espera de cliente o tercero',
+  'Problema de personal',
+  'Problema de transporte',
+  'Otro'
+];
+
+/* Escapa comillas para poder inyectar texto libre en atributos HTML (title=...) */
+function _escAttr(txt) {
+  return String(txt || '')
+    .replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+/* Devuelve la incidencia de ese día+sitio, o null si el día fue normal */
+function getIncidencia(fecha, sitioId) {
+  if (!fecha || !sitioId) return null;
+  return incidencias.find(i => i.fecha === fecha && i.sitioId === sitioId) || null;
+}
+
+function tieneImprevisto(fecha, sitioId) {
+  return !!getIncidencia(fecha, sitioId);
+}
+
+/* Texto para tooltip: "Clima — se fue el agua a las 10" */
+function _incTextoTooltip(inc) {
+  if (!inc) return '';
+  const motivo = inc.motivo || 'Sin motivo especificado';
+  return inc.observacion ? `${motivo} — ${inc.observacion}` : motivo;
+}
+
+/* ── Estado del modal de imprevisto ── */
+let _impFecha  = null;
+let _impSitio  = null;
+let _impOrigen = null;   // 'dia' | 'nasig' — qué vista refrescar al guardar
+let _impTipo   = 'normal';
+
+function abrirModalImprevisto(fecha, sitioId, origen) {
+  if (!fecha || !sitioId) return;
+  if (esEstadoEspecial(sitioId)) return;  // los estados especiales no llevan imprevisto
+
+  _impFecha  = fecha;
+  _impSitio  = sitioId;
+  _impOrigen = origen || 'dia';
+
+  const inc = getIncidencia(fecha, sitioId);
+  _impTipo = inc ? 'imprevisto' : 'normal';
+
+  // Subtítulo: sitio + fecha legible
+  const [y, m, d] = fecha.split('-');
+  document.getElementById('imp-sub').innerHTML =
+    `<b>${sitioId}</b> · ${parseInt(d)}/${m}/${y}`;
+
+  // Poblar el select de motivos (conservando el guardado si existe)
+  const sel = document.getElementById('imp-motivo');
+  sel.innerHTML = MOTIVOS_IMPREVISTO.map(mo => `<option value="${mo}">${mo}</option>`).join('');
+  if (inc && inc.motivo && MOTIVOS_IMPREVISTO.includes(inc.motivo)) {
+    sel.value = inc.motivo;
+  } else if (inc && inc.motivo) {
+    // Motivo cargado a mano en el Sheet que no está en la lista: lo agregamos para no perderlo
+    sel.innerHTML += `<option value="${_escAttr(inc.motivo)}" selected>${inc.motivo}</option>`;
+    sel.value = inc.motivo;
+  }
+
+  document.getElementById('imp-observacion').value = inc ? (inc.observacion || '') : '';
+
+  impSetTipo(_impTipo);
+  document.getElementById('modal-imprevisto').classList.add('open');
+}
+
+function cerrarModalImprevisto() {
+  document.getElementById('modal-imprevisto').classList.remove('open');
+  _impFecha = null; _impSitio = null; _impOrigen = null;
+}
+
+/* Cambia entre "Día normal" y "Con imprevisto" y pinta los botones */
+function impSetTipo(tipo) {
+  _impTipo = tipo;
+  const bNormal = document.getElementById('imp-tipo-normal');
+  const bImpr   = document.getElementById('imp-tipo-imprevisto');
+  const campos  = document.getElementById('imp-campos');
+
+  const off = 'background:rgba(200,205,225,0.22);color:var(--text-mid);border:1px solid rgba(200,205,225,0.55);';
+  const onNormal = 'background:rgba(45,212,191,0.18);color:#0d9488;border:1px solid rgba(45,212,191,0.55);';
+  const onImpr   = 'background:rgba(251,191,36,0.22);color:#b45309;border:1px solid rgba(251,191,36,0.6);';
+  const base = 'flex:1;padding:13px;border-radius:12px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:\'DM Sans\',sans-serif;transition:var(--transition);';
+
+  bNormal.style.cssText = base + (tipo === 'normal'     ? onNormal : off);
+  bImpr.style.cssText   = base + (tipo === 'imprevisto' ? onImpr   : off);
+  campos.style.display  = (tipo === 'imprevisto') ? 'block' : 'none';
+}
+
+/* Guarda el estado de la jornada. "normal" con incidencia previa → DELETE. */
+async function guardarImprevisto() {
+  const fecha  = _impFecha;
+  const sitio  = _impSitio;
+  const origen = _impOrigen;
+  if (!fecha || !sitio) return;
+
+  const existente = getIncidencia(fecha, sitio);
+  const btn = document.getElementById('imp-btn-guardar');
+  btn.disabled = true;
+  setLoading(true);
+
+  try {
+    if (_impTipo === 'normal') {
+      if (!existente) { cerrarModalImprevisto(); return; }  // nada que hacer
+      await apiPost('DELETE', 'INCIDENCIAS', {}, existente.id);
+      incidencias = incidencias.filter(i => i.id !== existente.id);
+      toast('Jornada marcada como normal ✓');
+
+    } else {
+      const motivo      = document.getElementById('imp-motivo').value || '';
+      const observacion = document.getElementById('imp-observacion').value.trim();
+      const usuario     = (_usuarioActual && (_usuarioActual.idUsuario || _usuarioActual.usuario)) || '';
+
+      if (existente) {
+        await apiPost('UPDATE', 'INCIDENCIAS', {
+          MOTIVO: motivo, OBSERVACION: observacion
+        }, existente.id);
+        existente.motivo      = motivo;
+        existente.observacion = observacion;
+        toast('Imprevisto actualizado ✓');
+
+      } else {
+        const nuevo = {
+          ID:            nuevoId('INC'),
+          FECHA:         fecha,
+          SITIO_ID:      sitio,
+          TIPO:          'IMPREVISTO',
+          MOTIVO:        motivo,
+          OBSERVACION:   observacion,
+          USUARIO_CARGA: usuario,
+          CREADO_AT:     new Date().toISOString()
+        };
+        await apiPost('INSERT', 'INCIDENCIAS', nuevo);
+        incidencias.push({
+          id: nuevo.ID, fecha: nuevo.FECHA, sitioId: nuevo.SITIO_ID,
+          tipo: nuevo.TIPO, motivo: nuevo.MOTIVO, observacion: nuevo.OBSERVACION,
+          usuarioCarga: nuevo.USUARIO_CARGA, creadoAt: nuevo.CREADO_AT
+        });
+        toast('Imprevisto registrado ✓');
+      }
+    }
+
+    cerrarModalImprevisto();
+    _impRefrescar(origen);
+
+  } catch (err) {
+    toast('Error al guardar: ' + err.message, 'err');
+  } finally {
+    btn.disabled = false;
+    setLoading(false);
+  }
+}
+
+/* Refresca las vistas afectadas según desde dónde se abrió el modal */
+function _impRefrescar(origen) {
+  if (origen === 'nasig') {
+    renderObrasCards();
+  } else {
+    if (_asigModalFecha) renderModalAsigDia();
+  }
+  renderAsigCalendario();
+}
+
 
 /* ══ MULTISELECT REUSABLE ══
    Convierte un contenedor <div class="ms-wrap" id="..."> en un dropdown con checkboxes.
@@ -3197,6 +3481,18 @@ function abrirModalSgDias(idSitio) {
   document.getElementById('sg-dias-personas').textContent =
     `${nPersonas} persona${nPersonas!==1?'s':''} distinta${nPersonas!==1?'s':''}`;
 
+  // Chip de resumen de imprevistos en el header (solo si hay al menos uno)
+  const diasConImpr = fechasOrden.filter(f => tieneImprevisto(f, idSitio)).length;
+  const chipImpr = document.getElementById('sg-dias-impr');
+  if (chipImpr) {
+    if (diasConImpr > 0) {
+      chipImpr.textContent = `${diasConImpr} día${diasConImpr!==1?'s':''} con imprevisto`;
+      chipImpr.style.display = '';
+    } else {
+      chipImpr.style.display = 'none';
+    }
+  }
+
   // 7) Pintar tabla
   const tbody = document.getElementById('sg-dias-tbody');
   tbody.innerHTML = fechasOrden.map((f, i) => {
@@ -3207,9 +3503,14 @@ function abrirModalSgDias(idSitio) {
         ${nombreEmpleado(eid)}
       </span>
     `).join('');
+    // Chip ámbar de imprevisto debajo de la fecha, con el motivo en el tooltip
+    const inc = getIncidencia(f, idSitio);
+    const impHtml = inc
+      ? `<div style="margin-top:6px;"><span class="imp-chip" title="${_escAttr(_incTextoTooltip(inc))}"><i class="fa-solid fa-triangle-exclamation"></i>Imprevisto</span></div>`
+      : '';
     const bg = i % 2 === 0 ? '' : 'background:rgba(240,242,248,0.4);';
     return `<tr style="${bg}border-bottom:1px solid rgba(200,205,225,0.25);">
-      <td style="padding:13px 14px 13px 4px;font-weight:600;font-size:13px;vertical-align:top;white-space:nowrap;">${fmtFechaCorta(f)}</td>
+      <td style="padding:13px 14px 13px 4px;font-weight:600;font-size:13px;vertical-align:top;white-space:nowrap;">${fmtFechaCorta(f)}${impHtml}</td>
       <td style="padding:13px 14px;">
         <div style="display:flex;flex-wrap:wrap;gap:6px;">${chips}</div>
       </td>
@@ -5375,6 +5676,16 @@ function renderAsigCalendario() {
       if (sinAsignar > 0) {
         pills += `<span class="pill warn" title="${sinAsignar} empleado${sinAsignar!==1?'s':''} sin asignar para este día">${sinAsignar} S/A</span>`;
       }
+      // Imprevistos: se cuentan solo sobre las obras realmente asignadas ese día,
+      // para que el conteo coincida siempre con lo que muestra el modal de detalle.
+      const sitiosConImpr = [...obrasDelDia].filter(sid => tieneImprevisto(fechaStr, sid));
+      if (sitiosConImpr.length > 0) {
+        const detalle = sitiosConImpr.map(sid => {
+          const inc = getIncidencia(fechaStr, sid);
+          return `${sid}: ${_incTextoTooltip(inc)}`;
+        }).join('\n');
+        pills += `<span class="pill impr" title="${_escAttr(detalle)}"><i class="fa-solid fa-triangle-exclamation"></i>${sitiosConImpr.length} impr.</span>`;
+      }
       infoHtml = `<div class="asig-cal-info">${pills}</div>`;
     }
     html += `<div class="${classes.join(' ')}"${clickHandler}>
@@ -5439,6 +5750,8 @@ function renderModalAsigDia() {
   const empleadosEspCount = new Set(items.filter(a => esEstadoEspecial(a.sitioId)).map(a => a.empleadoId)).size;
   let subText = `${obrasCount} obra${obrasCount!==1?'s':''} · ${empleadosObras} empleado${empleadosObras!==1?'s':''}`;
   if (empleadosEspCount > 0) subText += ` · ${empleadosEspCount} en estado especial`;
+  const impCount = sitiosReales.filter(sid => tieneImprevisto(fechaStr, sid)).length;
+  if (impCount > 0) subText += ` · ${impCount} con imprevisto`;
   document.getElementById('asig-dia-sub').textContent = subText;
 
   const cont = document.getElementById('asig-dia-contenido');
@@ -5462,14 +5775,27 @@ function renderModalAsigDia() {
     const asigs = porSitio.get(sitioId);
     const abierta = (_asigDiaObraAbierta === sitioId);
     const sidEsc = sitioId.replace(/'/g, "\\'");
+    const inc = getIncidencia(fechaStr, sitioId);
+    const impClase = inc ? ' con-imprevisto' : '';
+    const impBtn = `<button class="imp-btn${inc ? ' on' : ''}" style="margin-left:auto;"
+      title="${inc ? 'Editar el imprevisto de esta obra' : 'Marcar el estado de la jornada'}"
+      onclick="event.stopPropagation();abrirModalImprevisto('${fechaStr}','${sidEsc}','dia')">
+      <i class="fa-solid ${inc ? 'fa-triangle-exclamation' : 'fa-circle-check'}"></i>${inc ? 'Imprevisto' : 'Normal'}</button>`;
+    const impNota = inc
+      ? `<div class="imp-motivo-nota" style="padding:0 15px 12px;"><i class="fa-solid fa-triangle-exclamation"></i>
+          <span>${inc.motivo || 'Sin motivo'}</span>
+          ${inc.observacion ? `<span class="imp-motivo-obs">— ${inc.observacion}</span>` : ''}</div>`
+      : '';
     bloques.push(`
-      <div style="background:rgba(255,255,255,0.45);border:1px solid rgba(200,205,225,0.5);border-radius:12px;overflow:hidden;">
+      <div class="asig-dia-obra${impClase}" style="background:rgba(255,255,255,0.45);border:1px solid rgba(200,205,225,0.5);border-radius:12px;overflow:hidden;">
         <div onclick="toggleObraDia('${sidEsc}')" style="cursor:pointer;font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px;padding:13px 15px;">
           <span style="font-size:11px;color:var(--text-light);transition:transform .15s;transform:rotate(${abierta?'90':'0'}deg);">▶</span>
           <span style="background:rgba(79,128,255,0.12);color:#3a6bf0;padding:3px 11px;border-radius:20px;font-size:13px;font-weight:700;">${sitioId}</span>
           <span style="font-size:11px;color:var(--text-light);font-weight:500;">${asigs.length} empleado${asigs.length!==1?'s':''}</span>
-          <button class="btn btn-rose btn-sm" title="Eliminar la obra completa de este día" style="margin-left:auto;" onclick="event.stopPropagation();eliminarObraConfirmada('${sidEsc}')"><i class="fa-solid fa-trash"></i></button>
+          ${impBtn}
+          <button class="btn btn-rose btn-sm" title="Eliminar la obra completa de este día" onclick="event.stopPropagation();eliminarObraConfirmada('${sidEsc}')"><i class="fa-solid fa-trash"></i></button>
         </div>
+        ${impNota}
         ${abierta ? `<div style="display:flex;flex-wrap:wrap;gap:6px;padding:0 15px 14px;">${empChips(asigs)}</div>` : ''}
       </div>
     `);
@@ -5868,13 +6194,31 @@ function renderObrasCards() {
       tituloHtml = `<span class="nasig-obra-id">${sid}</span>`;
     }
 
+    // Marcado de imprevisto: solo para sitios reales (los estados especiales no aplican)
+    let impBtnHtml = '', impNotaHtml = '';
+    if (!esEsp && _asigModalFechaActual) {
+      const inc = getIncidencia(_asigModalFechaActual, sid);
+      if (inc) cardClase += ' con-imprevisto';
+      const sidEsc = sid.replace(/'/g, "\\'");
+      impBtnHtml = `<button class="imp-btn${inc ? ' on' : ''}" title="${inc ? 'Editar el imprevisto de esta obra' : 'Marcar el estado de la jornada'}"
+        onclick="abrirModalImprevisto('${_asigModalFechaActual}','${sidEsc}','nasig')">
+        <i class="fa-solid ${inc ? 'fa-triangle-exclamation' : 'fa-circle-check'}"></i>${inc ? 'Imprevisto' : 'Normal'}</button>`;
+      if (inc) {
+        impNotaHtml = `<div class="imp-motivo-nota"><i class="fa-solid fa-triangle-exclamation"></i>
+          <span>${inc.motivo || 'Sin motivo'}</span>
+          ${inc.observacion ? `<span class="imp-motivo-obs">— ${inc.observacion}</span>` : ''}</div>`;
+      }
+    }
+
     return `
       <div class="${cardClase}">
         <div class="nasig-obra-titulo">
           ${tituloHtml}
           <span class="nasig-obra-count">${totalEmp} empleado${totalEmp!==1?'s':''}</span>
+          ${impBtnHtml ? `<span style="margin-left:auto;">${impBtnHtml}</span>` : ''}
         </div>
         <div class="nasig-obra-emps">${chipConf}${chipNuevo}</div>
+        ${impNotaHtml}
       </div>`;
   };
 
