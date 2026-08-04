@@ -66,14 +66,15 @@
     /* ── Menú colapsable ── */
     .nav-group-header {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 8px 12px; border-radius: var(--radius-sm);
-      cursor: pointer; color: var(--text-light); font-size: 9.5px; font-weight: 700;
+      padding: 8px 12px 7px; border-radius: var(--radius-sm);
+      cursor: pointer; color: var(--text-mid); font-size: 9.5px; font-weight: 700;
       letter-spacing: 1.4px; text-transform: uppercase;
-      transition: var(--transition); margin-bottom: 3px;
+      transition: var(--transition); margin-bottom: 6px;
+      border-bottom: 2px solid rgba(200,205,220,0.55);
       user-select: none;
     }
-    .nav-group-header:hover { color: var(--text-mid); }
-    .nav-group-header.open { color: var(--text-mid); }
+    .nav-group-header:hover { color: var(--text-dark); }
+    .nav-group-header.open { color: var(--text-dark); }
     .nav-group-arrow { font-size: 9px; transition: transform 0.25s ease; }
     .nav-group-header.open .nav-group-arrow { transform: rotate(90deg); }
     .nav-subitems {
@@ -110,6 +111,27 @@
     .user-name { font-size: 13px; font-weight: 600; color: var(--text-dark); }
     .user-role { font-size: 11px; color: var(--text-light); }
     .sidebar-sep { height: 1px; background: rgba(200,205,220,0.25); margin: 8px 12px; }
+
+    /* ── Versión del archivo (cambio #69) ── */
+    .sidebar-version {
+      font-size: 10px; color: var(--text-light); text-align: center;
+      letter-spacing: 0.6px; padding: 9px 0 10px; user-select: text;
+      font-family: 'Syne', sans-serif; font-weight: 600; opacity: 0.75;
+    }
+
+    /* ── MODO VIEWER (cambio #68) — perfil de solo lectura ──
+       .vw-hide la aplica el barrido automático a cualquier control de escritura.
+       Los selectores fijos cubren bloques que no tienen onclick propio.
+       Todo cuelga de body.modo-viewer, así que al cerrar sesión (o si el usuario
+       no es viewer) el sistema vuelve a su estado normal sin efectos residuales. */
+    body.modo-viewer .vw-hide,
+    body.modo-viewer #sit-bulk-bar,
+    body.modo-viewer #cola-card,
+    body.modo-viewer #banner-proyecciones,
+    body.modo-viewer #banner-solicitudes,
+    body.modo-viewer #banner-facturas,
+    body.modo-viewer #form-cliente,
+    body.modo-viewer #form-sitio { display: none !important; }
 
     /* MAIN */
     .main { margin-left: var(--sidebar-w); flex: 1; padding: 32px 32px 40px; position: relative; z-index: 1; }
@@ -760,48 +782,6 @@
     .asig-cal-info .pill.teal  { background: rgba(45,212,191,0.14); color: #0d9488; }
     .asig-cal-info .pill.amber { background: rgba(251,191,36,0.18); color: #b45309; }
     .asig-cal-info .pill.warn  { background: rgba(234,179,8,0.18);  color: #a16207; border: 1px dashed rgba(234,179,8,0.55); padding: 0px 6px; }
-    .asig-cal-info .pill.impr  { background: rgba(251,191,36,0.85); color: #4a2c00; border: 1px solid rgba(180,83,9,0.45); }
-
-    /* ── IMPREVISTOS (día con problema, por sitio) ── */
-    /* Botón de marcado presente en la card de "Obras del día" y en el modal de detalle */
-    .imp-btn {
-      display: inline-flex; align-items: center; gap: 5px;
-      background: rgba(200,205,225,0.28); color: var(--text-mid);
-      border: 1px solid rgba(200,205,225,0.55); border-radius: 20px;
-      padding: 4px 11px; font-size: 11px; font-weight: 700; cursor: pointer;
-      font-family: 'DM Sans', sans-serif; transition: var(--transition); white-space: nowrap;
-    }
-    .imp-btn:hover { background: rgba(251,191,36,0.20); color: #b45309; border-color: rgba(251,191,36,0.5); }
-    .imp-btn.on {
-      background: rgba(251,191,36,0.22); color: #b45309; border-color: rgba(251,191,36,0.6);
-    }
-    .imp-btn.on:hover { background: rgba(251,191,36,0.34); }
-
-    /* Chip ámbar de imprevisto — usado en el modal de días trabajados de Sitios globales */
-    .imp-chip {
-      display: inline-flex; align-items: center; gap: 5px;
-      background: rgba(251,191,36,0.20); color: #b45309;
-      border: 1px solid rgba(251,191,36,0.45); border-radius: 20px;
-      padding: 3px 10px; font-size: 11px; font-weight: 700; cursor: help; white-space: nowrap;
-    }
-    .imp-chip-none { color: var(--text-light); font-size: 12px; }
-
-    /* Card de obra con imprevisto en la vista "Nueva asignación" */
-    .nasig-obra-card.con-imprevisto {
-      border-color: rgba(251,191,36,0.55);
-      background: rgba(251,191,36,0.07);
-    }
-    /* Bloque de obra con imprevisto en el modal de detalle del día */
-    .asig-dia-obra.con-imprevisto {
-      border-color: rgba(251,191,36,0.55) !important;
-      background: rgba(251,191,36,0.07) !important;
-    }
-    /* Fila de motivo dentro del modal de imprevisto */
-    .imp-motivo-nota {
-      font-size: 11.5px; color: #b45309; font-weight: 600;
-      display: flex; align-items: center; gap: 6px; margin-top: 8px;
-    }
-    .imp-motivo-obs { font-weight: 500; color: var(--text-mid); font-style: italic; }
 
     /* ── Autocomplete (selector de sitio) ── */
     .ac-wrap { position: relative; }
@@ -1325,7 +1305,6 @@
       <a class="nav-subitem" id="nav-sitios" onclick="showView('sitios',this)">PO sitios</a>
       <a class="nav-subitem" id="nav-seguimiento" onclick="showView('seguimiento',this)">
         Seguimiento
-        <span class="nav-badge" id="badge-seg">0</span>
       </a>
     </div>
   </div>
@@ -1333,11 +1312,11 @@
   <div class="sidebar-sep"></div>
 
   <div class="sidebar-section" style="padding-top:6px;">
-    <div class="nav-group-header" id="grp-operativa" onclick="toggleNavGroup('operativa')">
+    <div class="nav-group-header open" id="grp-operativa" onclick="toggleNavGroup('operativa')">
       <span>Operativa</span>
       <span class="nav-group-arrow">▶</span>
     </div>
-    <div class="nav-subitems" id="sub-operativa">
+    <div class="nav-subitems open" id="sub-operativa">
       <a class="nav-subitem" id="nav-asignaciones" onclick="showView('asignaciones',this)">Asignación personal</a>
     </div>
   </div>
@@ -1370,6 +1349,7 @@
       </div>
       <span style="font-size:11px;color:var(--text-light);" title="Cerrar sesión">↩</span>
     </div>
+    <div class="sidebar-version" id="sidebar-version" title="Versión del archivo en uso">—</div>
   </div>
 </nav>
 
@@ -1566,7 +1546,7 @@
       <div class="ms-wrap" id="sg-filtro-pct"></div>
       <div class="ms-wrap" id="sg-filtro-monto"></div>
       <label class="sg-filtro-check" title="Mostrar solo sitios con al menos un día asignado">
-        <input type="checkbox" id="sg-filtro-dias" checked onchange="aplicarFiltrosSitiosGlobales()" />
+        <input type="checkbox" id="sg-filtro-dias" onchange="aplicarFiltrosSitiosGlobales()" />
         <span>Con días</span>
       </label>
       <div class="sg-filtro-spacer"></div>
@@ -1838,46 +1818,6 @@
       </div>
     </div>
     <div id="asig-dia-contenido"></div>
-  </div>
-</div>
-
-<!-- Modal: Marcar imprevisto (por día + sitio) -->
-<div class="modal-overlay" id="modal-imprevisto">
-  <div class="modal" style="max-width:520px;padding:28px 30px;">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:4px;">
-      <div>
-        <div class="modal-title" style="margin:0;">Estado de la jornada</div>
-        <div id="imp-sub" style="font-size:12.5px;color:var(--text-light);margin-top:5px;">—</div>
-      </div>
-      <button onclick="cerrarModalImprevisto()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--text-light);line-height:1;">✕</button>
-    </div>
-
-    <!-- Selector normal / imprevisto -->
-    <div style="display:flex;gap:10px;margin:20px 0 4px;">
-      <button type="button" class="imp-tipo-btn" id="imp-tipo-normal" onclick="impSetTipo('normal')"
-        style="flex:1;padding:13px;border-radius:12px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:var(--transition);">
-        Día normal
-      </button>
-      <button type="button" class="imp-tipo-btn" id="imp-tipo-imprevisto" onclick="impSetTipo('imprevisto')"
-        style="flex:1;padding:13px;border-radius:12px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:var(--transition);">
-        Con imprevisto
-      </button>
-    </div>
-
-    <!-- Campos visibles solo si es imprevisto -->
-    <div id="imp-campos" style="display:none;margin-top:18px;">
-      <label class="form-label" style="display:block;margin-bottom:5px;">Motivo</label>
-      <select class="form-input" id="imp-motivo" style="width:100%;"></select>
-
-      <label class="form-label" style="display:block;margin:14px 0 5px;">Observación <span style="color:var(--text-light);font-weight:400;">(opcional)</span></label>
-      <textarea class="form-input" id="imp-observacion" rows="3" maxlength="300"
-        placeholder="Detalle de lo que pasó..." style="width:100%;resize:vertical;font-family:'DM Sans',sans-serif;"></textarea>
-    </div>
-
-    <div style="display:flex;gap:10px;margin-top:22px;">
-      <button class="btn btn-glass" style="flex:1;" onclick="cerrarModalImprevisto()">Cancelar</button>
-      <button class="btn btn-primary" style="flex:1;" id="imp-btn-guardar" onclick="guardarImprevisto()">Guardar</button>
-    </div>
   </div>
 </div>
 
@@ -2190,7 +2130,6 @@
         <div id="sg-dias-sub" style="font-size:13px;color:var(--text-light);margin-top:5px;"></div>
       </div>
       <div style="display:flex;align-items:center;gap:10px;">
-        <span id="sg-dias-impr" style="display:none;background:rgba(251,191,36,0.20);color:#b45309;border:1px solid rgba(251,191,36,0.45);padding:6px 13px;border-radius:20px;font-size:12px;font-weight:600;white-space:nowrap;"></span>
         <span id="sg-dias-personas" style="background:rgba(79,128,255,0.10);color:#3a6bf0;padding:6px 13px;border-radius:20px;font-size:12px;font-weight:600;white-space:nowrap;"></span>
         <button onclick="cerrarModalSgDias()" style="background:none;border:none;cursor:pointer;font-size:22px;color:var(--text-light);line-height:1;">✕</button>
       </div>
@@ -2362,10 +2301,19 @@
 // ═══════════════════════════════════════════════════════
 //  CONFIGURACIÓN
 // ═══════════════════════════════════════════════════════
-const API_URL = 'https://script.google.com/macros/s/AKfycbyxgXEVU4WY_hzXA_D301F33wYgbO8RUQ9qFmuM74QYA2lLGdvSO0CTYqjpvEYuZhhX/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbww-0XO0ZOZmjjkWJuQaDBafgb1d9wJ6Oof81kdp6Sxt5fWt3cRbuPdPkMjaYTQvaM_/exec';
 
 // PEQ — objetivo mensual fijo
 const PEQ = 90000000;
+
+/* ═══════════════════════════════════════════════════════
+   VERSIÓN DEL ARCHIVO (cambio #69)
+   Formato: "V DDMMAA HHMM" — fecha y hora de emisión (Argentina).
+   ⚠ ACTUALIZAR MANUALMENTE EN CADA ENTREGA. No se calcula en runtime
+   a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
+   Se pinta en el pie del sidebar (#sidebar-version).
+   ═══════════════════════════════════════════════════════ */
+const APP_VERSION = 'V 040826 1803';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
@@ -2461,8 +2409,6 @@ function setLoading(on) {
 // ═══════════════════════════════════════════════════════
 let clientes = [], sitios = [], lineas = [];
 let empleados = [], asignaciones = [];
-// Imprevistos por día+sitio (hoja INCIDENCIAS). Ausencia de fila = día normal.
-let incidencias = [];
 // Cola virtual de asignaciones pendientes de confirmar (persistida en sessionStorage)
 let colaAsignaciones = [];
 
@@ -2563,20 +2509,6 @@ async function cargarTodo() {
       usuarioCarga:  get(r, 'USUARIO_CARGA')
     })).filter(a => a.id && a.fecha && a.sitioId && a.empleadoId);
 
-    /* ── INCIDENCIAS (días con imprevisto, por sitio) ──
-       `data.incidencias` puede venir undefined si el backend todavía no está
-       redeployado con la hoja nueva. El `|| []` mantiene el front funcionando. */
-    incidencias = (data.incidencias || []).map(r => ({
-      id:           String(get(r, 'ID') || '').trim(),
-      fecha:        normFecha(get(r, 'FECHA')),
-      sitioId:      String(get(r, 'SITIO_ID') || '').trim(),
-      tipo:         String(get(r, 'TIPO') || '').trim().toUpperCase() || 'IMPREVISTO',
-      motivo:       get(r, 'MOTIVO'),
-      observacion:  get(r, 'OBSERVACION'),
-      usuarioCarga: get(r, 'USUARIO_CARGA'),
-      creadoAt:     get(r, 'CREADO_AT')
-    })).filter(x => x.id && x.fecha && x.sitioId);
-
     /* ── Restaurar cola virtual desde sessionStorage si existe ── */
     try {
       const colaGuardada = sessionStorage.getItem('terabyte_cola_asignaciones');
@@ -2662,191 +2594,6 @@ function fechaCorta(f) {
 const getCli  = id => clientes.find(c => c.id === id);
 const getSit  = uid => sitios.find(s => s.uid === uid) || sitios.find(s => s.id === uid);
 const dot     = color => `<span class="client-dot" style="background:${color}"></span>`;
-
-/* ══════════════════════════════════════════════════════════════════
-   IMPREVISTOS (hoja INCIDENCIAS)
-   ══════════════════════════════════════════════════════════════════
-   Modelo:
-   - 1 fila = 1 sitio real que tuvo un imprevisto en 1 día (FECHA + SITIO_ID).
-   - AUSENCIA DE FILA = día normal. Marcar "normal" equivale a DELETE.
-   - Unicidad (FECHA + SITIO_ID) garantizada por el front (criterio VS2).
-   - Los estados especiales (__DEPOSITO__ / __VACACIONES__ / __AUSENTE__) NO
-     admiten imprevisto: no son sitios reales.
-   - Se persiste al instante (no pasa por la cola virtual), porque la incidencia
-     es un registro independiente de las asignaciones. Esto evita tocar el
-     camino crítico de confirmarCola().
-*/
-const MOTIVOS_IMPREVISTO = [
-  'Clima',
-  'Falta de materiales',
-  'Sin acceso al sitio',
-  'Corte de energía',
-  'Falla de equipo / herramienta',
-  'Espera de cliente o tercero',
-  'Problema de personal',
-  'Problema de transporte',
-  'Otro'
-];
-
-/* Escapa comillas para poder inyectar texto libre en atributos HTML (title=...) */
-function _escAttr(txt) {
-  return String(txt || '')
-    .replace(/&/g, '&amp;').replace(/"/g, '&quot;')
-    .replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
-
-/* Devuelve la incidencia de ese día+sitio, o null si el día fue normal */
-function getIncidencia(fecha, sitioId) {
-  if (!fecha || !sitioId) return null;
-  return incidencias.find(i => i.fecha === fecha && i.sitioId === sitioId) || null;
-}
-
-function tieneImprevisto(fecha, sitioId) {
-  return !!getIncidencia(fecha, sitioId);
-}
-
-/* Texto para tooltip: "Clima — se fue el agua a las 10" */
-function _incTextoTooltip(inc) {
-  if (!inc) return '';
-  const motivo = inc.motivo || 'Sin motivo especificado';
-  return inc.observacion ? `${motivo} — ${inc.observacion}` : motivo;
-}
-
-/* ── Estado del modal de imprevisto ── */
-let _impFecha  = null;
-let _impSitio  = null;
-let _impOrigen = null;   // 'dia' | 'nasig' — qué vista refrescar al guardar
-let _impTipo   = 'normal';
-
-function abrirModalImprevisto(fecha, sitioId, origen) {
-  if (!fecha || !sitioId) return;
-  if (esEstadoEspecial(sitioId)) return;  // los estados especiales no llevan imprevisto
-
-  _impFecha  = fecha;
-  _impSitio  = sitioId;
-  _impOrigen = origen || 'dia';
-
-  const inc = getIncidencia(fecha, sitioId);
-  _impTipo = inc ? 'imprevisto' : 'normal';
-
-  // Subtítulo: sitio + fecha legible
-  const [y, m, d] = fecha.split('-');
-  document.getElementById('imp-sub').innerHTML =
-    `<b>${sitioId}</b> · ${parseInt(d)}/${m}/${y}`;
-
-  // Poblar el select de motivos (conservando el guardado si existe)
-  const sel = document.getElementById('imp-motivo');
-  sel.innerHTML = MOTIVOS_IMPREVISTO.map(mo => `<option value="${mo}">${mo}</option>`).join('');
-  if (inc && inc.motivo && MOTIVOS_IMPREVISTO.includes(inc.motivo)) {
-    sel.value = inc.motivo;
-  } else if (inc && inc.motivo) {
-    // Motivo cargado a mano en el Sheet que no está en la lista: lo agregamos para no perderlo
-    sel.innerHTML += `<option value="${_escAttr(inc.motivo)}" selected>${inc.motivo}</option>`;
-    sel.value = inc.motivo;
-  }
-
-  document.getElementById('imp-observacion').value = inc ? (inc.observacion || '') : '';
-
-  impSetTipo(_impTipo);
-  document.getElementById('modal-imprevisto').classList.add('open');
-}
-
-function cerrarModalImprevisto() {
-  document.getElementById('modal-imprevisto').classList.remove('open');
-  _impFecha = null; _impSitio = null; _impOrigen = null;
-}
-
-/* Cambia entre "Día normal" y "Con imprevisto" y pinta los botones */
-function impSetTipo(tipo) {
-  _impTipo = tipo;
-  const bNormal = document.getElementById('imp-tipo-normal');
-  const bImpr   = document.getElementById('imp-tipo-imprevisto');
-  const campos  = document.getElementById('imp-campos');
-
-  const off = 'background:rgba(200,205,225,0.22);color:var(--text-mid);border:1px solid rgba(200,205,225,0.55);';
-  const onNormal = 'background:rgba(45,212,191,0.18);color:#0d9488;border:1px solid rgba(45,212,191,0.55);';
-  const onImpr   = 'background:rgba(251,191,36,0.22);color:#b45309;border:1px solid rgba(251,191,36,0.6);';
-  const base = 'flex:1;padding:13px;border-radius:12px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:\'DM Sans\',sans-serif;transition:var(--transition);';
-
-  bNormal.style.cssText = base + (tipo === 'normal'     ? onNormal : off);
-  bImpr.style.cssText   = base + (tipo === 'imprevisto' ? onImpr   : off);
-  campos.style.display  = (tipo === 'imprevisto') ? 'block' : 'none';
-}
-
-/* Guarda el estado de la jornada. "normal" con incidencia previa → DELETE. */
-async function guardarImprevisto() {
-  const fecha  = _impFecha;
-  const sitio  = _impSitio;
-  const origen = _impOrigen;
-  if (!fecha || !sitio) return;
-
-  const existente = getIncidencia(fecha, sitio);
-  const btn = document.getElementById('imp-btn-guardar');
-  btn.disabled = true;
-  setLoading(true);
-
-  try {
-    if (_impTipo === 'normal') {
-      if (!existente) { cerrarModalImprevisto(); return; }  // nada que hacer
-      await apiPost('DELETE', 'INCIDENCIAS', {}, existente.id);
-      incidencias = incidencias.filter(i => i.id !== existente.id);
-      toast('Jornada marcada como normal ✓');
-
-    } else {
-      const motivo      = document.getElementById('imp-motivo').value || '';
-      const observacion = document.getElementById('imp-observacion').value.trim();
-      const usuario     = (_usuarioActual && (_usuarioActual.idUsuario || _usuarioActual.usuario)) || '';
-
-      if (existente) {
-        await apiPost('UPDATE', 'INCIDENCIAS', {
-          MOTIVO: motivo, OBSERVACION: observacion
-        }, existente.id);
-        existente.motivo      = motivo;
-        existente.observacion = observacion;
-        toast('Imprevisto actualizado ✓');
-
-      } else {
-        const nuevo = {
-          ID:            nuevoId('INC'),
-          FECHA:         fecha,
-          SITIO_ID:      sitio,
-          TIPO:          'IMPREVISTO',
-          MOTIVO:        motivo,
-          OBSERVACION:   observacion,
-          USUARIO_CARGA: usuario,
-          CREADO_AT:     new Date().toISOString()
-        };
-        await apiPost('INSERT', 'INCIDENCIAS', nuevo);
-        incidencias.push({
-          id: nuevo.ID, fecha: nuevo.FECHA, sitioId: nuevo.SITIO_ID,
-          tipo: nuevo.TIPO, motivo: nuevo.MOTIVO, observacion: nuevo.OBSERVACION,
-          usuarioCarga: nuevo.USUARIO_CARGA, creadoAt: nuevo.CREADO_AT
-        });
-        toast('Imprevisto registrado ✓');
-      }
-    }
-
-    cerrarModalImprevisto();
-    _impRefrescar(origen);
-
-  } catch (err) {
-    toast('Error al guardar: ' + err.message, 'err');
-  } finally {
-    btn.disabled = false;
-    setLoading(false);
-  }
-}
-
-/* Refresca las vistas afectadas según desde dónde se abrió el modal */
-function _impRefrescar(origen) {
-  if (origen === 'nasig') {
-    renderObrasCards();
-  } else {
-    if (_asigModalFecha) renderModalAsigDia();
-  }
-  renderAsigCalendario();
-}
-
 
 /* ══ MULTISELECT REUSABLE ══
    Convierte un contenedor <div class="ms-wrap" id="..."> en un dropdown con checkboxes.
@@ -2968,12 +2715,14 @@ document.addEventListener('click', function(e) {
 
 /* ══ CLIENTES ══ */
 function toggleFormCliente() {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   const f = document.getElementById('form-cliente');
   f.style.display = f.style.display === 'none' ? 'block' : 'none';
   if (f.style.display === 'block') initColorPicker();
 }
 
 async function guardarCliente() {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   const id    = document.getElementById('cli-id').value.trim();
   const color = document.getElementById('cli-color').value;
   if (!id) return alert('Ingresá un ID de cliente.');
@@ -3007,6 +2756,7 @@ function renderClientes(filtro = '') {
 }
 function filtrarClientes(v) { renderClientes(v); }
 async function eliminarCliente(id) {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   if (!confirm('¿Eliminar cliente '+id+'?')) return;
   setLoading(true);
   try {
@@ -3023,6 +2773,7 @@ async function eliminarCliente(id) {
 let _sitioTemp = null;
 
 function toggleFormSitio() {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   const f = document.getElementById('form-sitio');
   f.style.display = f.style.display === 'none' ? 'block' : 'none';
   if (f.style.display === 'block') poblarSelect('sit-cliente');
@@ -3038,6 +2789,7 @@ function poblarSelect(id) {
 }
 
 function guardarSitio() {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   const id    = document.getElementById('sit-id').value.trim();
   const loc   = document.getElementById('sit-localidad').value;
   const cid   = document.getElementById('sit-cliente').value;
@@ -3074,6 +2826,7 @@ function guardarSitio() {
 }
 
 async function confirmarGuardarSitio() {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   if (!_sitioTemp) return;
   const { id, loc, cid, con, poNro, po, obs } = _sitioTemp;
   cerrarModal();
@@ -3099,6 +2852,7 @@ async function confirmarGuardarSitio() {
 
 
 function abrirEditarSitio(uid) {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   const s = getSit(uid);
   if (!s) return;
   document.getElementById('edit-sit-original-id').value = uid;
@@ -3157,6 +2911,7 @@ function abrirEditarSitio(uid) {
 }
 
 async function guardarEdicionSitio() {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   const uid    = document.getElementById('edit-sit-original-id').value;
   const s      = getSit(uid);
   if (!s) return;
@@ -3481,18 +3236,6 @@ function abrirModalSgDias(idSitio) {
   document.getElementById('sg-dias-personas').textContent =
     `${nPersonas} persona${nPersonas!==1?'s':''} distinta${nPersonas!==1?'s':''}`;
 
-  // Chip de resumen de imprevistos en el header (solo si hay al menos uno)
-  const diasConImpr = fechasOrden.filter(f => tieneImprevisto(f, idSitio)).length;
-  const chipImpr = document.getElementById('sg-dias-impr');
-  if (chipImpr) {
-    if (diasConImpr > 0) {
-      chipImpr.textContent = `${diasConImpr} día${diasConImpr!==1?'s':''} con imprevisto`;
-      chipImpr.style.display = '';
-    } else {
-      chipImpr.style.display = 'none';
-    }
-  }
-
   // 7) Pintar tabla
   const tbody = document.getElementById('sg-dias-tbody');
   tbody.innerHTML = fechasOrden.map((f, i) => {
@@ -3503,14 +3246,9 @@ function abrirModalSgDias(idSitio) {
         ${nombreEmpleado(eid)}
       </span>
     `).join('');
-    // Chip ámbar de imprevisto debajo de la fecha, con el motivo en el tooltip
-    const inc = getIncidencia(f, idSitio);
-    const impHtml = inc
-      ? `<div style="margin-top:6px;"><span class="imp-chip" title="${_escAttr(_incTextoTooltip(inc))}"><i class="fa-solid fa-triangle-exclamation"></i>Imprevisto</span></div>`
-      : '';
     const bg = i % 2 === 0 ? '' : 'background:rgba(240,242,248,0.4);';
     return `<tr style="${bg}border-bottom:1px solid rgba(200,205,225,0.25);">
-      <td style="padding:13px 14px 13px 4px;font-weight:600;font-size:13px;vertical-align:top;white-space:nowrap;">${fmtFechaCorta(f)}${impHtml}</td>
+      <td style="padding:13px 14px 13px 4px;font-weight:600;font-size:13px;vertical-align:top;white-space:nowrap;">${fmtFechaCorta(f)}</td>
       <td style="padding:13px 14px;">
         <div style="display:flex;flex-wrap:wrap;gap:6px;">${chips}</div>
       </td>
@@ -3522,6 +3260,7 @@ function abrirModalSgDias(idSitio) {
 }
 
 function toggleSelSitio(uid, checked) {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   if (checked) _sitSeleccionados.add(uid);
   else _sitSeleccionados.delete(uid);
   // Actualizar visual sin re-render completo
@@ -3532,6 +3271,7 @@ function toggleSelSitio(uid, checked) {
 }
 
 function toggleSelAllSitios(cb) {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   // Toma todas las filas visibles con checkbox habilitado
   document.querySelectorAll('#tabla-sitios .sit-check:not(:disabled)').forEach(chk => {
     const uid = (chk.getAttribute('onclick') || '').match(/'([^']+)'/)?.[1];
@@ -3571,6 +3311,7 @@ function actualizarBulkBar() {
 }
 
 function limpiarSelSitios() {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   _sitSeleccionados.clear();
   document.querySelectorAll('#tabla-sitios .sit-check').forEach(c => { c.checked = false; });
   document.querySelectorAll('#tabla-sitios tr.row-seleccionada').forEach(r => r.classList.remove('row-seleccionada'));
@@ -3579,6 +3320,7 @@ function limpiarSelSitios() {
 
 /* ──── MODAL DE TANDA ──── */
 function abrirModalTanda() {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   if (_sitSeleccionados.size === 0) return toast('No hay sitios seleccionados.', 'err');
   // Reset: empieza con 1 tanda (D1)
   _tandas = [{ pct: '', mes: '' }];
@@ -3636,10 +3378,12 @@ function setTandaMes(idx, val) {
   actualizarTandaResumen();
 }
 function agregarTanda() {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   _tandas.push({ pct: '', mes: '' });
   renderModalTanda();
 }
 function quitarTanda(idx) {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   if (_tandas.length === 1) return;
   _tandas.splice(idx, 1);
   renderModalTanda();
@@ -3667,6 +3411,7 @@ function actualizarTandaResumen() {
 }
 
 function confirmarTanda() {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   const suma = _tandas.reduce((a,t) => a + (parseInt(t.pct) || 0), 0);
   if (suma !== 100) return toast('La suma de tandas debe ser 100%.', 'err');
   if (_tandas.some(t => !t.pct || !t.mes)) return toast('Completá todas las tandas.', 'err');
@@ -3901,8 +3646,8 @@ function _anRenderMatriz(data, isPct) {
 let _sgTab = 'activos';            // 'todos' | 'activos' | 'sin' | 'fac'
 let _sgSortKey = 'id';     // 'id' | 'monto' | 'fac' | 'cuad' | 'dias' | 'ult'
 let _sgSortDir = 'asc';    // 'asc' | 'desc'
-let _sgDefaultMontoAplicado = false;
-let _sgDefaultPctAplicado   = false;
+// (cambio #67) Flags _sgDefaultMontoAplicado / _sgDefaultPctAplicado eliminadas:
+// la vista Sitios globales ya no aplica filtros por defecto.
 
 // ── Helpers de cálculo ────────────────────────────────────────────
 
@@ -4050,35 +3795,19 @@ function renderSitiosGlobales() {
   msInit('sg-filtro-contratista', contratistasOpts, 'Contratista', aplicarFiltrosSitiosGlobales);
   sgToggleContratistaWrap();
 
-  // Multiselect % Facturado — default oculta 100%
+  // Multiselect % Facturado — sin default (cambio #67: la vista arranca sin filtros)
   msInit('sg-filtro-pct', [
     { value: '0',   label: '0%' },
     { value: '20',  label: '20%' },
     { value: '80',  label: '80%' },
     { value: '100', label: '100%' }
   ], '% Fact', aplicarFiltrosSitiosGlobales);
-  if (!_sgDefaultPctAplicado) {
-    const st = window._msState?.['sg-filtro-pct'];
-    if (st && st.selected.size === 0) {
-      st.selected.add('0'); st.selected.add('20'); st.selected.add('80');
-      msRender('sg-filtro-pct');
-    }
-    _sgDefaultPctAplicado = true;
-  }
 
-  // Multiselect Monto — default "Con monto"
+  // Multiselect Monto — sin default (cambio #67)
   msInit('sg-filtro-monto', [
     { value: 'con', label: 'Con monto' },
     { value: 'sin', label: 'Sin monto' }
   ], 'Monto', aplicarFiltrosSitiosGlobales);
-  if (!_sgDefaultMontoAplicado) {
-    const st = window._msState?.['sg-filtro-monto'];
-    if (st && st.selected.size === 0) {
-      st.selected.add('con');
-      msRender('sg-filtro-monto');
-    }
-    _sgDefaultMontoAplicado = true;
-  }
 
   aplicarFiltrosSitiosGlobales();
 }
@@ -4425,6 +4154,7 @@ function mostrarModalInfo(mensaje) {
 }
 
 async function eliminarSitio(uid) {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   const s = getSit(uid);
   if (!s) return;
   if (!confirm(`¿Eliminar sitio ${s.id} (PO: ${s.poNro || '—'})?`)) return;
@@ -4442,6 +4172,7 @@ async function eliminarSitio(uid) {
 
 /* ══ PROYECTAR SITIO ══ */
 function abrirProyectarSitio(uid) {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   const s = getSit(uid);
   if (!s) return;
 
@@ -4532,6 +4263,7 @@ function calcularMontoResto() {
 let _proyPendientes = [];
 
 function confirmarProyectarSitio() {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   const sitioId = document.getElementById('proy-sitio-id-hidden').value;
   const pct     = parseInt(document.getElementById('proy-pct').value);
   const mesM    = document.getElementById('proy-mes-mes').value;
@@ -4593,6 +4325,7 @@ function actualizarBannerProyecciones() {
 }
 
 function abrirConfirmarTraspaso() {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   const resumen = document.getElementById('traspaso-resumen');
   resumen.innerHTML = _proyPendientes.map(p => {
     const cli = getCli(p.clienteId);
@@ -4612,6 +4345,7 @@ function abrirConfirmarTraspaso() {
 }
 
 function quitarDeCola(id) {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   _proyPendientes = _proyPendientes.filter(p => p.id !== id);
   actualizarBannerProyecciones();
   if (_proyPendientes.length === 0) { cerrarModal(); renderSitios(); return; }
@@ -4619,6 +4353,7 @@ function quitarDeCola(id) {
 }
 
 async function ejecutarTraspaso() {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   if (!_proyPendientes.length) return;
   cerrarModal();
   setLoading(true);
@@ -4658,6 +4393,7 @@ async function ejecutarTraspaso() {
 }
 
 function descartarProyecciones() {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   if (!confirm(`¿Descartás las ${_proyPendientes.length} proyección(es) pendientes?`)) return;
   _proyPendientes = [];
   actualizarBannerProyecciones();
@@ -4687,6 +4423,7 @@ function aplicarFiltrosSeg() {
 }
 
 function abrirModalNuevaLinea() {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   const selCli = document.getElementById('nl-cliente');
   selCli.innerHTML = '<option value="">— Seleccionar cliente —</option>';
   clientes.forEach(c => { selCli.innerHTML += `<option value="${c.id}">${c.id}</option>`; });
@@ -4820,6 +4557,7 @@ function calcularMontoLinea() {
 }
 
 async function guardarNuevaLinea() {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   const sitId = document.getElementById('nl-sitio').value;
   const pct   = parseInt(document.getElementById('nl-pct').value);
   const mesM  = document.getElementById('nl-mes-mes').value;
@@ -4983,6 +4721,7 @@ function renderSeguimiento() {
 
 /* ══ EDITAR LÍNEA ══ */
 function abrirEditarLinea(lineaId) {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   const l = lineas.find(x => x.id === lineaId);
   if (!l) return;
   const cli = getCli(l.clienteId);
@@ -5015,6 +4754,7 @@ function abrirEditarLinea(lineaId) {
 }
 
 async function guardarEdicionLinea() {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   const lineaId = document.getElementById('edit-lin-id').value;
   const estado  = document.getElementById('edit-lin-estado').value;
   const mesM    = document.getElementById('edit-lin-mes-mes').value;
@@ -5052,6 +4792,7 @@ async function guardarEdicionLinea() {
 }
 
 function abrirEliminarLinea(lineaId) {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   const l = lineas.find(x => x.id === lineaId);
   if (!l) return;
   const cli = getCli(l.clienteId);
@@ -5078,6 +4819,7 @@ function abrirEliminarLinea(lineaId) {
 }
 
 async function confirmarEliminarLinea() {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   const lineaId = document.getElementById('elim-linea-id').value;
   cerrarModal();
   setLoading(true);
@@ -5099,6 +4841,7 @@ function hoy() {
 }
 
 function abrirModalSolicitud(lineaId) {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   const l = lineas.find(x => x.id === lineaId);
   if (!l) return;
   if (_solPendientes.find(p => p.lineaId === lineaId)) return toast('Esta línea ya está en la cola de solicitudes.', 'err');
@@ -5123,6 +4866,7 @@ function actualizarBannerSolicitudes() {
 }
 
 function abrirConfirmarSolicitudes() {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   const resumen = document.getElementById('sol-resumen');
   resumen.innerHTML = _solPendientes.map(p => {
     const cli = getCli(p.clienteId);
@@ -5143,6 +4887,7 @@ function abrirConfirmarSolicitudes() {
 }
 
 function quitarDeSolCola(lineaId) {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   _solPendientes = _solPendientes.filter(p => p.lineaId !== lineaId);
   actualizarBannerSolicitudes();
   if (_solPendientes.length === 0) { cerrarModal(); renderSeguimiento(); return; }
@@ -5150,6 +4895,7 @@ function quitarDeSolCola(lineaId) {
 }
 
 async function ejecutarSolicitudes() {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   if (!_solPendientes.length) return;
   const sinFecha = _solPendientes.find(p => !p.fecha);
   if (sinFecha) return toast('Todas las líneas deben tener fecha de solicitud.', 'err');
@@ -5180,6 +4926,7 @@ async function ejecutarSolicitudes() {
 }
 
 function descartarSolicitudes() {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   if (!confirm(`¿Descartás las ${_solPendientes.length} solicitud(es) pendientes?`)) return;
   _solPendientes = [];
   actualizarBannerSolicitudes();
@@ -5190,6 +4937,7 @@ function descartarSolicitudes() {
 let _facPendientes = [];
 
 function abrirModalFactura(lineaId) {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   const l = lineas.find(x => x.id === lineaId);
   if (!l) return;
   if (_facPendientes.find(p => p.lineaId === lineaId)) return toast('Esta línea ya está en la cola de facturas.', 'err');
@@ -5214,6 +4962,7 @@ function actualizarBannerFacturas() {
 }
 
 function abrirConfirmarFacturas() {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   const resumen = document.getElementById('fac-resumen');
   resumen.innerHTML = _facPendientes.map(p => {
     const cli = getCli(p.clienteId);
@@ -5237,6 +4986,7 @@ function abrirConfirmarFacturas() {
 }
 
 function quitarDeFacCola(lineaId) {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   _facPendientes = _facPendientes.filter(p => p.lineaId !== lineaId);
   actualizarBannerFacturas();
   if (_facPendientes.length === 0) { cerrarModal(); renderSeguimiento(); return; }
@@ -5244,6 +4994,7 @@ function quitarDeFacCola(lineaId) {
 }
 
 async function ejecutarFacturas() {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   if (!_facPendientes.length) return;
   const sinFecha   = _facPendientes.find(p => !p.fecha);
   const sinFactura = _facPendientes.find(p => !p.nroFactura);
@@ -5277,6 +5028,7 @@ async function ejecutarFacturas() {
 }
 
 function descartarFacturas() {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   if (!confirm(`¿Descartás las ${_facPendientes.length} factura(s) pendientes?`)) return;
   _facPendientes = [];
   actualizarBannerFacturas();
@@ -5291,7 +5043,11 @@ document.querySelectorAll('.modal-overlay').forEach(m =>
 );
 
 function actualizarBadge() {
-  document.getElementById('badge-seg').textContent = lineas.filter(l => l.estado !== 'Facturado').length;
+  // El badge del sidebar fue eliminado (cambio #66). Se conserva la función como
+  // no-op null-safe para no romper las 6 llamadas existentes que la invocan.
+  const el = document.getElementById('badge-seg');
+  if (!el) return;
+  el.textContent = lineas.filter(l => l.estado !== 'Facturado').length;
 }
 
 /* ── HELPERS FILTRO MES ── */
@@ -5676,16 +5432,6 @@ function renderAsigCalendario() {
       if (sinAsignar > 0) {
         pills += `<span class="pill warn" title="${sinAsignar} empleado${sinAsignar!==1?'s':''} sin asignar para este día">${sinAsignar} S/A</span>`;
       }
-      // Imprevistos: se cuentan solo sobre las obras realmente asignadas ese día,
-      // para que el conteo coincida siempre con lo que muestra el modal de detalle.
-      const sitiosConImpr = [...obrasDelDia].filter(sid => tieneImprevisto(fechaStr, sid));
-      if (sitiosConImpr.length > 0) {
-        const detalle = sitiosConImpr.map(sid => {
-          const inc = getIncidencia(fechaStr, sid);
-          return `${sid}: ${_incTextoTooltip(inc)}`;
-        }).join('\n');
-        pills += `<span class="pill impr" title="${_escAttr(detalle)}"><i class="fa-solid fa-triangle-exclamation"></i>${sitiosConImpr.length} impr.</span>`;
-      }
       infoHtml = `<div class="asig-cal-info">${pills}</div>`;
     }
     html += `<div class="${classes.join(' ')}"${clickHandler}>
@@ -5750,8 +5496,6 @@ function renderModalAsigDia() {
   const empleadosEspCount = new Set(items.filter(a => esEstadoEspecial(a.sitioId)).map(a => a.empleadoId)).size;
   let subText = `${obrasCount} obra${obrasCount!==1?'s':''} · ${empleadosObras} empleado${empleadosObras!==1?'s':''}`;
   if (empleadosEspCount > 0) subText += ` · ${empleadosEspCount} en estado especial`;
-  const impCount = sitiosReales.filter(sid => tieneImprevisto(fechaStr, sid)).length;
-  if (impCount > 0) subText += ` · ${impCount} con imprevisto`;
   document.getElementById('asig-dia-sub').textContent = subText;
 
   const cont = document.getElementById('asig-dia-contenido');
@@ -5775,27 +5519,14 @@ function renderModalAsigDia() {
     const asigs = porSitio.get(sitioId);
     const abierta = (_asigDiaObraAbierta === sitioId);
     const sidEsc = sitioId.replace(/'/g, "\\'");
-    const inc = getIncidencia(fechaStr, sitioId);
-    const impClase = inc ? ' con-imprevisto' : '';
-    const impBtn = `<button class="imp-btn${inc ? ' on' : ''}" style="margin-left:auto;"
-      title="${inc ? 'Editar el imprevisto de esta obra' : 'Marcar el estado de la jornada'}"
-      onclick="event.stopPropagation();abrirModalImprevisto('${fechaStr}','${sidEsc}','dia')">
-      <i class="fa-solid ${inc ? 'fa-triangle-exclamation' : 'fa-circle-check'}"></i>${inc ? 'Imprevisto' : 'Normal'}</button>`;
-    const impNota = inc
-      ? `<div class="imp-motivo-nota" style="padding:0 15px 12px;"><i class="fa-solid fa-triangle-exclamation"></i>
-          <span>${inc.motivo || 'Sin motivo'}</span>
-          ${inc.observacion ? `<span class="imp-motivo-obs">— ${inc.observacion}</span>` : ''}</div>`
-      : '';
     bloques.push(`
-      <div class="asig-dia-obra${impClase}" style="background:rgba(255,255,255,0.45);border:1px solid rgba(200,205,225,0.5);border-radius:12px;overflow:hidden;">
+      <div style="background:rgba(255,255,255,0.45);border:1px solid rgba(200,205,225,0.5);border-radius:12px;overflow:hidden;">
         <div onclick="toggleObraDia('${sidEsc}')" style="cursor:pointer;font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px;padding:13px 15px;">
           <span style="font-size:11px;color:var(--text-light);transition:transform .15s;transform:rotate(${abierta?'90':'0'}deg);">▶</span>
           <span style="background:rgba(79,128,255,0.12);color:#3a6bf0;padding:3px 11px;border-radius:20px;font-size:13px;font-weight:700;">${sitioId}</span>
           <span style="font-size:11px;color:var(--text-light);font-weight:500;">${asigs.length} empleado${asigs.length!==1?'s':''}</span>
-          ${impBtn}
-          <button class="btn btn-rose btn-sm" title="Eliminar la obra completa de este día" onclick="event.stopPropagation();eliminarObraConfirmada('${sidEsc}')"><i class="fa-solid fa-trash"></i></button>
+          <button class="btn btn-rose btn-sm" title="Eliminar la obra completa de este día" style="margin-left:auto;" onclick="event.stopPropagation();eliminarObraConfirmada('${sidEsc}')"><i class="fa-solid fa-trash"></i></button>
         </div>
-        ${impNota}
         ${abierta ? `<div style="display:flex;flex-wrap:wrap;gap:6px;padding:0 15px 14px;">${empChips(asigs)}</div>` : ''}
       </div>
     `);
@@ -5842,6 +5573,7 @@ function cerrarModalAsigDia() {
 
 /* ── Botón "Editar día" del modal de detalle → abre la vista de dos columnas ── */
 function editarDiaDesdeDetalle() {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   const fecha = _asigModalFecha;
   cerrarModalAsigDia();
   if (fecha) abrirVistaNuevaAsig(fecha);
@@ -5849,6 +5581,7 @@ function editarDiaDesdeDetalle() {
 
 /* ══ ELIMINAR ASIGNACIÓN CONFIRMADA (1 empleado) ══ */
 async function eliminarAsignacionConfirmada(asigId) {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   const item = asignaciones.find(a => a.id === asigId);
   if (!item) return;
   const empNombre = nombreEmpleado(item.empleadoId);
@@ -5877,6 +5610,7 @@ async function eliminarAsignacionConfirmada(asigId) {
 
 /* ══ ELIMINAR OBRA COMPLETA (N empleados de un sitio en un día) ══ */
 async function eliminarObraConfirmada(sitioId) {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   const fechaStr = _asigModalFecha;
   if (!fechaStr) return;
   const items = asignaciones.filter(a => a.fecha === fechaStr && a.sitioId === sitioId);
@@ -5991,6 +5725,7 @@ let _acFilaActivoIdx      = -1;
 
 /* Asignar (o reasignar) un estado especial al empleado. Sobreescribe si tenía algo. */
 function asignarEstadoEspecial(empId, sid) {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   if (!esEstadoEspecial(sid)) return;
   _asigSitioPorEmpleado[empId] = sid;
   if (_acFilaAbierta) cerrarAcFila(_acFilaAbierta);
@@ -5999,6 +5734,7 @@ function asignarEstadoEspecial(empId, sid) {
 
 /* ── Abrir la vista "Nueva asignación" para una fecha ── */
 function abrirVistaNuevaAsig(fechaPre) {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   const fecha = fechaPre || fechaHoyStr();
   document.getElementById('nasig-titulo').innerHTML = 'Nueva <span style="color:var(--accent-blue);">asignación</span>';
   document.getElementById('asig-fecha').value = fecha;
@@ -6021,6 +5757,7 @@ function volverDeNuevaAsig() {
 
 /* ── Abrir desde el botón ✏️ de la cola: edita el día completo ── */
 function abrirModalEditarCola(colaId) {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   const item = colaAsignaciones.find(c => c.id === colaId);
   if (!item) return;
   abrirVistaNuevaAsig(item.fecha);
@@ -6194,31 +5931,13 @@ function renderObrasCards() {
       tituloHtml = `<span class="nasig-obra-id">${sid}</span>`;
     }
 
-    // Marcado de imprevisto: solo para sitios reales (los estados especiales no aplican)
-    let impBtnHtml = '', impNotaHtml = '';
-    if (!esEsp && _asigModalFechaActual) {
-      const inc = getIncidencia(_asigModalFechaActual, sid);
-      if (inc) cardClase += ' con-imprevisto';
-      const sidEsc = sid.replace(/'/g, "\\'");
-      impBtnHtml = `<button class="imp-btn${inc ? ' on' : ''}" title="${inc ? 'Editar el imprevisto de esta obra' : 'Marcar el estado de la jornada'}"
-        onclick="abrirModalImprevisto('${_asigModalFechaActual}','${sidEsc}','nasig')">
-        <i class="fa-solid ${inc ? 'fa-triangle-exclamation' : 'fa-circle-check'}"></i>${inc ? 'Imprevisto' : 'Normal'}</button>`;
-      if (inc) {
-        impNotaHtml = `<div class="imp-motivo-nota"><i class="fa-solid fa-triangle-exclamation"></i>
-          <span>${inc.motivo || 'Sin motivo'}</span>
-          ${inc.observacion ? `<span class="imp-motivo-obs">— ${inc.observacion}</span>` : ''}</div>`;
-      }
-    }
-
     return `
       <div class="${cardClase}">
         <div class="nasig-obra-titulo">
           ${tituloHtml}
           <span class="nasig-obra-count">${totalEmp} empleado${totalEmp!==1?'s':''}</span>
-          ${impBtnHtml ? `<span style="margin-left:auto;">${impBtnHtml}</span>` : ''}
         </div>
         <div class="nasig-obra-emps">${chipConf}${chipNuevo}</div>
-        ${impNotaHtml}
       </div>`;
   };
 
@@ -6308,12 +6027,14 @@ function actualizarAcActivo(opts, idx) {
 }
 
 function elegirSitioFila(empId, sitioId) {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   _asigSitioPorEmpleado[empId] = sitioId;
   _acFilaAbierta = null;
   renderModalEmpleados();
 }
 
 function limpiarSitioEmpleado(empId, skipRender) {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   delete _asigSitioPorEmpleado[empId];
   if (!skipRender) renderModalEmpleados();
 }
@@ -6326,6 +6047,7 @@ function cerrarAcFila(empId) {
 
 /* ══ AGREGAR A LA COLA — sincroniza toda la cola del día ══ */
 function agregarAsigCola() {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   const fecha = _asigModalFechaActual;
   if (!fecha) return toast('Elegí una fecha', 'err');
 
@@ -6372,6 +6094,7 @@ function agregarAsigCola() {
 }
 
 function eliminarItemCola(colaId) {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   const item = colaAsignaciones.find(c => c.id === colaId);
   if (!item) return;
   if (!confirm(`¿Quitar de la cola el sitio ${item.sitioId} del ${item.fecha}?`)) return;
@@ -6382,6 +6105,7 @@ function eliminarItemCola(colaId) {
 }
 
 function vaciarColaConfirm() {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   if (!colaAsignaciones.length) return;
   if (!confirm(`¿Vaciar toda la cola (${colaAsignaciones.length} items)? Esta acción no se puede deshacer.`)) return;
   colaAsignaciones = [];
@@ -6458,6 +6182,7 @@ function renderCola() {
 
 /* ══ CONFIRMAR COLA (BULK_INSERT) ══ */
 async function confirmarCola() {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   if (!colaAsignaciones.length) return;
   const totalRegistros = colaAsignaciones.reduce((acc, c) => acc + c.empleadoIds.length, 0);
   if (!confirm(`¿Confirmar ${totalRegistros} asignación${totalRegistros!==1?'es':''} (${colaAsignaciones.length} obra${colaAsignaciones.length!==1?'s':''})?`)) return;
@@ -6852,6 +6577,120 @@ async function autoSync() {
 }
 
 /* ══ LOGIN ══ */
+/* ═══════════════════════════════════════════════════════
+   MODO VIEWER — perfil de SOLO LECTURA (cambio #68)
+
+   Se activa cuando la columna ROL de la hoja ADMIN dice "Viewer"
+   (case-insensitive). Cualquier otro rol —Administrador, Gerente,
+   o vacío— mantiene el sistema exactamente como estaba.
+
+   Dos capas independientes:
+
+   1) GUARD FUNCIONAL — bloqueoViewer() como primera línea de cada handler
+      de escritura. Es la capa que realmente garantiza que nada se modifique:
+      corta aunque el control se invoque desde la consola del navegador.
+
+   2) BARRIDO DE UI — lista BLANCA. Se oculta todo elemento con onclick que
+      invoque alguna función fuera de VIEWER_PERMITIDO. Al ser lista blanca,
+      cualquier control de escritura que se agregue en el futuro queda oculto
+      por default, sin necesidad de mantener una lista negra.
+
+   Alcance: el viewer navega, filtra, ordena, abre modales de detalle y
+   sincroniza. No puede crear, editar ni eliminar nada — ni en el Sheet
+   ni en las colas locales.
+
+   Aclaración de seguridad: esto vive en el navegador. El Web App de Apps
+   Script no tiene autenticación, así que no protege contra un POST armado
+   a mano desde afuera. Es un control de aplicación, no un candado de servidor.
+   ═══════════════════════════════════════════════════════ */
+
+const ROL_VIEWER = 'viewer';
+
+/* ¿El usuario logueado es viewer? Null-safe: sin sesión devuelve false. */
+function esViewer() {
+  return !!_usuarioActual &&
+         String(_usuarioActual.rol || '').trim().toLowerCase() === ROL_VIEWER;
+}
+
+/* Guard de escritura. Devuelve true (y avisa) si hay que abortar la acción. */
+function bloqueoViewer() {
+  if (!esViewer()) return false;
+  toast('Modo solo lectura: no tenés permisos para modificar datos', 'err');
+  return true;
+}
+
+/* Lista BLANCA de funciones que un viewer puede ejecutar desde un onclick.
+   Todo lo que no esté acá se oculta. Solo lectura, navegación y filtros. */
+const VIEWER_PERMITIDO = new Set([
+  // Navegación general
+  'showView', 'toggleNavGroup', 'cerrarSesion', 'navAsigMes',
+  'intentarLogin', 'sincronizar', 'volverDeNuevaAsig',
+  // Cierre de modales
+  'cerrarModal', 'cerrarModalAsigDia', 'cerrarModalSgDias', 'cerrarModalTanda',
+  // Apertura de vistas de consulta (no editan nada)
+  'abrirModalAsigDia', 'abrirModalSgDias', 'abrirDetalleCliente', 'abrirDetalleKPI',
+  // Filtros, orden y tabs
+  'msToggleOpen', 'msToggle', 'msClear', 'anSetPeriodo', 'kpiModalLimpiarFiltros',
+  'sgSetTab', 'sgSetSort', 'sgLimpiarTodosFiltros', 'sgToggleContratistaWrap',
+  // Navegación cruzada entre vistas
+  'sgVerEnPOSitios', 'irASeguimientoDesdeSitio', 'irASeguimientoDesdeModalDetalle',
+  // Expandir / colapsar
+  'toggleObraDia',
+  // Utilitarios DOM neutros que aparecen dentro de algunos onclick
+  'stopPropagation', 'preventDefault', 'getElementById', 'querySelector', 'remove'
+]);
+
+let _viewerObserver = null;
+let _viewerBarridoPend = false;
+
+/* Marca con .vw-hide todo control cuyo onclick invoque algo no permitido.
+   Si el onclick no contiene ninguna llamada a función, se deja intacto. */
+function _viewerBarrer() {
+  document.querySelectorAll('[onclick]').forEach(el => {
+    const code = el.getAttribute('onclick') || '';
+    const llamadas = code.match(/([A-Za-z_$][\w$]*)\s*\(/g);
+    if (!llamadas || !llamadas.length) return;
+    const nombres = llamadas.map(s => s.replace(/\s*\($/, ''));
+    const permitido = nombres.every(n => VIEWER_PERMITIDO.has(n));
+    if (permitido) el.classList.remove('vw-hide');
+    else           el.classList.add('vw-hide');
+  });
+}
+
+/* Agenda un barrido por frame (debounce). El barrido solo toca clases,
+   nunca el árbol DOM, así que no se retroalimenta con el MutationObserver. */
+function _viewerAgendarBarrido() {
+  if (_viewerBarridoPend) return;
+  _viewerBarridoPend = true;
+  requestAnimationFrame(() => {
+    _viewerBarridoPend = false;
+    if (esViewer()) _viewerBarrer();
+  });
+}
+
+function activarModoViewer() {
+  document.body.classList.add('modo-viewer');
+  _viewerBarrer();
+  if (!_viewerObserver && typeof MutationObserver === 'function') {
+    _viewerObserver = new MutationObserver(_viewerAgendarBarrido);
+  }
+  if (_viewerObserver) {
+    _viewerObserver.observe(document.body, { childList: true, subtree: true });
+  }
+}
+
+function desactivarModoViewer() {
+  document.body.classList.remove('modo-viewer');
+  if (_viewerObserver) _viewerObserver.disconnect();
+  document.querySelectorAll('.vw-hide').forEach(el => el.classList.remove('vw-hide'));
+}
+
+/* Punto de entrada único: se llama tras establecer _usuarioActual. */
+function aplicarModoViewer() {
+  if (esViewer()) activarModoViewer();
+  else            desactivarModoViewer();
+}
+
 let _usuariosAdmin = [];
 let _usuarioActual = null;
 
@@ -6926,6 +6765,7 @@ function mostrarBienvenida(user) {
   document.getElementById('sidebar-avatar').textContent = primerNombre.charAt(0).toUpperCase();
   document.getElementById('sidebar-nombre').textContent = nombre;
   document.getElementById('sidebar-rol').textContent    = user.rol || 'Usuario';
+  aplicarModoViewer();   // cambio #68 — activa/desactiva el modo solo lectura
   cargarTodo().then(() => {
     setTimeout(() => {
       bienvenida.style.opacity = '1';
@@ -6941,6 +6781,7 @@ function mostrarBienvenida(user) {
 function cerrarSesion() {
   if (!confirm('¿Cerrar sesión?')) return;
   _usuarioActual = null; _usuariosAdmin = [];
+  desactivarModoViewer();   // cambio #68 — limpiar el modo solo lectura
   try { sessionStorage.removeItem('terabyte_user'); } catch(e) {}
   document.getElementById('login-user').value = '';
   document.getElementById('login-error').style.display = 'none';
@@ -6953,6 +6794,10 @@ function cerrarSesion() {
 
 /* ── PING inicial ── */
 (async function pingServidor() {
+  /* Versión del archivo (cambio #69) — se pinta siempre, haya sesión o no */
+  const verEl = document.getElementById('sidebar-version');
+  if (verEl) verEl.textContent = APP_VERSION;
+
   const bar  = document.getElementById('login-conn-bar');
   const pct  = document.getElementById('login-conn-pct');
   const txt  = document.getElementById('login-conn-text');
@@ -7011,6 +6856,7 @@ function cerrarSesion() {
     document.getElementById('sidebar-avatar').textContent = primerNombre.charAt(0).toUpperCase();
     document.getElementById('sidebar-nombre').textContent = nombre;
     document.getElementById('sidebar-rol').textContent    = match.rol || 'Usuario';
+    aplicarModoViewer();   // cambio #68 — reaplicar el modo tras F5
     document.getElementById('screen-login').style.display = 'none';
     await cargarTodo();
   } catch(e) { /* sessionStorage bloqueado u otro error: queda en login */ }
