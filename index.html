@@ -133,6 +133,12 @@
     body.modo-viewer #form-cliente,
     body.modo-viewer #form-sitio { display: none !important; }
 
+    /* Vistas vedadas al viewer (cambio #71): Análisis y datos, Sitios globales y Seguimiento.
+       El bloqueo real está en showView(); esto solo saca los accesos del sidebar. */
+    body.modo-viewer #nav-analisis,
+    body.modo-viewer #nav-sitios-globales,
+    body.modo-viewer #nav-seguimiento { display: none !important; }
+
     /* MAIN */
     .main { margin-left: var(--sidebar-w); flex: 1; padding: 32px 32px 40px; position: relative; z-index: 1; }
     .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; }
@@ -2313,7 +2319,7 @@ const PEQ = 90000000;
    a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
    Se pinta en el pie del sidebar (#sidebar-version).
    ═══════════════════════════════════════════════════════ */
-const APP_VERSION = 'V 040826 1817';
+const APP_VERSION = 'V 040826 1827';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
@@ -2565,6 +2571,8 @@ function toggleNavGroup(group) {
 }
 
 function showView(name, el) {
+  // cambio #71 — el viewer no accede a estas vistas por ninguna vía. Silencioso a propósito.
+  if (viewerVistaBloqueada(name)) return;
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.getElementById('view-' + name).classList.add('active');
   document.querySelectorAll('.nav-item, .nav-subitem').forEach(n => n.classList.remove('active'));
@@ -4111,6 +4119,7 @@ function sgVerEnPOSitios(idSitio) {
 
 /* ── Navegación dblclick Sitios → Seguimiento ── */
 function irASeguimientoDesdeSitio(idSitio) {
+  if (viewerVistaBloqueada('seguimiento')) return;   // cambio #71
   // Verificar que el sitio tenga al menos 1 línea de cualquier estado
   const tieneLineas = lineas.some(l => l.sitioId === idSitio);
   if (!tieneLineas) {
@@ -5158,6 +5167,7 @@ let _kpiModalState = {
 };
 
 function irASeguimientoDesdeModalDetalle(idSitio) {
+  if (viewerVistaBloqueada('seguimiento')) return;   // cambio #71 — ni siquiera cierra el modal
   // Cerrar el modal antes de navegar
   document.getElementById('modal-kpi-detalle').classList.remove('open');
   irASeguimientoDesdeSitio(idSitio);
@@ -6606,6 +6616,17 @@ async function autoSync() {
 
 const ROL_VIEWER = 'viewer';
 
+/* Vistas que el viewer NO puede abrir (cambio #71).
+   Se ocultan del sidebar por CSS y se bloquean en showView(), que es el
+   embudo por el que pasan TODAS las rutas de navegación — incluidas las
+   cruzadas (dblclick desde PO sitios y desde los modales del dashboard). */
+const VIEWER_VISTAS_BLOQUEADAS = ['analisis', 'sitios-globales', 'seguimiento'];
+
+/* ¿La vista está vedada para el usuario actual? */
+function viewerVistaBloqueada(name) {
+  return esViewer() && VIEWER_VISTAS_BLOQUEADAS.includes(name);
+}
+
 /* ¿El usuario logueado es viewer? Null-safe: sin sesión devuelve false. */
 function esViewer() {
   return !!_usuarioActual &&
@@ -6633,7 +6654,7 @@ const VIEWER_PERMITIDO = new Set([
   'msToggleOpen', 'msToggle', 'msClear', 'anSetPeriodo', 'kpiModalLimpiarFiltros',
   'sgSetTab', 'sgSetSort', 'sgLimpiarTodosFiltros', 'sgToggleContratistaWrap',
   // Navegación cruzada entre vistas
-  'sgVerEnPOSitios', 'irASeguimientoDesdeSitio', 'irASeguimientoDesdeModalDetalle',
+  'sgVerEnPOSitios',   // irASeguimientoDesde* salen de la whitelist (cambio #71)
   // Expandir / colapsar
   'toggleObraDia',
   // Utilitarios DOM neutros que aparecen dentro de algunos onclick
