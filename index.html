@@ -934,6 +934,44 @@
     .asig-quick-btn.quick-vacaciones:hover { background: rgba(168,85,247,0.18);  color: #7c3aed; border-color: rgba(168,85,247,0.45); }
     .asig-quick-btn.quick-ausente:hover    { background: rgba(248,113,113,0.18); color: #dc2626; border-color: rgba(248,113,113,0.45); }
 
+    /* Clima (cambio #73) — atajo del imprevisto por CLIMA sobre la obra del empleado.
+       Usa el rosa propio de imprevistos (#db2777), distinto del rose destructivo. */
+    .asig-quick-btn.quick-clima:hover:not(:disabled) { background: rgba(219,39,119,0.14); color: #db2777; border-color: rgba(219,39,119,0.45); }
+    .asig-quick-btn.quick-clima.clima-on {
+      background: rgba(219,39,119,0.18); color: #db2777; border-color: rgba(219,39,119,0.55);
+    }
+    /* Pendiente de confirmar: mismo tratamiento punteado que el chip de jornada */
+    .asig-quick-btn.quick-clima.clima-pend { border-style: dashed; }
+    /* La obra tiene imprevisto pero con OTRO motivo: se avisa sin marcarlo como clima */
+    .asig-quick-btn.quick-clima.clima-otro { color: #db2777; border-color: rgba(219,39,119,0.35); }
+    .asig-quick-btn:disabled {
+      opacity: 0.38; cursor: not-allowed; background: rgba(235,238,245,0.7);
+    }
+    .asig-quick-btn:disabled:hover { transform: none; box-shadow: none; }
+
+    /* ── Precarga desde otro día (cambio #74) ── */
+    .precarga-wrap { flex: 0 0 auto; }
+    .precarga-controles { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .precarga-sep { font-size: 11px; color: var(--text-light); font-weight: 500; }
+    .precarga-fecha { max-width: 155px; padding: 6px 9px; font-size: 12px; }
+    #btn-traer-ultimo:disabled { opacity: 0.42; cursor: not-allowed; transform: none; box-shadow: none; }
+    .precarga-opciones { display: flex; flex-direction: column; gap: 10px; }
+    .precarga-opcion {
+      border: 1px solid rgba(200,205,225,0.6); border-radius: 12px;
+      padding: 14px 16px; cursor: pointer; transition: var(--transition);
+      background: rgba(255,255,255,0.55);
+    }
+    .precarga-opcion:hover {
+      border-color: var(--accent-blue); background: rgba(79,128,255,0.07);
+      transform: translateY(-1px); box-shadow: 0 4px 12px rgba(40,50,80,0.08);
+    }
+    .precarga-opcion-tit {
+      font-weight: 700; font-size: 13.5px; color: var(--text-dark);
+      display: flex; align-items: center; gap: 9px;
+    }
+    .precarga-opcion-tit i { color: var(--accent-blue); font-size: 12.5px; }
+    .precarga-opcion-sub { font-size: 12px; color: var(--text-light); margin-top: 4px; line-height: 1.45; }
+
     /* Chip de estado especial dentro de la fila (reemplaza el input del sitio) */
     .asig-emp-esp-chip {
       flex: 1; display: inline-flex; align-items: center; gap: 7px;
@@ -1870,11 +1908,23 @@
       </div>
     </div>
 
-    <!-- Fecha + resumen -->
+    <!-- Fecha + precarga + resumen -->
     <div class="card" style="margin-bottom:16px;display:flex;align-items:center;gap:24px;flex-wrap:wrap;">
       <div>
         <label class="form-label" style="display:block;margin-bottom:4px;">Fecha</label>
         <input type="date" class="form-input" id="asig-fecha" onchange="onCambioFechaAsig()" style="max-width:220px;" />
+      </div>
+      <!-- Precarga desde otro día (cambio #74) -->
+      <div class="precarga-wrap">
+        <label class="form-label" style="display:block;margin-bottom:4px;">Precargar desde otro día</label>
+        <div class="precarga-controles">
+          <button class="btn btn-glass btn-sm" id="btn-traer-ultimo" onclick="traerUltimoDia()">
+            <i class="fa-solid fa-clock-rotate-left"></i> Traer último día
+          </button>
+          <span class="precarga-sep">o</span>
+          <input type="date" class="form-input precarga-fecha" id="asig-fecha-origen" />
+          <button class="btn btn-glass btn-sm" onclick="traerDesdeFechaElegida()">Traer</button>
+        </div>
       </div>
       <div class="asig-emp-resumen" id="asig-emp-resumen" style="margin-bottom:0;"></div>
     </div>
@@ -2270,6 +2320,34 @@
   </div>
 </div>
 
+<!-- MODAL — Precarga desde otro día: qué hacer con lo ya cargado — cambio #74 -->
+<div class="modal-overlay" id="modal-precarga">
+  <div class="modal" style="max-width:520px;padding:28px 30px;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:18px;">
+      <div>
+        <div class="modal-title" style="margin:0;">Ya hay asignaciones cargadas</div>
+        <div id="precarga-sub" style="font-size:13px;color:var(--text-light);margin-top:5px;">—</div>
+      </div>
+      <button onclick="cerrarModalPrecarga()" style="background:none;border:none;cursor:pointer;font-size:22px;color:var(--text-light);line-height:1;">✕</button>
+    </div>
+
+    <div class="precarga-opciones">
+      <div class="precarga-opcion" onclick="precargaAplicar('pisar')">
+        <div class="precarga-opcion-tit"><i class="fa-solid fa-arrows-rotate"></i> Pisar todo</div>
+        <div class="precarga-opcion-sub">Descarta lo cargado y deja exactamente el día de origen.</div>
+      </div>
+      <div class="precarga-opcion" onclick="precargaAplicar('rellenar')">
+        <div class="precarga-opcion-tit"><i class="fa-solid fa-fill-drip"></i> Rellenar los vacíos</div>
+        <div class="precarga-opcion-sub">Respeta lo que ya asignaste y completa solo los empleados sin asignar.</div>
+      </div>
+    </div>
+
+    <div style="margin-top:20px;">
+      <button class="btn btn-glass" style="width:100%;justify-content:center;padding:12px;font-size:13.5px;" onclick="cerrarModalPrecarga()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL — Proyección por tandas (selección múltiple en PO sitios) -->
 <div class="modal-overlay" id="modal-tanda">
   <div class="modal" style="max-width:820px;padding:30px 34px;">
@@ -2437,7 +2515,7 @@ const PEQ = 90000000;
    a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
    Se pinta en el pie del sidebar (#sidebar-version).
    ═══════════════════════════════════════════════════════ */
-const APP_VERSION = 'V 050826 1217';
+const APP_VERSION = 'V 060826 1515';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
@@ -3326,14 +3404,42 @@ function _sitDisponiblePara100(s) {
   return true;
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   CORTE PLANIFICADO / EJECUTADO (cambio #75)
+   ═══════════════════════════════════════════════════════════════════
+   Desde que se planifican asignaciones a futuro (tipo Gantt), una fila
+   de ASIGNACIONES puede ser un plan y no un hecho. La hoja no distingue
+   una cosa de la otra, así que el corte se hace por fecha:
+
+     Sitios globales mide EJECUCIÓN ⇒ solo cuentan las asignaciones
+     con fecha <= hoy. Todo lo posterior es plan y se ignora.
+
+   El calendario de Asignación personal y su modal quedan FUERA del
+   corte: son justamente la herramienta de planificación.
+
+   Este es el único punto de verdad del criterio. Si algún día se suma
+   una columna de estado en la hoja (PLANIFICADO / EJECUTADO), se
+   reemplaza acá adentro y ninguna otra función se entera.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ¿La asignación ya ocurrió? (hoy incluido) */
+function _asigEjecutada(a) {
+  return !!a && !!a.fecha && a.fecha <= fechaHoyStr();
+}
+
+/* Asignaciones ejecutadas de un sitio. Base de todos los cálculos de Sitios globales. */
+function _asigEjecutadasDeSitio(idSitio) {
+  if (!idSitio || !Array.isArray(asignaciones) || asignaciones.length === 0) return [];
+  const hoy = fechaHoyStr();
+  return asignaciones.filter(a => a.sitioId === idSitio && a.fecha && a.fecha <= hoy);
+}
+
 // Helper: cuenta de FECHAS ÚNICAS con asignaciones confirmadas para un ID de sitio (E1).
 // Devuelve un entero (0 si no tiene asignaciones).
+// cambio #75 — solo días ya ejecutados; la planificación futura no cuenta.
 function _diasTrabajadosSitio(idSitio) {
-  if (!idSitio || !Array.isArray(asignaciones) || asignaciones.length === 0) return 0;
   const fechas = new Set();
-  asignaciones.forEach(a => {
-    if (a.sitioId === idSitio && a.fecha) fechas.add(a.fecha);
-  });
+  _asigEjecutadasDeSitio(idSitio).forEach(a => fechas.add(a.fecha));
   return fechas.size;
 }
 
@@ -3345,7 +3451,9 @@ function cerrarModalSgDias() {
 function abrirModalSgDias(idSitio) {
   if (!idSitio) return;
   // 1) Filtrar asignaciones del sitio (solo confirmadas, igual que el badge — E1)
-  const asigDelSitio = asignaciones.filter(a => a.sitioId === idSitio && a.fecha);
+  //    cambio #75 — y solo ejecutadas: el modal tiene que dar el mismo número
+  //    de días que el badge azul desde el que se abre.
+  const asigDelSitio = _asigEjecutadasDeSitio(idSitio);
   if (asigDelSitio.length === 0) return; // safeguard
 
   // 2) Agrupar por fecha (orden cronológico ASC — C1)
@@ -3818,18 +3926,24 @@ let _sgSortDir = 'asc';    // 'asc' | 'desc'
 
 // ── Helpers de cálculo ────────────────────────────────────────────
 
+/* Última fecha con actividad YA EJECUTADA (cambio #75).
+   Antes tomaba el máximo absoluto: con planificación a futuro eso daba
+   "activos" a los sitios agendados para adelante, no a los que se están
+   trabajando. Ahora el techo es hoy. */
 function _sgFechaMaxAsignaciones() {
   if (!Array.isArray(asignaciones) || !asignaciones.length) return null;
+  const hoy = fechaHoyStr();
   let max = '';
   for (const a of asignaciones) {
-    if (a.fecha && a.fecha > max) max = a.fecha;
+    if (a.fecha && a.fecha <= hoy && a.fecha > max) max = a.fecha;
   }
   return max || null;
 }
 
 function _sgEsActivo(idSitio, fechaMax) {
   if (!fechaMax || !idSitio) return false;
-  return asignaciones.some(a => a.sitioId === idSitio && a.fecha === fechaMax);
+  // fechaMax ya viene acotada a <= hoy, pero se filtra igual por si se invoca suelta.
+  return _asigEjecutadasDeSitio(idSitio).some(a => a.fecha === fechaMax);
 }
 
 function _sgFacturadoSitio(idSitio, totalSitio) {
@@ -3839,35 +3953,32 @@ function _sgFacturadoSitio(idSitio, totalSitio) {
   return { monto, pct };
 }
 
+/* cambio #75 — personas que REALMENTE pasaron por el sitio (sin planificados) */
 function _sgPersonasUnicasSitio(idSitio) {
   const ids = new Set();
-  asignaciones.forEach(a => { if (a.sitioId === idSitio) ids.add(a.empleadoId); });
+  _asigEjecutadasDeSitio(idSitio).forEach(a => ids.add(a.empleadoId));
   return ids.size;
 }
 
+/* cambio #75 — un sitio que solo tiene plan a futuro no tiene "inicio" todavía */
 function _sgPrimeraActividad(idSitio) {
   let min = '';
-  for (const a of asignaciones) {
-    if (a.sitioId === idSitio && a.fecha) {
-      if (!min || a.fecha < min) min = a.fecha;
-    }
+  for (const a of _asigEjecutadasDeSitio(idSitio)) {
+    if (!min || a.fecha < min) min = a.fecha;
   }
   return min || null;
 }
 function _sgUltimaActividad(idSitio) {
   let max = '';
-  for (const a of asignaciones) {
-    if (a.sitioId === idSitio && a.fecha) {
-      if (a.fecha > max) max = a.fecha;
-    }
+  for (const a of _asigEjecutadasDeSitio(idSitio)) {
+    if (a.fecha > max) max = a.fecha;
   }
   return max || null;
 }
 
 function _sgContratistasDeSitio(idSitio) {
   const nombres = new Set();
-  asignaciones.forEach(a => {
-    if (a.sitioId !== idSitio) return;
+  _asigEjecutadasDeSitio(idSitio).forEach(a => {   // cambio #75
     const e = empleados.find(x => x.id === a.empleadoId);
     if (e && String(e.relacion).toUpperCase() === 'C') {
       nombres.add(e.nombre || e.id);
@@ -3877,7 +3988,7 @@ function _sgContratistasDeSitio(idSitio) {
 }
 
 function _sgTipoCuadrilla(idSitio, pctFacturado) {
-  const asigs = asignaciones.filter(a => a.sitioId === idSitio);
+  const asigs = _asigEjecutadasDeSitio(idSitio);   // cambio #75
   if (!asigs.length) {
     // Sin asignaciones: si está 100% facturado, es un sitio legacy terminado (anterior a la hoja ASIGNACIONES)
     if (typeof pctFacturado === 'number' && pctFacturado >= 99.5) {
@@ -5211,7 +5322,8 @@ function descartarFacturas() {
 
 function cerrarModal() {
   document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('open'));
-  _jorCtx = null;   // cambio #72 — el cierre genérico también limpia el contexto de jornada
+  _jorCtx = null;       // cambio #72 — el cierre genérico también limpia el contexto de jornada
+  _precargaCtx = null;  // cambio #74 — ídem para el de precarga (cierre por click en el overlay)
 }
 document.querySelectorAll('.modal-overlay').forEach(m =>
   m.addEventListener('click', e => { if (e.target === m) cerrarModal(); })
@@ -5981,8 +6093,10 @@ function estadoJornada(fecha, sitioId) {
 function _diasConImprevistoSitio(idSitio) {
   if (!idSitio || !Array.isArray(incidencias) || incidencias.length === 0) return 0;
   if (!Array.isArray(asignaciones) || asignaciones.length === 0) return 0;
+  // cambio #75 — solo días ejecutados, para seguir siendo coherente con el
+  // número de días trabajados que el asterisco acompaña.
   const fechasTrabajadas = new Set();
-  asignaciones.forEach(a => { if (a.sitioId === idSitio && a.fecha) fechasTrabajadas.add(a.fecha); });
+  _asigEjecutadasDeSitio(idSitio).forEach(a => fechasTrabajadas.add(a.fecha));
   if (fechasTrabajadas.size === 0) return 0;
   const conImprevisto = new Set();
   incidencias.forEach(i => {
@@ -6206,6 +6320,86 @@ function _jorPurgarColaDeFecha(fecha, sitiosDelDia) {
   if (colaIncidencias.length !== antes) guardarColaIncidenciasSession();
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   ATAJO DE CLIMA EN LA FILA DEL EMPLEADO (cambio #73)
+   ═══════════════════════════════════════════════════════════════════
+   El botón vive en la fila del empleado, pero el imprevisto es por
+   OBRA × DÍA: marca la obra donde ese empleado está asignado, así que
+   se ve en espejo en todas las filas de empleados de esa misma obra.
+
+   - Solo habilitado si el empleado tiene un sitio REAL (no estados
+     especiales, no "sin asignar").
+   - Pisa cualquier otro motivo y BORRA la observación previa.
+   - Toggle: si ya está en Clima, el click vuelve la jornada a Normal.
+   - Timing: contexto 'nueva' ⇒ va a colaIncidencias y se escribe en
+     "Confirmar todo", igual que el chip de la card.
+   ═══════════════════════════════════════════════════════════════════ */
+
+const MOTIVO_CLIMA = 'Clima';
+
+/* Sitio efectivo del empleado en la vista Nueva asignación.
+   El confirmado manda: esas filas están bloqueadas y no se pueden reasignar. */
+function _sitioEfectivoEmpleado(empId) {
+  if (!empId) return '';
+  return _asigEmpConfirmados[empId] || _asigSitioPorEmpleado[empId] || '';
+}
+
+/* Estado del botón de clima para un empleado:
+   { habilitado, esClima, otroMotivo, pendiente, sitioId } */
+function estadoClimaEmpleado(empId) {
+  const sid = _sitioEfectivoEmpleado(empId);
+  const base = { habilitado: false, esClima: false, otroMotivo: '', pendiente: false, sitioId: sid };
+  if (!sid || esEstadoEspecial(sid) || !_asigModalFechaActual) return base;
+  const st = estadoJornada(_asigModalFechaActual, sid);
+  return {
+    habilitado: true,
+    esClima:    st.imprevisto && st.motivo === MOTIVO_CLIMA,
+    otroMotivo: (st.imprevisto && st.motivo !== MOTIVO_CLIMA) ? (st.motivo || 'Imprevisto') : '',
+    pendiente:  st.pendiente,
+    sitioId:    sid
+  };
+}
+
+/* HTML del botón. Deshabilitado (gris) cuando no hay obra real detrás. */
+function _quickClimaBtnHtml(empId) {
+  const st = estadoClimaEmpleado(empId);
+  let cls = 'asig-quick-btn quick-clima';
+  let tip;
+  if (!st.habilitado) {
+    tip = 'Asigná primero un sitio para poder marcar el clima';
+  } else if (st.esClima) {
+    cls += ' clima-on' + (st.pendiente ? ' clima-pend' : '');
+    tip = `${st.sitioId}: imprevisto por clima. Click para volver a día normal`;
+  } else if (st.otroMotivo) {
+    cls += ' clima-otro' + (st.pendiente ? ' clima-pend' : '');
+    tip = `${st.sitioId}: imprevisto por ${st.otroMotivo}. Click para pisarlo con Clima`;
+  } else {
+    tip = `Marcar imprevisto por clima en ${st.sitioId} (afecta a toda la obra del día)`;
+  }
+  return `<button type="button" class="${cls}" title="${_escAttr(tip)}"${st.habilitado ? '' : ' disabled'}
+    onclick="toggleClimaEmpleado('${_escJs(empId)}')"><i class="fa-solid fa-cloud-showers-heavy"></i></button>`;
+}
+
+/* Toggle del atajo. Reusa _jorEncolar, así que hereda la precedencia
+   cola↔confirmado y el DELETE diferido cuando se limpia algo ya guardado. */
+function toggleClimaEmpleado(empId) {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
+  const fecha = _asigModalFechaActual;
+  if (!fecha) return;
+  const st = estadoClimaEmpleado(empId);
+  if (!st.habilitado) return;    // defensivo: el botón ya viene disabled
+
+  if (st.esClima) {
+    _jorEncolar(fecha, st.sitioId, false, '', '');       // volver a día normal
+    toast(`${st.sitioId}: jornada normal (en cola) ✓`);
+  } else {
+    _jorEncolar(fecha, st.sitioId, true, MOTIVO_CLIMA, ''); // pisa motivo y borra observación
+    toast(`${st.sitioId}: imprevisto por clima (en cola) ✓`);
+  }
+  renderModalEmpleados();   // espejo en todas las filas de la obra + cards
+  renderCola();             // habilita "Confirmar todo" y actualiza el subtítulo
+}
+
 let _asigModalFechaActual = null;
 let _asigSitioPorEmpleado = {};
 let _asigEmpConfirmados   = {};
@@ -6272,6 +6466,9 @@ function cargarEstadoModalAsig(fecha) {
     });
   });
 
+  // cambio #74 — el día origen sugerido depende de la fecha destino
+  _actualizarControlesPrecarga();
+
   renderModalEmpleados();
 }
 
@@ -6280,6 +6477,151 @@ function onCambioFechaAsig() {
   const fecha = document.getElementById('asig-fecha').value;
   if (!fecha) return;
   cargarEstadoModalAsig(fecha);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   PRECARGA DESDE OTRO DÍA (cambio #74)
+   ═══════════════════════════════════════════════════════════════════
+   Copia el mapa empleado → sitio de una fecha origen a la selección
+   editable de la fecha destino. NO escribe nada: queda todo revisable
+   hasta "Agregar a la cola".
+
+   Reglas cerradas:
+   - Origen automático = última fecha CONFIRMADA (hoja ASIGNACIONES)
+     estrictamente anterior a la fecha destino. La cola no cuenta.
+   - Se copian obras reales Y estados especiales (Dep/Vac/Aus).
+   - NO se copian las marcas de imprevisto: el destino arranca Normal.
+   - Empleados ya confirmados en el destino no se tocan (se informan).
+   - Empleados del origen que ya no están en la hoja EMPLEADOS se ignoran.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Última fecha con asignaciones confirmadas anterior a `fechaDestino`. */
+function _ultimaFechaConfirmadaAntesDe(fechaDestino) {
+  if (!fechaDestino || !Array.isArray(asignaciones)) return null;
+  let max = '';
+  for (const a of asignaciones) {
+    if (a.fecha && a.fecha < fechaDestino && a.fecha > max) max = a.fecha;
+  }
+  return max || null;
+}
+
+/* Habilita/deshabilita el botón rápido y sugiere la fecha en el selector.
+   Se recalcula en cada carga de estado porque depende de la fecha destino. */
+function _actualizarControlesPrecarga() {
+  const btn   = document.getElementById('btn-traer-ultimo');
+  const input = document.getElementById('asig-fecha-origen');
+  const ultima = _ultimaFechaConfirmadaAntesDe(_asigModalFechaActual);
+  if (btn) {
+    btn.disabled = !ultima;
+    btn.title = ultima
+      ? `Traer las asignaciones del ${fechaCorta(ultima)}`
+      : 'No hay ningún día anterior con asignaciones confirmadas';
+  }
+  if (input) input.value = ultima || '';
+}
+
+/* Mapa empleado → sitio de una fecha, solo desde lo confirmado en el Sheet. */
+function _mapaAsignacionesDeFecha(fecha) {
+  const mapa = {};
+  if (!fecha) return mapa;
+  asignaciones.forEach(a => {
+    if (a.fecha !== fecha || !a.empleadoId || !a.sitioId) return;
+    mapa[a.empleadoId] = a.sitioId;
+  });
+  return mapa;
+}
+
+/* Botón "Traer último día" */
+function traerUltimoDia() {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
+  const origen = _ultimaFechaConfirmadaAntesDe(_asigModalFechaActual);
+  if (!origen) return toast('No hay ningún día anterior con asignaciones confirmadas', 'err');
+  _iniciarPrecarga(origen);
+}
+
+/* Botón "Traer" con la fecha elegida a mano */
+function traerDesdeFechaElegida() {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
+  const origen = (document.getElementById('asig-fecha-origen')?.value || '').trim();
+  if (!origen) return toast('Elegí la fecha de origen', 'err');
+  if (origen === _asigModalFechaActual) return toast('La fecha de origen es la misma que la del día que estás cargando', 'err');
+  _iniciarPrecarga(origen);
+}
+
+/* Contexto del modal de colisión: { origen } */
+let _precargaCtx = null;
+
+/* Valida el origen y decide si hace falta preguntar por la colisión. */
+function _iniciarPrecarga(origen) {
+  const destino = _asigModalFechaActual;
+  if (!destino) return toast('Elegí primero la fecha a cargar', 'err');
+  if (origen === destino) return toast('La fecha de origen es la misma que la del día que estás cargando', 'err');
+
+  const mapaOrigen = _mapaAsignacionesDeFecha(origen);
+  if (!Object.keys(mapaOrigen).length) {
+    return toast(`El ${fechaCorta(origen)} no tiene asignaciones confirmadas`, 'err');
+  }
+
+  // ¿Hay algo cargado sin confirmar que podría pisarse?
+  const hayCargado = Object.values(_asigSitioPorEmpleado).some(sid => !!sid);
+  _precargaCtx = { origen };
+  if (!hayCargado) { _aplicarPrecarga(origen, 'pisar'); return; }
+
+  const sub = document.getElementById('precarga-sub');
+  if (sub) sub.textContent = `Traer del ${fechaCorta(origen)} al ${fechaCorta(destino)}. ¿Qué hacemos con lo que ya cargaste?`;
+  document.getElementById('modal-precarga').classList.add('open');
+}
+
+function cerrarModalPrecarga() {
+  _precargaCtx = null;
+  const m = document.getElementById('modal-precarga');
+  if (m) m.classList.remove('open');
+}
+
+/* Elección del modal de colisión */
+function precargaAplicar(modo) {
+  if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
+  if (!_precargaCtx) return;
+  const origen = _precargaCtx.origen;
+  cerrarModalPrecarga();
+  _aplicarPrecarga(origen, modo === 'rellenar' ? 'rellenar' : 'pisar');
+}
+
+/* Aplica la precarga sobre la selección editable.
+   modo 'pisar'    → descarta la selección previa y deja el origen tal cual.
+   modo 'rellenar' → solo completa empleados que hoy están sin asignar. */
+function _aplicarPrecarga(origen, modo) {
+  const mapaOrigen = _mapaAsignacionesDeFecha(origen);
+  const idsValidos = new Set(empleados.map(e => e.id));
+
+  let copiados = 0, omitidosConf = 0, ignorados = 0, respetados = 0;
+
+  if (modo === 'pisar') _asigSitioPorEmpleado = {};
+
+  Object.entries(mapaOrigen).forEach(([eid, sid]) => {
+    if (!idsValidos.has(eid))            { ignorados++;    return; }  // ya no está en EMPLEADOS
+    if (_asigEmpConfirmados[eid])        { omitidosConf++; return; }  // confirmado en el destino: intocable
+    if (modo === 'rellenar' && _asigSitioPorEmpleado[eid]) { respetados++; return; }
+    _asigSitioPorEmpleado[eid] = sid;
+    copiados++;
+  });
+
+  renderModalEmpleados();   // repinta filas, resumen y cards (incluye los chips de jornada en Normal)
+
+  if (!copiados) {
+    const motivo = omitidosConf
+      ? 'todos los empleados de ese día ya están confirmados acá'
+      : (respetados ? 'los empleados de ese día ya tenían asignación cargada' : 'no había nada para copiar');
+    toast(`Nada para precargar: ${motivo}`, 'err');
+    return;
+  }
+
+  const extras = [];
+  if (omitidosConf) extras.push(`${omitidosConf} ya confirmado${omitidosConf!==1?'s':''}`);
+  if (respetados)   extras.push(`${respetados} respetado${respetados!==1?'s':''}`);
+  if (ignorados)    extras.push(`${ignorados} empleado${ignorados!==1?'s':''} inexistente${ignorados!==1?'s':''}`);
+  toast(`${copiados} empleado${copiados!==1?'s':''} precargado${copiados!==1?'s':''} del ${fechaCorta(origen)}` +
+        (extras.length ? ` · ${extras.join(' · ')}` : '') + ' ✓');
 }
 
 /* ── Render de la lista de empleados ── */
@@ -6335,12 +6677,18 @@ function renderModalEmpleados() {
           oninput="onAcFilaInput('${e.id}')" onkeydown="onAcFilaKeydown(event,'${e.id}')" />`;
     }
 
-    // Botones rápidos para estados especiales (solo si NO está confirmado)
-    const quickHtml = estaConfirmado ? '' : `
-      <div class="asig-emp-quick">
+    /* Botones rápidos. Los de estado especial solo si NO está confirmado
+       (esas filas están bloqueadas). El de clima va SIEMPRE: opera sobre la
+       obra, no sobre el empleado, así que también aplica a filas confirmadas
+       con sitio real (cambio #73). */
+    const quickEspHtml = estaConfirmado ? '' : `
         <button type="button" class="asig-quick-btn quick-deposito"   title="Asignar a Depósito"   onclick="asignarEstadoEspecial('${e.id}','__DEPOSITO__')"><i class="fa-solid fa-warehouse"></i></button>
         <button type="button" class="asig-quick-btn quick-vacaciones" title="Marcar Vacaciones"    onclick="asignarEstadoEspecial('${e.id}','__VACACIONES__')"><i class="fa-solid fa-umbrella-beach"></i></button>
-        <button type="button" class="asig-quick-btn quick-ausente"    title="Marcar Ausente"       onclick="asignarEstadoEspecial('${e.id}','__AUSENTE__')"><i class="fa-solid fa-circle-xmark"></i></button>
+        <button type="button" class="asig-quick-btn quick-ausente"    title="Marcar Ausente"       onclick="asignarEstadoEspecial('${e.id}','__AUSENTE__')"><i class="fa-solid fa-circle-xmark"></i></button>`;
+    const quickHtml = `
+      <div class="asig-emp-quick">
+        ${quickEspHtml}
+        ${_quickClimaBtnHtml(e.id)}
       </div>`;
 
     return `
@@ -6548,6 +6896,17 @@ function agregarAsigCola() {
   // Empleados con sitio elegido en este modal (no incluye confirmados, esos ya están en el Sheet)
   const pares = Object.entries(_asigSitioPorEmpleado).filter(([eid, sid]) => sid);
   if (!pares.length) {
+    /* cambio #73 — con el atajo de clima ahora es normal entrar a un día ya
+       confirmado solo para marcar la jornada, sin agregar ningún empleado.
+       En ese caso no hay nada que encolar pero tampoco es un error: la marca
+       ya quedó en colaIncidencias, así que se vuelve al calendario a confirmar.
+       Sin marcas pendientes, el comportamiento es el de siempre. */
+    const nMarcas = colaIncidencias.filter(c => c.fecha === fecha).length;
+    if (nMarcas) {
+      renderCola();
+      volverDeNuevaAsig();
+      return toast(`${nMarcas} marca${nMarcas!==1?'s':''} de jornada en cola ✓`);
+    }
     return toast('No asignaste ningún sitio', 'err');
   }
 
@@ -7186,6 +7545,7 @@ const VIEWER_PERMITIDO = new Set([
   // Cierre de modales
   'cerrarModal', 'cerrarModalAsigDia', 'cerrarModalSgDias', 'cerrarModalTanda',
   'cerrarModalJornada',   // cambio #72 (abrirModalJornada/guardarJornada NO entran: son escritura)
+  'cerrarModalPrecarga',  // cambio #74 (traerUltimoDia/traerDesdeFechaElegida/precargaAplicar NO entran)
   // Apertura de vistas de consulta (no editan nada)
   'abrirModalAsigDia', 'abrirModalSgDias', 'abrirDetalleCliente', 'abrirDetalleKPI',
   // Filtros, orden y tabs
