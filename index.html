@@ -103,7 +103,6 @@
       background: rgba(45,212,191,0.07) !important;
     }
     tr.row-facturado-100 { border-left: 3px solid rgba(45,212,191,0.5); }
-    .nav-badge { margin-left: auto; font-size: 10px; font-weight: 700; background: var(--accent-blue); color: #fff; padding: 2px 7px; border-radius: 20px; }
     .sidebar-footer { margin-top: auto; padding: 16px 12px 0; border-top: 1px solid rgba(200,205,220,0.25); }
     .user-card { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--radius-sm); cursor: pointer; transition: var(--transition); }
     .user-card:hover { background: rgba(79,128,255,0.07); }
@@ -1358,6 +1357,121 @@
       font-size: 11px; color: var(--text-mid); font-weight: 500;
       margin-top: 5px; font-style: italic; line-height: 1.45;
     }
+    /* ═══════════ PRECIARIOS (fase 2 de OC) ═══════════ */
+    .pr-estado { font-size: 12px; color: var(--text-light); }
+    .pr-estado.err { color: #b91c1c; font-weight: 600; }
+
+    .pr-tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 16px; }
+    .pr-tile {
+      background: var(--glass); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+      border: 1px solid var(--glass-border); border-radius: var(--radius-sm);
+      box-shadow: var(--glass-shadow); padding: 14px 16px;
+    }
+    .pr-tile-label {
+      font-size: 10px; font-weight: 700; color: var(--text-light);
+      text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 6px;
+    }
+    .pr-tile-valor { font-family: 'Syne', sans-serif; font-size: 21px; font-weight: 700; color: var(--text-dark); }
+    .pr-tile-sub { font-size: 11px; color: var(--text-light); margin-top: 3px; }
+    .pr-tile-valor.neg { color: #0d9488; }
+    .pr-tile-valor.pos { color: #b45309; }
+
+    .pr-filtros-card { position: relative; z-index: 20; padding: 14px 18px; margin-bottom: 16px; }
+    .pr-filtros { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .pr-buscador { flex: 1; min-width: 240px; max-width: 420px; }
+
+    .pr-tabs { display: flex; gap: 4px; background: rgba(255,255,255,0.45); padding: 3px; border-radius: 10px; }
+    .pr-tabs button {
+      border: none; background: transparent; cursor: pointer;
+      font-family: 'DM Sans', sans-serif; font-size: 12.5px; font-weight: 600;
+      color: var(--text-mid); padding: 7px 13px; border-radius: 8px;
+      transition: var(--transition); display: flex; align-items: center; gap: 6px;
+    }
+    .pr-tabs button:hover { color: var(--text-dark); background: rgba(255,255,255,0.6); }
+    .pr-tabs button.active { background: #fff; color: var(--accent-blue); box-shadow: 0 2px 8px rgba(100,110,140,0.13); }
+    .pr-tab-n {
+      font-size: 10.5px; font-weight: 700; color: var(--text-light);
+      background: rgba(150,160,190,0.16); padding: 1px 6px; border-radius: 20px;
+    }
+    .pr-tabs button.active .pr-tab-n { background: rgba(79,128,255,0.14); color: var(--accent-blue); }
+
+    .pr-check {
+      display: flex; align-items: center; gap: 7px; cursor: pointer;
+      background: rgba(255,255,255,0.45); border: 1px solid rgba(200,205,225,0.5);
+      padding: 7px 12px; border-radius: 9px; font-size: 12px; color: var(--text-mid);
+      user-select: none; -webkit-user-select: none;
+    }
+    .pr-check:hover { border-color: var(--accent-blue); color: var(--text-dark); }
+    .pr-check input { cursor: pointer; }
+    .pr-btn-limpiar { padding: 8px 14px; font-size: 12.5px; }
+
+    .pr-head, .pr-row {
+      display: grid;
+      grid-template-columns: 120px 1fr 130px 130px 110px;
+      gap: 12px; padding: 12px 20px; align-items: center;
+    }
+    .pr-head {
+      font-size: 10.5px; font-weight: 700; color: var(--text-light);
+      text-transform: uppercase; letter-spacing: 0.7px;
+      border-bottom: 1px solid rgba(200,205,225,0.4);
+      background: rgba(255,255,255,0.30);
+    }
+    .pr-head > div { display: flex; align-items: center; gap: 5px; }
+    .pr-head .num, .pr-row .num { justify-content: flex-end; text-align: right; }
+    .pr-th-sort { cursor: pointer; transition: color .12s ease; user-select: none; -webkit-user-select: none; }
+    .pr-th-sort:hover { color: var(--accent-blue); }
+    .pr-th-sort.sort-active { color: var(--accent-blue); }
+    .pr-th-sort .sort-arrow { display: inline-block; width: 9px; font-size: 9px; line-height: 1; opacity: 0; }
+    .pr-th-sort.sort-active .sort-arrow { opacity: 1; }
+    .pr-th-sort.sort-active.sort-asc  .sort-arrow::before { content: '▲'; }
+    .pr-th-sort.sort-active.sort-desc .sort-arrow::before { content: '▼'; }
+
+    .pr-row { border-bottom: 1px solid rgba(200,205,225,0.22); font-size: 13px; transition: background .12s ease; }
+    .pr-row:last-child { border-bottom: none; }
+    .pr-row:hover { background: rgba(79,128,255,0.045); }
+    .pr-cod { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 12.5px; color: var(--text-mid); }
+    .pr-desc { color: var(--text-dark); line-height: 1.35; }
+    .pr-desc-alt {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 15px; height: 15px; margin-left: 6px; border-radius: 50%;
+      background: rgba(251,191,36,0.22); color: #b45309;
+      font-size: 9px; font-weight: 700; cursor: help; vertical-align: middle;
+    }
+    .pr-monto { font-family: 'Syne', sans-serif; font-weight: 600; font-size: 13px; color: var(--text-dark); }
+    .pr-monto.vacio { color: var(--text-light); font-weight: 500; }
+    .pr-conv {
+      font-size: 10px; font-weight: 700; color: #b45309;
+      background: rgba(251,191,36,0.20); padding: 2px 7px; border-radius: 20px;
+      text-transform: uppercase; letter-spacing: 0.4px;
+    }
+    .pr-var {
+      font-family: 'Syne', sans-serif; font-size: 12.5px; font-weight: 700;
+      padding: 3px 10px; border-radius: 20px; display: inline-block;
+    }
+    .pr-var.up   { background: rgba(45,212,191,0.18); color: #0d9488; }
+    .pr-var.down { background: rgba(248,113,113,0.16); color: #b91c1c; }
+    .pr-var.eq   { background: rgba(150,160,190,0.16); color: var(--text-light); }
+    .pr-var.na   { background: transparent; color: var(--text-light); font-weight: 500; }
+
+    .pr-footer {
+      padding: 13px 20px; font-size: 12px; color: var(--text-light);
+      border-top: 1px solid rgba(200,205,225,0.4); background: rgba(255,255,255,0.25);
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    .pr-btn-mas {
+      border: 1px solid rgba(79,128,255,0.35); background: rgba(79,128,255,0.08);
+      color: var(--accent-blue); font-family: 'DM Sans', sans-serif;
+      font-size: 12px; font-weight: 600; padding: 7px 15px;
+      border-radius: 8px; cursor: pointer; transition: var(--transition);
+    }
+    .pr-btn-mas:hover { background: rgba(79,128,255,0.16); }
+    .pr-empty { padding: 44px 20px; text-align: center; color: var(--text-light); font-size: 13.5px; }
+
+    @media (max-width: 1100px) {
+      .pr-tiles { grid-template-columns: repeat(2, 1fr); }
+      .pr-head, .pr-row { grid-template-columns: 100px 1fr 110px 110px 90px; gap: 8px; padding: 12px; }
+    }
+
   </style>
 </head>
 <body>
@@ -1446,6 +1560,19 @@
     </div>
     <div class="nav-subitems open" id="sub-operativa">
       <a class="nav-subitem" id="nav-asignaciones" onclick="showView('asignaciones',this)">Asignación personal</a>
+    </div>
+  </div>
+
+  <div class="sidebar-sep"></div>
+
+  <!-- Grupo: Comercial (emisión de OC) — fase 2 -->
+  <div class="sidebar-section" style="padding-top:6px;">
+    <div class="nav-group-header open" id="grp-comercial" onclick="toggleNavGroup('comercial')">
+      <span>Comercial</span>
+      <span class="nav-group-arrow">▶</span>
+    </div>
+    <div class="nav-subitems open" id="sub-comercial">
+      <a class="nav-subitem" id="nav-preciarios" onclick="showView('preciarios',this)">Preciarios</a>
     </div>
   </div>
 
@@ -1939,6 +2066,47 @@
         <div class="card-title" style="font-size:15px;margin-bottom:12px;">Obras del día</div>
         <div id="nasig-cards"></div>
       </div>
+    </div>
+  </div>
+  <!-- ═══════════ VISTA: PRECIARIOS (fase 2 de OC) ═══════════ -->
+  <div id="view-preciarios" class="view">
+    <div class="topbar">
+      <div>
+        <div class="page-title">Pre<span>ciarios</span></div>
+        <div style="font-size:13px;color:var(--text-light);margin-top:3px;">Comparación de precios entre AMX y Nokia</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span id="pr-estado-carga" class="pr-estado"></span>
+        <button class="btn btn-sec" id="pr-btn-recargar" onclick="prRecargar()">Recargar</button>
+      </div>
+    </div>
+
+    <!-- Tiles de resumen -->
+    <div class="pr-tiles" id="pr-tiles"></div>
+
+    <!-- Filtros -->
+    <div class="card pr-filtros-card">
+      <div class="pr-filtros">
+        <input type="text" class="input pr-buscador" id="pr-buscador"
+               placeholder="Buscar por código o descripción..." oninput="prOnBuscar()">
+        <div class="pr-tabs" id="pr-tabs">
+          <button class="active" data-b="ambos" onclick="prSetBloque('ambos',this)">En ambos <span class="pr-tab-n" id="pr-n-ambos">—</span></button>
+          <button data-b="amx" onclick="prSetBloque('amx',this)">Solo AMX <span class="pr-tab-n" id="pr-n-amx">—</span></button>
+          <button data-b="nokia" onclick="prSetBloque('nokia',this)">Solo Nokia <span class="pr-tab-n" id="pr-n-nokia">—</span></button>
+        </div>
+        <label class="pr-check" title="Oculta los ítems de precio a convenir (montos de 1 o 0,01)">
+          <input type="checkbox" id="pr-ocultar-placeholder" onchange="prRender()">
+          <span>Ocultar precio a convenir</span>
+        </label>
+        <button class="btn btn-sec pr-btn-limpiar" id="pr-btn-limpiar" onclick="prLimpiar()" style="display:none;">Limpiar</button>
+      </div>
+    </div>
+
+    <!-- Lista -->
+    <div class="card" style="padding:0;overflow:hidden;">
+      <div class="pr-head" id="pr-head"></div>
+      <div id="pr-lista-body"></div>
+      <div class="pr-footer" id="pr-footer"></div>
     </div>
   </div>
 
@@ -2503,7 +2671,7 @@
 // ═══════════════════════════════════════════════════════
 //  CONFIGURACIÓN
 // ═══════════════════════════════════════════════════════
-const API_URL = 'https://script.google.com/macros/s/AKfycbyxgXEVU4WY_hzXA_D301F33wYgbO8RUQ9qFmuM74QYA2lLGdvSO0CTYqjpvEYuZhhX/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbwGrecEkK593xjbiHpsKxUkKglGQh0HeMcGBeH9awUI7BEjvkh6yfi3qg8xBMybkjt_/exec';
 
 // PEQ — objetivo mensual fijo
 const PEQ = 90000000;
@@ -2515,7 +2683,7 @@ const PEQ = 90000000;
    a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
    Se pinta en el pie del sidebar (#sidebar-version).
    ═══════════════════════════════════════════════════════ */
-const APP_VERSION = 'V 060826 1515';
+const APP_VERSION = 'V 110826 1941';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
@@ -2808,6 +2976,7 @@ function showView(name, el) {
   if (name === 'analisis')        renderAnalisis();
   if (name === 'seguimiento')  renderSeguimiento();
   if (name === 'asignaciones') renderAsignaciones();
+  if (name === 'preciarios')   renderPreciarios();
 }
 
 /* ── HELPERS ── */
@@ -3369,7 +3538,6 @@ function renderSitios(filtro = '', filtros = null) {
 }
 
 function aplicarFiltrosSitios() { renderSitios(); }
-function filtrarSitios(v) { renderSitios(v); }
 
 /* ══════════════════════════════════════════════════════════════════
    PROYECCIÓN POR TANDAS (PO sitios)
@@ -3422,16 +3590,21 @@ function _sitDisponiblePara100(s) {
    reemplaza acá adentro y ninguna otra función se entera.
    ═══════════════════════════════════════════════════════════════════ */
 
-/* ¿La asignación ya ocurrió? (hoy incluido) */
-function _asigEjecutada(a) {
-  return !!a && !!a.fecha && a.fecha <= fechaHoyStr();
+/* ¿La asignación ya ocurrió? (hoy incluido)
+   `hoy` es opcional: si el llamador ya lo calculó (recorridos sobre arrays),
+   se pasa para que todo el recorrido use el mismo instante de referencia y
+   no haya riesgo de cruzar la medianoche a mitad del loop. Sin argumento,
+   lo calcula solo. */
+function _asigEjecutada(a, hoy) {
+  const ref = hoy || fechaHoyStr();
+  return !!a && !!a.fecha && a.fecha <= ref;
 }
 
 /* Asignaciones ejecutadas de un sitio. Base de todos los cálculos de Sitios globales. */
 function _asigEjecutadasDeSitio(idSitio) {
   if (!idSitio || !Array.isArray(asignaciones) || asignaciones.length === 0) return [];
   const hoy = fechaHoyStr();
-  return asignaciones.filter(a => a.sitioId === idSitio && a.fecha && a.fecha <= hoy);
+  return asignaciones.filter(a => a.sitioId === idSitio && _asigEjecutada(a, hoy));
 }
 
 // Helper: cuenta de FECHAS ÚNICAS con asignaciones confirmadas para un ID de sitio (E1).
@@ -3935,7 +4108,7 @@ function _sgFechaMaxAsignaciones() {
   const hoy = fechaHoyStr();
   let max = '';
   for (const a of asignaciones) {
-    if (a.fecha && a.fecha <= hoy && a.fecha > max) max = a.fecha;
+    if (_asigEjecutada(a, hoy) && a.fecha > max) max = a.fecha;
   }
   return max || null;
 }
@@ -5962,32 +6135,12 @@ function relacionEmpleado(empId) {
   return e ? (e.relacion || '') : '';
 }
 
-/* ── Helper: etiqueta legible de la relación ── */
-function labelRelacion(rel) {
-  const r = String(rel || '').trim().toUpperCase();
-  if (r === 'P') return 'Propio';
-  if (r === 'C') return 'Contratista';
-  return 'Sin definir';
-}
-
 /* ── Helper: HTML del badge P/C de un empleado. Vacío si no tiene relación (SD1). ── */
 function badgeRelacion(empId) {
   const r = relacionEmpleado(empId);
   if (r === 'P') return '<span class="rel-badge rel-p" title="Propio">P</span>';
   if (r === 'C') return '<span class="rel-badge rel-c" title="Contratista">C</span>';
   return '';
-}
-
-/* ── Helper: obtener todas las asignaciones (confirmadas + cola) de una fecha ── */
-function asignacionesDeLaFecha(fechaStr) {
-  const confirmadas = asignaciones.filter(a => a.fecha === fechaStr);
-  const enCola = [];
-  colaAsignaciones.forEach(c => {
-    if (c.fecha === fechaStr) {
-      c.empleadoIds.forEach(eid => enCola.push({ sitioId: c.sitioId, empleadoId: eid }));
-    }
-  });
-  return { confirmadas, enCola, todas: [...confirmadas, ...enCola] };
 }
 
 /* ══ MODAL NUEVA ASIGNACIÓN — empleado-céntrico ══
@@ -7482,6 +7635,374 @@ async function autoSync() {
   await sincronizar(true);
 }
 
+/* ═══════════════════════════════════════════════════════
+   PRECIARIOS — fase 2 de la emisión de OC (cambio #81)
+
+   Vista de SOLO LECTURA. Compara los preciarios de AMX y Nokia.
+
+   Por qué carga bajo demanda (#79): "BI AMX" tiene +2.000 ítems (~250 KB
+   de JSON). Meterlos en el ?sheet=ALL habría engordado medio mega cada
+   login y cada "Sincronizar", incluso para quien nunca abre esta vista.
+   Se piden con ?sheet=BI_AMX / ?sheet=BI_NOKIA la primera vez que se
+   entra, y quedan cacheados en memoria hasta el F5 o el botón Recargar.
+
+   Las dos hojas son del usuario y NO usan los mismos encabezados:
+     BI AMX   → SERVICIO | DENOMINACIÓN | MONTO
+     BI NOKIA → Servicio (Work Item) | Denominación | Monto
+   Por eso las columnas se resuelven por VARIANTES (_prCampo) y no por
+   nombre fijo: así el usuario puede repegar el preciario del proveedor
+   con sus encabezados originales sin que la vista se rompa.
+   ═══════════════════════════════════════════════════════ */
+
+/* Variantes aceptadas por columna, normalizadas (sin tildes, mayúsculas).
+   Se comparan por igualdad exacta primero y por "incluye" después, para
+   tolerar encabezados con sufijos como "Servicio (Work Item)". */
+const PR_COLS = {
+  codigo: ['SERVICIO', 'COD SERV', 'COD_SERV', 'CODIGO', 'COD', 'ITEM', 'WORK ITEM'],
+  desc:   ['DENOMINACION', 'DESCRIPCION', 'DETALLE', 'CONCEPTO'],
+  monto:  ['MONTO', 'PRECIO', 'IMPORTE', 'VALOR']
+};
+
+/* Montos que en realidad significan "precio a convenir", no un precio real.
+   Verificado en el preciario AMX: los "Trabajos No Estandarizados" y
+   "Pago Permisos/visados/tasas" valen 1, y "CAO Obra Civil sin costo" 0.01.
+   Compararlos como si fueran precios ensucia la variación. */
+const PR_PLACEHOLDERS = [1, 0.01];
+
+let _prData      = null;   // { amx: [...], nokia: [...] } — cache en memoria
+let _prCargando   = false;
+let _prBloque     = 'ambos';  // 'ambos' | 'amx' | 'nokia'
+let _prSortKey    = 'cod';    // 'cod' | 'desc' | 'amx' | 'nokia' | 'var'
+let _prSortDir    = 'asc';
+let _prLimite     = 100;      // primeros N (decisión D39)
+const PR_PASO     = 100;
+
+/* Normaliza un encabezado: saca tildes, colapsa espacios, mayúsculas.
+   La tilde importa: "DENOMINACIÓN" puede venir con la Ó precompuesta o
+   como O + tilde combinante. Se ven iguales y no matchean entre sí. */
+function _prNorm(txt) {
+  return String(txt || '')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ').trim().toUpperCase();
+}
+
+/* Saca caracteres de control invisibles. Verificado: al menos una
+   descripción del preciario AMX trae un \u001a embebido. */
+function _prLimpiar(txt) {
+  return String(txt || '').replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+/* Ubica el valor de una columna lógica dentro de una fila cruda,
+   probando todas las variantes conocidas. */
+function _prCampo(fila, cual) {
+  const variantes = PR_COLS[cual];
+  const claves = Object.keys(fila || {});
+  const normas = claves.map(_prNorm);
+  for (const v of variantes) {                       // 1) match exacto
+    const i = normas.indexOf(v);
+    if (i !== -1) return fila[claves[i]];
+  }
+  for (const v of variantes) {                       // 2) match parcial
+    const i = normas.findIndex(n => n.includes(v));
+    if (i !== -1) return fila[claves[i]];
+  }
+  return '';
+}
+
+/* Parser de montos DEFENSIVO.
+   Hoy el backend devuelve punto decimal ("3488.33") porque la celda es
+   numérica. Pero alcanza con que una fila se cargue como TEXTO —pegada
+   desde otro lado o con apóstrofo— para que llegue "3488,33", y
+   parseFloat("3488,33") devuelve 3488: trunca los centavos SIN lanzar
+   error. Por eso no se usa parseFloat a secas en ningún lado.
+   Maneja "1.234,56" (miles con punto) y "1,234.56" (miles con coma). */
+function prParseMonto(v) {
+  if (typeof v === 'number') return isFinite(v) ? v : null;
+  let s = String(v == null ? '' : v).trim();
+  if (!s) return null;
+  s = s.replace(/[^\d,.\-]/g, '');            // saca $, espacios, etc.
+  if (!s || s === '-') return null;
+  const tieneComa = s.includes(','), tienePunto = s.includes('.');
+  if (tieneComa && tienePunto) {
+    // El separador decimal es el que aparece MÁS A LA DERECHA
+    s = (s.lastIndexOf(',') > s.lastIndexOf('.'))
+      ? s.replace(/\./g, '').replace(',', '.')
+      : s.replace(/,/g, '');
+  } else if (tieneComa) {
+    const partes = s.split(',');
+    // "1,234" con 3 dígitos después = separador de miles, no decimal
+    s = (partes.length === 2 && partes[1].length === 3 && partes[0].length <= 3 && !/^0/.test(partes[0]))
+      ? s.replace(/,/g, '')
+      : s.replace(/,/g, '.');
+  }
+  const n = Number(s);
+  return isFinite(n) ? n : null;
+}
+
+/* Formato es-AR con 2 decimales: 3488.33 → "$ 3.488,33" */
+function prFmtMonto(n) {
+  if (n == null || !isFinite(n)) return '—';
+  return '$ ' + n.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function _prEsPlaceholder(n) {
+  return n != null && PR_PLACEHOLDERS.some(p => Math.abs(n - p) < 0.0001);
+}
+
+/* Normaliza una hoja cruda a { cod, desc, monto }. Descarta filas sin
+   código: una fila con un texto suelto (un total al pie, por ejemplo)
+   no debe entrar como ítem del preciario. */
+function _prNormalizarHoja(filas) {
+  const out = [];
+  (filas || []).forEach(f => {
+    const cod = String(_prCampo(f, 'codigo') || '').trim();
+    if (!cod) return;
+    out.push({
+      cod,
+      desc:  _prLimpiar(_prCampo(f, 'desc')),
+      monto: prParseMonto(_prCampo(f, 'monto'))
+    });
+  });
+  return out;
+}
+
+async function _prFetchHoja(sheet) {
+  const res  = await fetch(`${API_URL}?sheet=${sheet}`);
+  const data = await res.json();
+  if (data.ok === false) throw new Error(data.error || ('No se pudo leer ' + sheet));
+  return _prNormalizarHoja(data.data);
+}
+
+async function prCargar(forzar) {
+  if (_prCargando) return;
+  if (_prData && !forzar) return;
+  _prCargando = true;
+  const est = document.getElementById('pr-estado-carga');
+  if (est) { est.className = 'pr-estado'; est.textContent = 'Cargando preciarios...'; }
+  try {
+    const [amx, nokia] = await Promise.all([
+      _prFetchHoja('BI_AMX'),
+      _prFetchHoja('BI_NOKIA')
+    ]);
+    _prData = { amx, nokia };
+    if (est) est.textContent = `${amx.length} ítems AMX · ${nokia.length} Nokia`;
+  } catch (err) {
+    _prData = null;
+    if (est) { est.className = 'pr-estado err'; est.textContent = 'Error al cargar los preciarios'; }
+    toast('No se pudieron cargar los preciarios: ' + err.message, 'err');
+  } finally {
+    _prCargando = false;
+    prRender();
+  }
+}
+
+function prRecargar() {
+  _prData = null;
+  prCargar(true);
+}
+
+/* Cruza los dos preciarios por código (D6). Devuelve los 3 grupos. */
+function _prCruzar() {
+  if (!_prData) return { ambos: [], amx: [], nokia: [] };
+  const mapNokia = new Map();
+  _prData.nokia.forEach(n => { if (!mapNokia.has(n.cod)) mapNokia.set(n.cod, n); });
+  const vistos = new Set();
+  const ambos = [], soloAmx = [];
+
+  _prData.amx.forEach(a => {
+    const n = mapNokia.get(a.cod);
+    if (n) {
+      vistos.add(a.cod);
+      ambos.push({
+        cod: a.cod, desc: a.desc, descAlt: (n.desc && n.desc !== a.desc) ? n.desc : '',
+        amx: a.monto, nokia: n.monto,
+        variacion: (a.monto != null && n.monto != null && a.monto !== 0)
+          ? ((n.monto - a.monto) / a.monto) * 100 : null
+      });
+    } else {
+      soloAmx.push({ cod: a.cod, desc: a.desc, descAlt: '', amx: a.monto, nokia: null, variacion: null });
+    }
+  });
+
+  const soloNokia = _prData.nokia
+    .filter(n => !vistos.has(n.cod))
+    .map(n => ({ cod: n.cod, desc: n.desc, descAlt: '', amx: null, nokia: n.monto, variacion: null }));
+
+  return { ambos, amx: soloAmx, nokia: soloNokia };
+}
+
+function prSetBloque(b, btn) {
+  _prBloque = b;
+  _prLimite = PR_PASO;
+  document.querySelectorAll('#pr-tabs button').forEach(x => x.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  prRender();
+}
+
+function prSetSort(key) {
+  if (_prSortKey === key) _prSortDir = (_prSortDir === 'asc') ? 'desc' : 'asc';
+  else { _prSortKey = key; _prSortDir = 'asc'; }
+  prRender();
+}
+
+function prOnBuscar() { _prLimite = PR_PASO; prRender(); }
+
+function prVerMas() { _prLimite += PR_PASO; prRender(); }
+
+function prLimpiar() {
+  const b = document.getElementById('pr-buscador');
+  if (b) b.value = '';
+  const ph = document.getElementById('pr-ocultar-placeholder');
+  if (ph) ph.checked = false;
+  _prLimite = PR_PASO;
+  prRender();
+}
+
+function _prHayFiltros() {
+  const txt = (document.getElementById('pr-buscador')?.value || '').trim();
+  const ph  = !!document.getElementById('pr-ocultar-placeholder')?.checked;
+  return !!txt || ph;
+}
+
+function renderPreciarios() {
+  prRender();
+  prCargar(false);   // no-op si ya está cargado
+}
+
+function prRender() {
+  const body = document.getElementById('pr-lista-body');
+  if (!body) return;
+  const head   = document.getElementById('pr-head');
+  const footer = document.getElementById('pr-footer');
+  const tiles  = document.getElementById('pr-tiles');
+
+  const btnLimpiar = document.getElementById('pr-btn-limpiar');
+  if (btnLimpiar) btnLimpiar.style.display = _prHayFiltros() ? '' : 'none';
+
+  if (!_prData) {
+    if (head)   head.innerHTML = '';
+    if (footer) footer.innerHTML = '';
+    if (tiles)  tiles.innerHTML = '';
+    body.innerHTML = `<div class="pr-empty">${_prCargando ? 'Cargando preciarios...' : 'No hay datos de preciarios cargados.'}</div>`;
+    return;
+  }
+
+  const grupos = _prCruzar();
+  ['ambos', 'amx', 'nokia'].forEach(k => {
+    const el = document.getElementById('pr-n-' + k);
+    if (el) el.textContent = grupos[k].length;
+  });
+
+  /* ── Tiles de resumen (sobre "En ambos", que es donde hay comparación) ── */
+  if (tiles) {
+    const comparables = grupos.ambos.filter(r =>
+      r.variacion != null && !_prEsPlaceholder(r.amx) && !_prEsPlaceholder(r.nokia));
+    const prom = comparables.length
+      ? comparables.reduce((a, r) => a + r.variacion, 0) / comparables.length : null;
+    const nokiaMas   = comparables.filter(r => r.variacion > 0.01).length;
+    const nokiaMenos = comparables.filter(r => r.variacion < -0.01).length;
+    const total = grupos.ambos.length + grupos.amx.length + grupos.nokia.length;
+    tiles.innerHTML = `
+      <div class="pr-tile">
+        <div class="pr-tile-label">Ítems totales</div>
+        <div class="pr-tile-valor">${total.toLocaleString('es-AR')}</div>
+        <div class="pr-tile-sub">${grupos.ambos.length} en ambos preciarios</div>
+      </div>
+      <div class="pr-tile">
+        <div class="pr-tile-label">Variación promedio</div>
+        <div class="pr-tile-valor ${prom == null ? '' : (prom < 0 ? 'neg' : 'pos')}">${
+          prom == null ? '—' : (prom > 0 ? '+' : '') + prom.toFixed(1) + '%'}</div>
+        <div class="pr-tile-sub">Nokia respecto de AMX</div>
+      </div>
+      <div class="pr-tile">
+        <div class="pr-tile-label">Nokia paga más</div>
+        <div class="pr-tile-valor">${nokiaMas}</div>
+        <div class="pr-tile-sub">de ${comparables.length} comparables</div>
+      </div>
+      <div class="pr-tile">
+        <div class="pr-tile-label">Nokia paga menos</div>
+        <div class="pr-tile-valor">${nokiaMenos}</div>
+        <div class="pr-tile-sub">de ${comparables.length} comparables</div>
+      </div>`;
+  }
+
+  /* ── Filtrado ── */
+  let lista = grupos[_prBloque].slice();
+  const universo = lista.length;
+  const q = _prNorm(document.getElementById('pr-buscador')?.value || '');
+  if (q) lista = lista.filter(r => _prNorm(r.cod).includes(q) || _prNorm(r.desc).includes(q));
+  if (document.getElementById('pr-ocultar-placeholder')?.checked) {
+    lista = lista.filter(r => !_prEsPlaceholder(r.amx) && !_prEsPlaceholder(r.nokia));
+  }
+
+  /* ── Orden ── */
+  const dir = (_prSortDir === 'desc') ? -1 : 1;
+  const nulUlt = (v) => (v == null ? Infinity : v);   // los sin dato, siempre al final
+  lista.sort((a, b) => {
+    let r = 0;
+    if (_prSortKey === 'cod')       r = a.cod.localeCompare(b.cod, 'es', { numeric: true });
+    else if (_prSortKey === 'desc') r = a.desc.localeCompare(b.desc, 'es');
+    else if (_prSortKey === 'amx')   r = nulUlt(a.amx)   - nulUlt(b.amx);
+    else if (_prSortKey === 'nokia') r = nulUlt(a.nokia) - nulUlt(b.nokia);
+    else if (_prSortKey === 'var')   r = nulUlt(a.variacion) - nulUlt(b.variacion);
+    if (r === 0) return a.cod.localeCompare(b.cod, 'es', { numeric: true });
+    return r * dir;
+  });
+
+  /* ── Header ── */
+  const th = (key, label, extra) => {
+    const act = (_prSortKey === key) ? ` sort-active sort-${_prSortDir}` : '';
+    return `<div class="pr-th-sort${act}${extra || ''}" onclick="prSetSort('${key}')">${label}<span class="sort-arrow"></span></div>`;
+  };
+  if (head) {
+    head.innerHTML =
+      th('cod', 'Código') +
+      th('desc', 'Descripción') +
+      th('amx', 'Monto AMX', ' num') +
+      th('nokia', 'Monto Nokia', ' num') +
+      th('var', 'Variación', ' num');
+  }
+
+  /* ── Filas ── */
+  const visibles = lista.slice(0, _prLimite);
+  if (!visibles.length) {
+    body.innerHTML = `<div class="pr-empty">${
+      universo === 0 ? 'No hay ítems en este grupo.' : 'Ningún ítem coincide con la búsqueda.'}</div>`;
+  } else {
+    body.innerHTML = visibles.map(r => {
+      const celdaMonto = (v) => _prEsPlaceholder(v)
+        ? `<span class="pr-conv">a convenir</span>`
+        : `<span class="pr-monto${v == null ? ' vacio' : ''}">${prFmtMonto(v)}</span>`;
+      let varHtml = '<span class="pr-var na">—</span>';
+      if (r.variacion != null && !_prEsPlaceholder(r.amx) && !_prEsPlaceholder(r.nokia)) {
+        const cls = (r.variacion > 0.01) ? 'up' : (r.variacion < -0.01 ? 'down' : 'eq');
+        const sig = (r.variacion > 0) ? '+' : '';
+        varHtml = `<span class="pr-var ${cls}">${sig}${r.variacion.toFixed(1)}%</span>`;
+      }
+      const alt = r.descAlt
+        ? `<span class="pr-desc-alt" title="En Nokia: ${_escAttr(r.descAlt)}">N</span>` : '';
+      return `<div class="pr-row">
+        <div class="pr-cod">${_escHtml(r.cod)}</div>
+        <div class="pr-desc">${_escHtml(r.desc) || '<span style="color:var(--text-light)">(sin descripción)</span>'}${alt}</div>
+        <div class="num">${celdaMonto(r.amx)}</div>
+        <div class="num">${celdaMonto(r.nokia)}</div>
+        <div class="num">${varHtml}</div>
+      </div>`;
+    }).join('');
+  }
+
+  /* ── Footer ── */
+  if (footer) {
+    const restantes = lista.length - visibles.length;
+    const ocultos = universo - lista.length;
+    const txtIzq = `Mostrando ${visibles.length.toLocaleString('es-AR')} de ${lista.length.toLocaleString('es-AR')}` +
+      (ocultos > 0 ? ` · ${ocultos.toLocaleString('es-AR')} ocultos por filtros` : '');
+    footer.innerHTML = `<span>${txtIzq}</span>` + (restantes > 0
+      ? `<button class="pr-btn-mas" onclick="prVerMas()">Ver ${Math.min(restantes, PR_PASO)} más</button>`
+      : '<span></span>');
+  }
+}
+
 /* ══ LOGIN ══ */
 /* ═══════════════════════════════════════════════════════
    MODO VIEWER — perfil de SOLO LECTURA (cambio #68)
@@ -7539,6 +8060,10 @@ function bloqueoViewer() {
 /* Lista BLANCA de funciones que un viewer puede ejecutar desde un onclick.
    Todo lo que no esté acá se oculta. Solo lectura, navegación y filtros. */
 const VIEWER_PERMITIDO = new Set([
+  /* Preciarios (cambio #81) — vista de SOLO LECTURA: el viewer la usa completa.
+     Ninguna de estas funciones escribe al backend ni muta colas locales. */
+  'renderPreciarios', 'prRender', 'prCargar', 'prRecargar', 'prSetBloque',
+  'prSetSort', 'prOnBuscar', 'prVerMas', 'prLimpiar',
   // Navegación general
   'showView', 'toggleNavGroup', 'cerrarSesion', 'navAsigMes',
   'intentarLogin', 'sincronizar', 'volverDeNuevaAsig',
