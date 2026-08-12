@@ -1472,6 +1472,141 @@
       .pr-head, .pr-row { grid-template-columns: 100px 1fr 110px 110px 90px; gap: 8px; padding: 12px; }
     }
 
+    /* ═══════════ EMISIÓN OC (fase 3) ═══════════ */
+    .oc-tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 16px; }
+    .oc-filtros-card { position: relative; z-index: 30; padding: 14px 18px; margin-bottom: 16px; }
+    .oc-filtros { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .oc-buscador { flex: 1; min-width: 200px; max-width: 300px; }
+
+    .oc-head, .oc-row {
+      display: grid;
+      grid-template-columns: 125px 95px 1fr 1fr 110px 110px 85px 100px 130px;
+      gap: 10px; padding: 12px 18px; align-items: center;
+    }
+    .oc-head {
+      font-size: 10.5px; font-weight: 700; color: var(--text-light);
+      text-transform: uppercase; letter-spacing: 0.7px;
+      border-bottom: 1px solid rgba(200,205,225,0.4); background: rgba(255,255,255,0.30);
+    }
+    .oc-head > div { display: flex; align-items: center; gap: 5px; }
+    .oc-head .num, .oc-row .num { justify-content: flex-end; text-align: right; }
+    .oc-row {
+      border-bottom: 1px solid rgba(200,205,225,0.22); font-size: 13px;
+      transition: background .12s ease;
+    }
+    .oc-row:last-child { border-bottom: none; }
+    .oc-row:hover { background: rgba(79,128,255,0.045); }
+    .oc-row.anulada { opacity: .5; }
+    .oc-nro { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px; color: var(--text-dark); }
+    .oc-nro.sin { color: var(--text-light); font-weight: 500; font-style: italic; }
+    .oc-monto { font-family: 'Syne', sans-serif; font-weight: 600; font-size: 12.5px; }
+    .oc-estado {
+      font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 20px;
+      text-transform: uppercase; letter-spacing: 0.4px; display: inline-block;
+    }
+    .oc-estado.borrador { background: rgba(150,160,190,0.18); color: var(--text-mid); }
+    .oc-estado.emitida  { background: rgba(45,212,191,0.18); color: #0d9488; }
+    .oc-estado.anulada  { background: rgba(248,113,113,0.16); color: #b91c1c; }
+    .oc-acciones { display: flex; gap: 5px; justify-content: flex-end; }
+    .oc-btn-mini {
+      border: 1px solid rgba(200,205,225,0.6); background: rgba(255,255,255,0.6);
+      color: var(--text-mid); font-family: 'DM Sans', sans-serif; font-size: 11px;
+      font-weight: 600; padding: 5px 9px; border-radius: 7px; cursor: pointer;
+      transition: var(--transition); white-space: nowrap;
+    }
+    .oc-btn-mini:hover { border-color: var(--accent-blue); color: var(--accent-blue); }
+    .oc-btn-mini.danger:hover { border-color: var(--accent-rose); color: #b91c1c; }
+
+    /* ── Formulario ── */
+    .ocf-cab { display: grid; grid-template-columns: 1.2fr 1.4fr 150px 1fr; gap: 16px; align-items: flex-end; }
+    .ocf-campo { display: flex; flex-direction: column; gap: 6px; }
+    .ocf-label {
+      font-size: 10.5px; font-weight: 700; color: var(--text-light);
+      text-transform: uppercase; letter-spacing: 0.7px;
+    }
+    .ocf-chip-preciario {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(79,128,255,0.10); border: 1px solid rgba(79,128,255,0.30);
+      color: var(--accent-blue); font-size: 12.5px; font-weight: 600;
+      padding: 9px 14px; border-radius: 9px;
+    }
+    .ocf-chip-vacio {
+      font-size: 12.5px; color: var(--text-light); padding: 9px 0;
+    }
+    .ocf-aviso {
+      margin-top: 14px; padding: 12px 16px; border-radius: 10px;
+      background: rgba(251,191,36,0.14); border: 1px solid rgba(251,191,36,0.4);
+      color: #92400e; font-size: 12.5px; line-height: 1.5;
+    }
+    .ocf-aviso.err { background: rgba(248,113,113,0.12); border-color: rgba(248,113,113,0.4); color: #b91c1c; }
+
+    .ocf-lineas-top {
+      display: flex; gap: 16px; align-items: center; flex-wrap: wrap;
+      padding: 16px 18px; border-bottom: 1px solid rgba(200,205,225,0.4);
+    }
+    .ocf-pct-wrap { display: flex; align-items: center; gap: 9px; }
+    .ocf-pct { width: 78px; text-align: center; }
+
+    .ocf-head, .ocf-row {
+      display: grid;
+      grid-template-columns: 105px 1fr 90px 115px 115px 115px 75px 40px;
+      gap: 10px; padding: 11px 18px; align-items: center;
+    }
+    .ocf-head {
+      font-size: 10.5px; font-weight: 700; color: var(--text-light);
+      text-transform: uppercase; letter-spacing: 0.7px;
+      border-bottom: 1px solid rgba(200,205,225,0.4); background: rgba(255,255,255,0.30);
+    }
+    .ocf-head .num, .ocf-row .num { text-align: right; justify-content: flex-end; }
+    .ocf-row { border-bottom: 1px solid rgba(200,205,225,0.22); font-size: 12.5px; }
+    .ocf-row:last-child { border-bottom: none; }
+    .ocf-row.manual { background: rgba(251,191,36,0.07); }
+    .ocf-inp {
+      width: 100%; padding: 6px 9px; font-size: 12.5px; text-align: right;
+      border: 1px solid rgba(200,205,225,0.7); border-radius: 7px;
+      background: rgba(255,255,255,0.75); font-family: 'DM Sans', sans-serif;
+      color: var(--text-dark);
+    }
+    .ocf-inp:focus { outline: none; border-color: var(--accent-blue); background: #fff; }
+    .ocf-inp.fijado { border-color: rgba(251,191,36,0.75); background: rgba(255,251,235,0.9); }
+    .ocf-x {
+      border: none; background: rgba(248,113,113,0.12); color: #b91c1c;
+      width: 26px; height: 26px; border-radius: 7px; cursor: pointer;
+      font-size: 13px; line-height: 1; transition: var(--transition);
+    }
+    .ocf-x:hover { background: rgba(248,113,113,0.25); }
+    .ocf-margen { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 12px; }
+    .ocf-margen.ok   { color: #0d9488; }
+    .ocf-margen.bajo { color: #b45309; }
+    .ocf-margen.neg  { color: #b91c1c; }
+    .ocf-margen.na   { color: var(--text-light); font-weight: 500; }
+    .ocf-pin {
+      display: inline-block; margin-left: 5px; font-size: 9px; font-weight: 700;
+      color: #b45309; background: rgba(251,191,36,0.25);
+      padding: 1px 5px; border-radius: 20px; cursor: help;
+    }
+
+    .ocf-totales {
+      display: flex; justify-content: flex-end; gap: 34px; flex-wrap: wrap;
+      padding: 16px 20px; border-top: 1px solid rgba(200,205,225,0.4);
+      background: rgba(255,255,255,0.25);
+    }
+    .ocf-total-item { text-align: right; }
+    .ocf-total-label {
+      font-size: 10px; font-weight: 700; color: var(--text-light);
+      text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 4px;
+    }
+    .ocf-total-valor { font-family: 'Syne', sans-serif; font-size: 19px; font-weight: 700; color: var(--text-dark); }
+
+    .ac-panel .ocf-op-cod { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 11.5px; color: var(--accent-blue); }
+    .ac-panel .ocf-op-desc { font-size: 12px; color: var(--text-mid); }
+    .ac-panel .ocf-op-monto { font-family: 'Syne', sans-serif; font-size: 11.5px; color: var(--text-light); }
+
+    @media (max-width: 1250px) {
+      .oc-tiles { grid-template-columns: repeat(2, 1fr); }
+      .ocf-cab { grid-template-columns: 1fr 1fr; }
+    }
+
   </style>
 </head>
 <body>
@@ -1573,6 +1708,7 @@
     </div>
     <div class="nav-subitems open" id="sub-comercial">
       <a class="nav-subitem" id="nav-preciarios" onclick="showView('preciarios',this)">Preciarios</a>
+      <a class="nav-subitem" id="nav-oc" onclick="showView('oc',this)">Emisión OC</a>
     </div>
   </div>
 
@@ -2107,6 +2243,101 @@
       <div class="pr-head" id="pr-head"></div>
       <div id="pr-lista-body"></div>
       <div class="pr-footer" id="pr-footer"></div>
+    </div>
+  </div>
+  <!-- ═══════════ VISTA: EMISIÓN OC — listado (fase 3) ═══════════ -->
+  <div id="view-oc" class="view">
+    <div class="topbar">
+      <div>
+        <div class="page-title">Emisión <span>OC</span></div>
+        <div style="font-size:13px;color:var(--text-light);margin-top:3px;">Órdenes de compra a contratistas</div>
+      </div>
+      <button class="btn btn-primary" onclick="abrirFormOC()">+ Nueva OC</button>
+    </div>
+
+    <div class="oc-tiles" id="oc-tiles"></div>
+
+    <div class="card oc-filtros-card">
+      <div class="oc-filtros">
+        <input type="text" class="input oc-buscador" id="oc-buscador"
+               placeholder="Buscar por N° OC o sitio..." oninput="renderOC()">
+        <div class="ms-wrap" id="oc-filtro-estado"></div>
+        <div class="ms-wrap" id="oc-filtro-contratista"></div>
+        <div class="ms-wrap" id="oc-filtro-cliente"></div>
+        <button class="btn btn-sec pr-btn-limpiar" id="oc-btn-limpiar" onclick="ocLimpiarFiltros()" style="display:none;">Limpiar</button>
+      </div>
+    </div>
+
+    <div class="card" style="padding:0;overflow:hidden;">
+      <div class="oc-head" id="oc-head"></div>
+      <div id="oc-lista-body"></div>
+      <div class="pr-footer" id="oc-footer"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════ VISTA: formulario de OC (alta / edición) ═══════════ -->
+  <div id="view-oc-form" class="view">
+    <div class="topbar">
+      <div>
+        <div class="page-title" id="ocf-titulo">Nueva <span>OC</span></div>
+        <div style="font-size:13px;color:var(--text-light);margin-top:3px;" id="ocf-subtitulo">Completá la cabecera para habilitar la carga de ítems</div>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-sec" onclick="cerrarFormOC()">Cancelar</button>
+        <button class="btn btn-sec" id="ocf-btn-borrador" onclick="guardarOC('Borrador')">Guardar borrador</button>
+        <button class="btn btn-primary" id="ocf-btn-emitir" onclick="guardarOC('Emitida')">Emitir OC</button>
+      </div>
+    </div>
+
+    <!-- Paso 1: cabecera -->
+    <div class="card" style="margin-bottom:16px;">
+      <div class="ocf-cab">
+        <div class="ocf-campo">
+          <label class="ocf-label">Contratista</label>
+          <select class="input" id="ocf-contratista" onchange="ocfCambioCabecera()"></select>
+        </div>
+        <div class="ocf-campo" style="position:relative;">
+          <label class="ocf-label">Sitio</label>
+          <input type="text" class="input" id="ocf-sitio" autocomplete="off"
+                 placeholder="Escribí el ID del sitio..."
+                 oninput="ocfBuscarSitio()" onkeydown="ocfSitioKeydown(event)">
+          <div class="ac-panel" id="ocf-sitio-panel" style="display:none;"></div>
+        </div>
+        <div class="ocf-campo">
+          <label class="ocf-label">Fecha</label>
+          <input type="date" class="input" id="ocf-fecha" onchange="ocfCambioCabecera()">
+        </div>
+        <div class="ocf-campo">
+          <label class="ocf-label">Preciario activo</label>
+          <div id="ocf-chip-preciario" class="ocf-chip-vacio">Elegí un sitio</div>
+        </div>
+      </div>
+      <div id="ocf-aviso" class="ocf-aviso" style="display:none;"></div>
+    </div>
+
+    <!-- Paso 2 y 3: líneas + % global -->
+    <div class="card" id="ocf-card-lineas" style="padding:0;overflow:visible;">
+      <div class="ocf-lineas-top">
+        <div style="position:relative;flex:1;min-width:260px;">
+          <input type="text" class="input" id="ocf-buscar-item" autocomplete="off"
+                 placeholder="Buscar ítem del preciario por código o descripción..."
+                 oninput="ocfBuscarItem()" onkeydown="ocfItemKeydown(event)" disabled>
+          <div class="ac-panel" id="ocf-item-panel" style="display:none;"></div>
+        </div>
+        <div class="ocf-pct-wrap">
+          <label class="ocf-label" style="margin:0;">% al contratista</label>
+          <input type="number" class="input ocf-pct" id="ocf-pct-global" min="1" max="100" step="1" value="65">
+          <button class="btn btn-sec" onclick="ocfAplicarPct()">Aplicar</button>
+        </div>
+      </div>
+      <div class="ocf-head" id="ocf-head"></div>
+      <div id="ocf-lineas-body"></div>
+      <div class="ocf-totales" id="ocf-totales"></div>
+    </div>
+
+    <div class="card" style="margin-top:16px;">
+      <label class="ocf-label">Notas <span style="font-weight:400;color:var(--text-light);">(se imprimen en el PDF)</span></label>
+      <textarea class="input" id="ocf-notas" rows="3" style="resize:vertical;font-family:'DM Sans',sans-serif;"></textarea>
     </div>
   </div>
 
@@ -2683,7 +2914,7 @@ const PEQ = 90000000;
    a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
    Se pinta en el pie del sidebar (#sidebar-version).
    ═══════════════════════════════════════════════════════ */
-const APP_VERSION = 'V 110826 1941';
+const APP_VERSION = 'V 110826 2044';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
@@ -2698,6 +2929,20 @@ async function apiGet(sheet = 'ALL') {
 async function apiPost(action, sheet, payload = {}, id = '') {
   const body = JSON.stringify({ action, sheet, data: payload, id });
   const res  = await fetch(API_URL, { method: 'POST', body });
+  const data = await res.json();
+  if (!data.ok) throw new Error(data.error || 'Error en POST');
+  return data;
+}
+
+/**
+ * POST con el cuerpo COMPLETO, sin envolver en `data`.
+ * apiPost() manda { action, sheet, data, id } y sirve para INSERT/UPDATE/DELETE,
+ * pero BULK_INSERT espera `rows` en la raíz y BULK_DELETE espera `matchColumn`
+ * y `matchValue` también en la raíz. Mandarlos dentro de `data` haría que el
+ * backend no los vea y respondiera "requiere matchColumn".
+ */
+async function apiPostRaw(body) {
+  const res  = await fetch(API_URL, { method: 'POST', body: JSON.stringify(body) });
   const data = await res.json();
   if (!data.ok) throw new Error(data.error || 'Error en POST');
   return data;
@@ -2782,6 +3027,9 @@ let empleados = [], asignaciones = [];
 /* Incidencias confirmadas (hoja INCIDENCIAS). 1 fila = 1 sitio × 1 día con imprevisto.
    Ausencia de fila = día normal — no se persisten los días normales. (cambio #72) */
 let incidencias = [];
+/* Órdenes de compra a contratistas (fase 3 de OC).
+   `oc` = cabeceras (1 fila por orden), `ocLineas` = ítems (N por orden, ligados por ocId). */
+let oc = [], ocLineas = [];
 // Cola virtual de asignaciones pendientes de confirmar (persistida en sessionStorage)
 let colaAsignaciones = [];
 /* Cola virtual de incidencias pendientes (cambio #72). Independiente de colaAsignaciones
@@ -2807,7 +3055,11 @@ async function cargarTodo() {
 
     clientes = (data.clientes || []).map(r => ({
       id:    get(r, 'ID'),
-      color: get(r, 'COLOR') || '#4f80ff'
+      color: get(r, 'COLOR') || '#4f80ff',
+      /* PRECIARIO (fase 1 de OC): 'AMX' | 'NOKIA' | ''.
+         Vacío = no se pueden emitir OC para los sitios de ese cliente (R4).
+         Hoy Huawei y Telmex están vacíos por decisión explícita (D38). */
+      preciario: String(get(r, 'PRECIARIO') || '').trim().toUpperCase()
     })).filter(c => c.id.trim() !== '');
 
     sitios = (data.sitios || []).map(r => {
@@ -2899,6 +3151,41 @@ async function cargarTodo() {
       creadoAt:     get(r, 'CREADO_AT')
     })).filter(i => i.id && i.fecha && i.sitioId);
 
+    /* ── ÓRDENES DE COMPRA (fase 3) ──
+       Cabecera + líneas. Los importes se guardan como texto con PUNTO decimal
+       y se parsean con prParseMonto, que también tolera coma por si alguna
+       fila se editó a mano en el Sheet. */
+    oc = (data.oc || []).map(r => ({
+      id:            String(get(r, 'ID') || '').trim(),
+      nroOc:         String(get(r, 'NRO_OC') || '').trim(),
+      fecha:         normFecha(get(r, 'FECHA')),
+      sitioId:       String(get(r, 'SITIO_ID') || '').trim(),
+      contratistaId: String(get(r, 'CONTRATISTA_ID') || '').trim(),
+      clienteId:     String(get(r, 'CLIENTE_ID') || '').trim(),
+      preciario:     String(get(r, 'PRECIARIO') || '').trim().toUpperCase(),
+      notas:         get(r, 'NOTAS'),
+      estado:        String(get(r, 'ESTADO') || OC_ESTADO_BORRADOR).trim(),
+      totalVenta:    prParseMonto(get(r, 'TOTAL_VENTA')) || 0,
+      totalCosto:    prParseMonto(get(r, 'TOTAL_COSTO')) || 0,
+      pctGlobal:     parseInt(get(r, 'PCT_GLOBAL'), 10) || 0,
+      usuarioCarga:  get(r, 'USUARIO_CARGA'),
+      creadoAt:      get(r, 'CREADO_AT'),
+      modificadoAt:  get(r, 'MODIFICADO_AT')
+    })).filter(o => o.id);
+
+    ocLineas = (data.ocLineas || []).map(r => ({
+      id:           String(get(r, 'ID') || '').trim(),
+      ocId:         String(get(r, 'OC_ID') || '').trim(),
+      orden:        parseInt(get(r, 'ORDEN'), 10) || 0,
+      codServ:      String(get(r, 'COD_SERV') || '').trim(),
+      descripcion:  get(r, 'DESCRIPCION'),
+      cantidad:     prParseMonto(get(r, 'CANTIDAD')) || 0,
+      puVenta:      prParseMonto(get(r, 'PU_VENTA')) || 0,
+      importeVenta: prParseMonto(get(r, 'IMPORTE_VENTA')) || 0,
+      costoLinea:   prParseMonto(get(r, 'COSTO_LINEA')) || 0,
+      manual:       String(get(r, 'MANUAL') || '').trim() === '1'
+    })).filter(l => l.id && l.ocId);
+
     /* ── Restaurar cola virtual desde sessionStorage si existe ── */
     try {
       const colaGuardada = sessionStorage.getItem('terabyte_cola_asignaciones');
@@ -2918,6 +3205,7 @@ async function cargarTodo() {
     renderSitios();
     renderSeguimiento();
     if (typeof renderAsignaciones === 'function') renderAsignaciones();
+    if (typeof renderOC === 'function') renderOC();
   } catch (err) {
     toast('Error al cargar: ' + err.message, 'err');
     console.error('ERROR cargarTodo:', err);
@@ -2977,6 +3265,7 @@ function showView(name, el) {
   if (name === 'seguimiento')  renderSeguimiento();
   if (name === 'asignaciones') renderAsignaciones();
   if (name === 'preciarios')   renderPreciarios();
+  if (name === 'oc')           renderOC();
 }
 
 /* ── HELPERS ── */
@@ -8003,6 +8292,737 @@ function prRender() {
   }
 }
 
+/* ═══════════════════════════════════════════════════════
+   EMISIÓN DE OC — fase 3 (cambio #82)
+
+   Órdenes de compra a contratistas. Modelo:
+     OC        → cabecera, 1 fila por orden
+     OC_LINEAS → N ítems, ligados por OC_ID
+
+   Ciclo de estados (D23): Borrador → Emitida → Anulada.
+     - El NRO_OC se asigna RECIÉN AL EMITIR (D24). Un borrador no tiene número.
+     - Un borrador se ELIMINA del todo (D25); una emitida solo se anula.
+     - Anular NO es terminal: se puede editar y reactivar (D31).
+     - Solo las Emitidas cuentan como costo para rentabilidad (D33).
+
+   Solo se emiten OC para sitios de clientes CON preciario (R4). Hoy eso deja
+   afuera a Huawei y Telmex por decisión explícita (D38): sus sitios ni siquiera
+   aparecen en el buscador (D40).
+   ═══════════════════════════════════════════════════════ */
+
+const OC_ESTADO_BORRADOR = 'Borrador';
+const OC_ESTADO_EMITIDA  = 'Emitida';
+const OC_ESTADO_ANULADA  = 'Anulada';
+const OC_ESTADOS = [OC_ESTADO_BORRADOR, OC_ESTADO_EMITIDA, OC_ESTADO_ANULADA];
+const OC_PCT_DEFAULT = 65;
+
+/* Redondeo a 2 decimales (D20). El +Number.EPSILON corrige el clásico
+   Math.round(1.005*100)/100 === 1 por representación binaria. */
+function ocRound2(n) {
+  if (n == null || !isFinite(n)) return 0;
+  return Math.round((n + Number.EPSILON) * 100) / 100;
+}
+
+/* Preciario que le corresponde a un sitio: sitio → cliente → PRECIARIO. */
+function ocPreciarioDeSitio(sitioId) {
+  const s = sitios.find(x => x.id === sitioId);
+  if (!s) return '';
+  const c = clientes.find(x => x.id === s.clienteId);
+  return c ? (c.preciario || '') : '';
+}
+
+function ocClienteDeSitio(sitioId) {
+  const s = sitios.find(x => x.id === sitioId);
+  return s ? s.clienteId : '';
+}
+
+/* IDs cortos de sitio únicos cuyo cliente TIENE preciario (D40). */
+function ocSitiosHabilitados() {
+  const vistos = new Set(), out = [];
+  sitios.forEach(s => {
+    if (vistos.has(s.id)) return;
+    if (!ocPreciarioDeSitio(s.id)) return;
+    vistos.add(s.id);
+    out.push(s);
+  });
+  return out.sort((a, b) => a.id.localeCompare(b.id, 'es', { numeric: true }));
+}
+
+function ocContratistas() {
+  return empleados.filter(e => String(e.relacion || '').trim().toUpperCase() === 'C');
+}
+
+function ocLineasDe(ocId) {
+  return ocLineas.filter(l => l.ocId === ocId).sort((a, b) => a.orden - b.orden);
+}
+
+/* Margen sobre precio de venta (D9). Guarda contra división por cero (R3):
+   devuelve null, nunca Infinity ni NaN. */
+function ocMargen(venta, costo) {
+  if (!venta || venta === 0) return null;
+  return ((venta - costo) / venta) * 100;
+}
+
+function ocMargenHtml(venta, costo) {
+  const m = ocMargen(venta, costo);
+  if (m == null) return '<span class="ocf-margen na">—</span>';
+  const cls = m < 0 ? 'neg' : (m < 15 ? 'bajo' : 'ok');
+  return `<span class="ocf-margen ${cls}">${m.toFixed(1)}%</span>`;
+}
+
+/* Correlativo por año (R7). El año sale de la FECHA de la OC, no de hoy.
+   Se calcula AL EMITIR, no al abrir el formulario.
+   Riesgo asumido (D14): sin transacción. Dos sesiones emitiendo en el mismo
+   instante podrían llevarse el mismo número. Con un usuario es despreciable. */
+function ocProximoNumero(fecha) {
+  const anio = String(fecha || fechaHoyStr()).slice(0, 4);
+  const pref = `OC-${anio}-`;
+  let max = 0;
+  oc.forEach(o => {
+    if (!o.nroOc || !o.nroOc.startsWith(pref)) return;
+    const n = parseInt(o.nroOc.slice(pref.length), 10);
+    if (isFinite(n) && n > max) max = n;
+  });
+  return pref + String(max + 1).padStart(4, '0');
+}
+
+/* ── LISTADO ───────────────────────────────────────────── */
+
+let _ocFiltrosInit = false;
+
+function renderOC() {
+  const body = document.getElementById('oc-lista-body');
+  if (!body) return;
+
+  if (!_ocFiltrosInit) {
+    msInit('oc-filtro-estado',      OC_ESTADOS.map(e => ({ v: e, l: e })), 'Estado',      renderOC);
+    msInit('oc-filtro-contratista', ocContratistas().map(c => ({ v: c.id, l: c.nombre })), 'Contratista', renderOC);
+    msInit('oc-filtro-cliente',     [...new Set(oc.map(o => o.clienteId).filter(Boolean))].map(c => ({ v: c, l: c })), 'Cliente', renderOC);
+    _ocFiltrosInit = true;
+  }
+
+  const q = (document.getElementById('oc-buscador')?.value || '').trim().toLowerCase();
+  const fEst = msGet('oc-filtro-estado'), fCon = msGet('oc-filtro-contratista'), fCli = msGet('oc-filtro-cliente');
+
+  let lista = oc.slice().sort((a, b) => {
+    // Sin número (borradores) primero, después por número descendente
+    if (!a.nroOc && b.nroOc) return -1;
+    if (a.nroOc && !b.nroOc) return 1;
+    if (!a.nroOc && !b.nroOc) return (b.creadoAt || '').localeCompare(a.creadoAt || '');
+    return b.nroOc.localeCompare(a.nroOc, 'es', { numeric: true });
+  });
+  const universo = lista.length;
+
+  if (q) lista = lista.filter(o =>
+    (o.nroOc || '').toLowerCase().includes(q) || (o.sitioId || '').toLowerCase().includes(q));
+  if (fEst.length) lista = lista.filter(o => fEst.includes(o.estado));
+  if (fCon.length) lista = lista.filter(o => fCon.includes(o.contratistaId));
+  if (fCli.length) lista = lista.filter(o => fCli.includes(o.clienteId));
+
+  const btnLimpiar = document.getElementById('oc-btn-limpiar');
+  const hayFiltros = !!q || fEst.length || fCon.length || fCli.length;
+  if (btnLimpiar) btnLimpiar.style.display = hayFiltros ? '' : 'none';
+
+  /* Tiles — solo las Emitidas cuentan (D33/R9) */
+  const tiles = document.getElementById('oc-tiles');
+  if (tiles) {
+    const emitidas = oc.filter(o => o.estado === OC_ESTADO_EMITIDA);
+    const tv = emitidas.reduce((a, o) => a + o.totalVenta, 0);
+    const tc = emitidas.reduce((a, o) => a + o.totalCosto, 0);
+    const mg = ocMargen(tv, tc);
+    tiles.innerHTML = `
+      <div class="pr-tile"><div class="pr-tile-label">OC emitidas</div>
+        <div class="pr-tile-valor">${emitidas.length}</div>
+        <div class="pr-tile-sub">${oc.filter(o => o.estado === OC_ESTADO_BORRADOR).length} en borrador · ${oc.filter(o => o.estado === OC_ESTADO_ANULADA).length} anuladas</div></div>
+      <div class="pr-tile"><div class="pr-tile-label">Valor según preciario</div>
+        <div class="pr-tile-valor">${prFmtMonto(tv)}</div>
+        <div class="pr-tile-sub">Solo OC emitidas</div></div>
+      <div class="pr-tile"><div class="pr-tile-label">Costo a contratistas</div>
+        <div class="pr-tile-valor">${prFmtMonto(tc)}</div>
+        <div class="pr-tile-sub">Solo OC emitidas</div></div>
+      <div class="pr-tile"><div class="pr-tile-label">Margen global</div>
+        <div class="pr-tile-valor ${mg == null ? '' : (mg < 0 ? 'pos' : 'neg')}">${mg == null ? '—' : mg.toFixed(1) + '%'}</div>
+        <div class="pr-tile-sub">Sobre precio de venta</div></div>`;
+  }
+
+  const head = document.getElementById('oc-head');
+  if (head) head.innerHTML =
+    '<div>N° OC</div><div>Fecha</div><div>Sitio</div><div>Contratista</div>' +
+    '<div class="num">Venta</div><div class="num">Costo</div><div class="num">Margen</div>' +
+    '<div>Estado</div><div class="num">Acciones</div>';
+
+  if (!lista.length) {
+    body.innerHTML = `<div class="pr-empty">${universo === 0
+      ? 'Todavía no hay órdenes de compra. Creá la primera con "+ Nueva OC".'
+      : 'Ninguna OC coincide con los filtros.'}</div>`;
+  } else {
+    body.innerHTML = lista.map(o => {
+      const est = String(o.estado || '').toLowerCase();
+      const nro = o.nroOc
+        ? `<span class="oc-nro">${_escHtml(o.nroOc)}</span>`
+        : `<span class="oc-nro sin">sin emitir</span>`;
+      const acciones = [];
+      acciones.push(`<button class="oc-btn-mini" onclick="abrirFormOC('${_escJs(o.id)}')">Editar</button>`);
+      if (o.estado === OC_ESTADO_BORRADOR) {
+        acciones.push(`<button class="oc-btn-mini danger" onclick="eliminarOC('${_escJs(o.id)}')">Eliminar</button>`);
+      } else if (o.estado === OC_ESTADO_EMITIDA) {
+        acciones.push(`<button class="oc-btn-mini danger" onclick="anularOC('${_escJs(o.id)}')">Anular</button>`);
+      } else {
+        acciones.push(`<button class="oc-btn-mini" onclick="reactivarOC('${_escJs(o.id)}')">Reactivar</button>`);
+      }
+      return `<div class="oc-row ${o.estado === OC_ESTADO_ANULADA ? 'anulada' : ''}">
+        <div>${nro}</div>
+        <div style="font-size:12px;color:var(--text-mid);">${_escHtml(fechaCorta(o.fecha) || o.fecha)}</div>
+        <div style="font-weight:600;">${_escHtml(o.sitioId)}</div>
+        <div style="font-size:12.5px;">${_escHtml(nombreEmpleado(o.contratistaId))}</div>
+        <div class="num"><span class="oc-monto">${prFmtMonto(o.totalVenta)}</span></div>
+        <div class="num"><span class="oc-monto">${prFmtMonto(o.totalCosto)}</span></div>
+        <div class="num">${ocMargenHtml(o.totalVenta, o.totalCosto)}</div>
+        <div><span class="oc-estado ${est}">${_escHtml(o.estado)}</span></div>
+        <div class="oc-acciones">${acciones.join('')}</div>
+      </div>`;
+    }).join('');
+  }
+
+  const footer = document.getElementById('oc-footer');
+  if (footer) {
+    const ocultas = universo - lista.length;
+    footer.innerHTML = `<span>Mostrando ${lista.length} de ${universo} órdenes${
+      ocultas > 0 ? ` · ${ocultas} ocultas por filtros` : ''}</span><span></span>`;
+  }
+}
+
+function ocLimpiarFiltros() {
+  const b = document.getElementById('oc-buscador');
+  if (b) b.value = '';
+  ['oc-filtro-estado', 'oc-filtro-contratista', 'oc-filtro-cliente'].forEach(msClearAll);
+  renderOC();
+}
+
+/* ── ACCIONES DE ESTADO ────────────────────────────────── */
+
+async function anularOC(ocId) {
+  if (bloqueoViewer()) return;
+  const o = oc.find(x => x.id === ocId);
+  if (!o) return;
+  if (!confirm(`¿Anular la OC ${o.nroOc || '(sin número)'}?\n\nDeja de contar en los totales y en la rentabilidad. Se puede reactivar después.`)) return;
+  setLoading(true);
+  try {
+    await apiPost('UPDATE', 'OC', { ESTADO: OC_ESTADO_ANULADA, MODIFICADO_AT: new Date().toISOString() }, ocId);
+    o.estado = OC_ESTADO_ANULADA;
+    toast('OC anulada', 'ok');
+    renderOC();
+  } catch (err) {
+    toast('No se pudo anular: ' + err.message, 'err');
+  } finally { setLoading(false); }
+}
+
+async function reactivarOC(ocId) {
+  if (bloqueoViewer()) return;
+  const o = oc.find(x => x.id === ocId);
+  if (!o) return;
+  /* La anulación no es terminal (D31). Si nunca tuvo número —se anuló siendo
+     borrador— vuelve a Borrador; si ya se había emitido, conserva su número. */
+  const destino = o.nroOc ? OC_ESTADO_EMITIDA : OC_ESTADO_BORRADOR;
+  if (!confirm(`¿Reactivar la OC ${o.nroOc || '(sin número)'}?\n\nVuelve al estado "${destino}".`)) return;
+  setLoading(true);
+  try {
+    await apiPost('UPDATE', 'OC', { ESTADO: destino, MODIFICADO_AT: new Date().toISOString() }, ocId);
+    o.estado = destino;
+    toast('OC reactivada', 'ok');
+    renderOC();
+  } catch (err) {
+    toast('No se pudo reactivar: ' + err.message, 'err');
+  } finally { setLoading(false); }
+}
+
+async function eliminarOC(ocId) {
+  if (bloqueoViewer()) return;
+  const o = oc.find(x => x.id === ocId);
+  if (!o) return;
+  if (o.estado !== OC_ESTADO_BORRADOR) {
+    toast('Solo se pueden eliminar borradores. Una OC emitida se anula.', 'err');
+    return;
+  }
+  if (!confirm('¿Eliminar este borrador?\n\nSe borra junto con todas sus líneas. No se puede deshacer.')) return;
+  setLoading(true);
+  try {
+    /* Primero las líneas (BULK_DELETE, atómico), después la cabecera.
+       En ese orden: si falla el segundo paso queda una cabecera sin líneas,
+       que es visible y corregible. Al revés quedarían líneas huérfanas
+       invisibles desde la interfaz. */
+    await apiPostRaw({ action: 'BULK_DELETE', sheet: 'OC_LINEAS', matchColumn: 'OC_ID', matchValue: ocId });
+    await apiPost('DELETE', 'OC', {}, ocId);
+    ocLineas = ocLineas.filter(l => l.ocId !== ocId);
+    oc = oc.filter(x => x.id !== ocId);
+    toast('Borrador eliminado', 'ok');
+    renderOC();
+  } catch (err) {
+    toast('No se pudo eliminar: ' + err.message, 'err');
+  } finally { setLoading(false); }
+}
+
+/* ── FORMULARIO DE ALTA / EDICIÓN ──────────────────────── */
+
+let _ocfCtx = null;   // { ocId|null, lineas: [...], preciario, sitioId, ... }
+let _ocfAcIdx = -1;   // índice activo en el autocomplete abierto
+
+/* El preciario del formulario se toma del cache de la vista PRECIARIOS.
+   Si el usuario entra directo a EMISIÓN OC sin haber pasado por ahí,
+   _prData es null y hay que cargarlo: por eso abrirFormOC es async. */
+function _ocfItemsPreciario() {
+  if (!_prData || !_ocfCtx) return [];
+  return (_ocfCtx.preciario === 'NOKIA') ? _prData.nokia : _prData.amx;
+}
+
+async function abrirFormOC(ocId) {
+  if (bloqueoViewer()) return;
+
+  const existente = ocId ? oc.find(o => o.id === ocId) : null;
+  if (ocId && !existente) { toast('No se encontró la OC', 'err'); return; }
+
+  _ocfCtx = {
+    ocId:      existente ? existente.id : null,
+    sitioId:   existente ? existente.sitioId : '',
+    preciario: existente ? existente.preciario : '',
+    creadoAt:  existente ? existente.creadoAt : '',
+    nroOc:     existente ? existente.nroOc : '',
+    estado:    existente ? existente.estado : OC_ESTADO_BORRADOR,
+    lineas:    existente ? ocLineasDe(existente.id).map(l => ({
+      codServ: l.codServ, descripcion: l.descripcion, cantidad: l.cantidad,
+      puVenta: l.puVenta, costoLinea: l.costoLinea, manual: l.manual
+    })) : []
+  };
+  _ocfAcIdx = -1;
+
+  showView('oc-form');
+
+  document.getElementById('ocf-titulo').innerHTML = existente
+    ? `Editar <span>${_escHtml(existente.nroOc || 'borrador')}</span>`
+    : 'Nueva <span>OC</span>';
+
+  // Contratistas
+  const selCon = document.getElementById('ocf-contratista');
+  const cons = ocContratistas();
+  selCon.innerHTML = '<option value="">Elegí un contratista...</option>' +
+    cons.map(c => `<option value="${_escAttr(c.id)}">${_escHtml(c.nombre)}</option>`).join('');
+  selCon.value = existente ? existente.contratistaId : '';
+  if (!cons.length) selCon.innerHTML = '<option value="">No hay contratistas cargados (Relacion = C)</option>';
+
+  document.getElementById('ocf-sitio').value  = existente ? existente.sitioId : '';
+  document.getElementById('ocf-fecha').value  = existente ? existente.fecha : fechaHoyStr();
+  document.getElementById('ocf-notas').value  = existente ? existente.notas : '';
+  document.getElementById('ocf-pct-global').value = existente ? (existente.pctGlobal || OC_PCT_DEFAULT) : OC_PCT_DEFAULT;
+
+  ocfRender();
+  // El preciario puede no estar cargado si no se pasó por la vista PRECIARIOS
+  if (!_prData) { await prCargar(false); ocfRender(); }
+}
+
+function cerrarFormOC() {
+  _ocfCtx = null;
+  ocfCerrarPaneles();
+  showView('oc');
+  const nav = document.getElementById('nav-oc');
+  if (nav) { document.querySelectorAll('.nav-item, .nav-subitem').forEach(n => n.classList.remove('active')); nav.classList.add('active'); }
+}
+
+function ocfCerrarPaneles() {
+  ['ocf-sitio-panel', 'ocf-item-panel'].forEach(id => {
+    const p = document.getElementById(id);
+    if (p) { p.classList.remove('ac-open'); p.style.display = 'none'; }
+  });
+  _ocfAcIdx = -1;
+}
+
+/* Cambio en contratista o fecha: no afecta las líneas, solo re-render. */
+function ocfCambioCabecera() { ocfRender(); }
+
+/* ── Autocomplete de sitio (solo sitios CON preciario — D40) ── */
+function ocfBuscarSitio() {
+  const inp = document.getElementById('ocf-sitio');
+  const panel = document.getElementById('ocf-sitio-panel');
+  const q = (inp.value || '').trim().toLowerCase();
+  if (!q) { panel.style.display = 'none'; panel.classList.remove('ac-open'); ocfSetSitio(''); return; }
+
+  const opts = ocSitiosHabilitados()
+    .filter(s => s.id.toLowerCase().includes(q) || (s.localidad || '').toLowerCase().includes(q))
+    .slice(0, 40);
+  _ocfAcIdx = -1;
+
+  panel.innerHTML = opts.length
+    ? opts.map((s, i) => `<div class="ac-option" data-i="${i}" onclick="ocfElegirSitio('${_escJs(s.id)}')">
+         <span style="font-weight:600;">${_escHtml(s.id)}</span>
+         <span class="ac-meta">${_escHtml(s.clienteId)} · ${_escHtml(ocPreciarioDeSitio(s.id))}</span>
+       </div>`).join('')
+    : '<div class="ac-empty">Sin resultados.<br><span style="font-size:11px;">Solo se listan sitios de clientes con preciario.</span></div>';
+  panel.style.display = 'block'; panel.classList.add('ac-open');
+
+  // Si lo tipeado coincide exacto con un sitio habilitado, seleccionarlo
+  const exacto = ocSitiosHabilitados().find(s => s.id.toLowerCase() === q);
+  ocfSetSitio(exacto ? exacto.id : '');
+}
+
+function ocfSitioKeydown(ev) {
+  const panel = document.getElementById('ocf-sitio-panel');
+  const opts = [...panel.querySelectorAll('.ac-option')];
+  if (!opts.length) return;
+  if (ev.key === 'ArrowDown')      { ev.preventDefault(); _ocfAcIdx = Math.min(_ocfAcIdx + 1, opts.length - 1); }
+  else if (ev.key === 'ArrowUp')   { ev.preventDefault(); _ocfAcIdx = Math.max(_ocfAcIdx - 1, 0); }
+  else if (ev.key === 'Enter')     { ev.preventDefault(); if (_ocfAcIdx >= 0) opts[_ocfAcIdx].click(); return; }
+  else if (ev.key === 'Escape')    { ocfCerrarPaneles(); return; }
+  else return;
+  opts.forEach((o, i) => o.classList.toggle('ac-active', i === _ocfAcIdx));
+}
+
+function ocfElegirSitio(sitioId) {
+  document.getElementById('ocf-sitio').value = sitioId;
+  ocfCerrarPaneles();
+  ocfSetSitio(sitioId);
+}
+
+/* Fija el sitio y su preciario. Si cambia el preciario y ya había líneas
+   cargadas, avisa: los precios congelados dejan de corresponder. */
+function ocfSetSitio(sitioId) {
+  if (!_ocfCtx) return;
+  const nuevoPre = sitioId ? ocPreciarioDeSitio(sitioId) : '';
+  const cambio = _ocfCtx.preciario && nuevoPre && nuevoPre !== _ocfCtx.preciario;
+  _ocfCtx.sitioId = sitioId;
+  _ocfCtx.preciario = nuevoPre;
+  if (cambio && _ocfCtx.lineas.length) {
+    toast('Cambió el preciario: revisá los precios de las líneas ya cargadas', 'err');
+  }
+  ocfRender();
+}
+
+/* ── Autocomplete de ítems del preciario ── */
+function ocfBuscarItem() {
+  const inp = document.getElementById('ocf-buscar-item');
+  const panel = document.getElementById('ocf-item-panel');
+  const q = _prNorm(inp.value || '');
+  if (!q) { panel.style.display = 'none'; panel.classList.remove('ac-open'); return; }
+
+  const items = _ocfItemsPreciario()
+    .filter(it => _prNorm(it.cod).includes(q) || _prNorm(it.desc).includes(q))
+    .slice(0, 40);
+  _ocfAcIdx = -1;
+
+  panel.innerHTML = items.length
+    ? items.map((it, i) => `<div class="ac-option" data-i="${i}" onclick="ocfAgregarLinea('${_escJs(it.cod)}')">
+         <span class="ocf-op-cod">${_escHtml(it.cod)}</span>
+         <span class="ocf-op-desc">${_escHtml(it.desc)}</span>
+         <span class="ac-meta ocf-op-monto">${prFmtMonto(it.monto)}</span>
+       </div>`).join('')
+    : '<div class="ac-empty">Sin resultados en el preciario.</div>';
+  panel.style.display = 'block'; panel.classList.add('ac-open');
+}
+
+function ocfItemKeydown(ev) {
+  const panel = document.getElementById('ocf-item-panel');
+  const opts = [...panel.querySelectorAll('.ac-option')];
+  if (!opts.length) return;
+  if (ev.key === 'ArrowDown')      { ev.preventDefault(); _ocfAcIdx = Math.min(_ocfAcIdx + 1, opts.length - 1); }
+  else if (ev.key === 'ArrowUp')   { ev.preventDefault(); _ocfAcIdx = Math.max(_ocfAcIdx - 1, 0); }
+  else if (ev.key === 'Enter')     { ev.preventDefault(); if (_ocfAcIdx >= 0) opts[_ocfAcIdx].click(); return; }
+  else if (ev.key === 'Escape')    { ocfCerrarPaneles(); return; }
+  else return;
+  opts.forEach((o, i) => o.classList.toggle('ac-active', i === _ocfAcIdx));
+}
+
+/* Agrega una línea con DESCRIPCION y PU_VENTA congelados (D19/snapshot). */
+function ocfAgregarLinea(cod) {
+  if (bloqueoViewer()) return;
+  if (!_ocfCtx) return;
+  const it = _ocfItemsPreciario().find(x => x.cod === cod);
+  if (!it) { toast('No se encontró el ítem en el preciario', 'err'); return; }
+  const pct = ocfPctActual();
+  const importe = ocRound2(1 * (it.monto || 0));
+  _ocfCtx.lineas.push({
+    codServ: it.cod, descripcion: it.desc, cantidad: 1,
+    puVenta: it.monto || 0, costoLinea: ocRound2(importe * pct / 100), manual: false
+  });
+  document.getElementById('ocf-buscar-item').value = '';
+  ocfCerrarPaneles();
+  ocfRender();
+}
+
+function ocfQuitarLinea(idx) {
+  if (bloqueoViewer()) return;
+  if (!_ocfCtx) return;
+  _ocfCtx.lineas.splice(idx, 1);
+  ocfRender();
+}
+
+function ocfPctActual() {
+  const v = parseInt(document.getElementById('ocf-pct-global')?.value, 10);
+  return (isFinite(v) && v > 0 && v <= 100) ? v : OC_PCT_DEFAULT;
+}
+
+/* Cambio de cantidad. R8: si la línea está FIJADA (manual), el costo NO se
+   recalcula — es un total de línea, no un unitario. Se avisa. */
+function ocfSetCantidad(idx, valor) {
+  if (bloqueoViewer()) return;
+  if (!_ocfCtx || !_ocfCtx.lineas[idx]) return;
+  const l = _ocfCtx.lineas[idx];
+  const n = prParseMonto(valor);
+  l.cantidad = (n == null || n < 0) ? 0 : ocRound2(n);
+  if (!l.manual) {
+    l.costoLinea = ocRound2(ocRound2(l.cantidad * l.puVenta) * ocfPctActual() / 100);
+  } else {
+    toast('Esa línea tiene el costo fijado a mano: no se recalculó (R8)', 'err');
+  }
+  ocfRender();
+}
+
+/* Editar el costo a mano FIJA la línea (MANUAL = 1). */
+function ocfSetCosto(idx, valor) {
+  if (bloqueoViewer()) return;
+  if (!_ocfCtx || !_ocfCtx.lineas[idx]) return;
+  const l = _ocfCtx.lineas[idx];
+  const n = prParseMonto(valor);
+  l.costoLinea = (n == null || n < 0) ? 0 : ocRound2(n);
+  l.manual = true;
+  ocfRender();
+}
+
+function ocfLiberarLinea(idx) {
+  if (bloqueoViewer()) return;
+  if (!_ocfCtx || !_ocfCtx.lineas[idx]) return;
+  const l = _ocfCtx.lineas[idx];
+  l.manual = false;
+  l.costoLinea = ocRound2(ocRound2(l.cantidad * l.puVenta) * ocfPctActual() / 100);
+  ocfRender();
+}
+
+/* Aplica el % global. R2: NO toca las líneas fijadas; avisa cuántas quedaron
+   afuera y ofrece liberarlas. */
+function ocfAplicarPct() {
+  if (bloqueoViewer()) return;
+  if (!_ocfCtx) return;
+  const pct = ocfPctActual();
+  const fijadas = _ocfCtx.lineas.filter(l => l.manual).length;
+  _ocfCtx.lineas.forEach(l => {
+    if (l.manual) return;
+    l.costoLinea = ocRound2(ocRound2(l.cantidad * l.puVenta) * pct / 100);
+  });
+  ocfRender();
+  if (fijadas > 0) {
+    if (confirm(`${fijadas} línea(s) tienen el costo fijado a mano y no se recalcularon.\n\n¿Querés liberarlas y aplicarles el ${pct}% también?`)) {
+      _ocfCtx.lineas.forEach(l => {
+        l.manual = false;
+        l.costoLinea = ocRound2(ocRound2(l.cantidad * l.puVenta) * pct / 100);
+      });
+      ocfRender();
+      toast(`${pct}% aplicado a todas las líneas`, 'ok');
+    }
+  } else {
+    toast(`${pct}% aplicado`, 'ok');
+  }
+}
+
+function ocfTotales() {
+  const lin = (_ocfCtx?.lineas) || [];
+  const venta = ocRound2(lin.reduce((a, l) => a + ocRound2(l.cantidad * l.puVenta), 0));
+  const costo = ocRound2(lin.reduce((a, l) => a + (l.costoLinea || 0), 0));
+  return { venta, costo };
+}
+
+function ocfRender() {
+  if (!_ocfCtx) return;
+  const chip   = document.getElementById('ocf-chip-preciario');
+  const aviso  = document.getElementById('ocf-aviso');
+  const buscar = document.getElementById('ocf-buscar-item');
+  const body   = document.getElementById('ocf-lineas-body');
+  const head   = document.getElementById('ocf-head');
+  if (!body) return;
+
+  const sitioId = _ocfCtx.sitioId;
+  const pre = _ocfCtx.preciario;
+
+  /* Chip de preciario + aviso de bloqueo (R4) */
+  if (pre) {
+    chip.className = 'ocf-chip-preciario';
+    chip.textContent = `${ocClienteDeSitio(sitioId)} · ${pre}`;
+  } else {
+    chip.className = 'ocf-chip-vacio';
+    chip.textContent = sitioId ? 'Sin preciario' : 'Elegí un sitio';
+  }
+
+  let bloqueo = '';
+  if (!sitioId) bloqueo = 'Elegí un sitio para habilitar la carga de ítems.';
+  else if (!pre) bloqueo = `El cliente de ${sitioId} no tiene preciario asignado, así que no se puede emitir una OC para este sitio.`;
+  else if (!_prData) bloqueo = 'Cargando el preciario...';
+
+  if (bloqueo) {
+    aviso.style.display = '';
+    aviso.className = 'ocf-aviso' + (sitioId && !pre ? ' err' : '');
+    aviso.textContent = bloqueo;
+  } else {
+    aviso.style.display = 'none';
+  }
+  if (buscar) buscar.disabled = !!bloqueo;
+
+  /* Aviso de OC previa para el mismo sitio + contratista (R12/D30) */
+  const conId = document.getElementById('ocf-contratista')?.value || '';
+  if (!bloqueo && sitioId && conId) {
+    const previas = oc.filter(o => o.id !== _ocfCtx.ocId && o.sitioId === sitioId &&
+      o.contratistaId === conId && o.estado !== OC_ESTADO_ANULADA);
+    if (previas.length) {
+      aviso.style.display = '';
+      aviso.className = 'ocf-aviso';
+      aviso.textContent = `Atención: ya hay ${previas.length} OC para ${sitioId} con este contratista (${previas.map(p => p.nroOc || 'borrador').join(', ')}). Se permite igual.`;
+    }
+  }
+
+  const sub = document.getElementById('ocf-subtitulo');
+  if (sub) sub.textContent = _ocfCtx.ocId
+    ? `${_ocfCtx.estado}${_ocfCtx.nroOc ? ' · ' + _ocfCtx.nroOc : ''} · ${_ocfCtx.lineas.length} ítem(s)`
+    : 'El número se asigna al emitir. Podés guardarla como borrador.';
+
+  if (head) head.innerHTML =
+    '<div>Código</div><div>Descripción</div><div class="num">Cantidad</div>' +
+    '<div class="num">P.U. venta</div><div class="num">Importe venta</div>' +
+    '<div class="num">Costo contratista</div><div class="num">Margen</div><div></div>';
+
+  if (!_ocfCtx.lineas.length) {
+    body.innerHTML = `<div class="pr-empty">${bloqueo
+      ? 'Sin ítems.' : 'Buscá un ítem del preciario arriba para agregar la primera línea.'}</div>`;
+  } else {
+    body.innerHTML = _ocfCtx.lineas.map((l, i) => {
+      const imp = ocRound2(l.cantidad * l.puVenta);
+      return `<div class="ocf-row ${l.manual ? 'manual' : ''}">
+        <div class="pr-cod">${_escHtml(l.codServ)}</div>
+        <div class="pr-desc">${_escHtml(l.descripcion)}</div>
+        <div class="num"><input class="ocf-inp" type="text" value="${l.cantidad}"
+             onchange="ocfSetCantidad(${i}, this.value)"></div>
+        <div class="num"><span class="oc-monto">${prFmtMonto(l.puVenta)}</span></div>
+        <div class="num"><span class="oc-monto">${prFmtMonto(imp)}</span></div>
+        <div class="num"><input class="ocf-inp ${l.manual ? 'fijado' : ''}" type="text" value="${l.costoLinea}"
+             onchange="ocfSetCosto(${i}, this.value)">${l.manual
+               ? `<span class="ocf-pin" title="Costo fijado a mano: el % global no lo toca. Click para liberar." onclick="ocfLiberarLinea(${i})">FIJO</span>` : ''}</div>
+        <div class="num">${ocMargenHtml(imp, l.costoLinea)}</div>
+        <div><button class="ocf-x" onclick="ocfQuitarLinea(${i})" title="Quitar">✕</button></div>
+      </div>`;
+    }).join('');
+  }
+
+  const { venta, costo } = ocfTotales();
+  const tot = document.getElementById('ocf-totales');
+  if (tot) tot.innerHTML = `
+    <div class="ocf-total-item"><div class="ocf-total-label">Total venta</div>
+      <div class="ocf-total-valor">${prFmtMonto(venta)}</div></div>
+    <div class="ocf-total-item"><div class="ocf-total-label">Total costo</div>
+      <div class="ocf-total-valor">${prFmtMonto(costo)}</div></div>
+    <div class="ocf-total-item"><div class="ocf-total-label">Margen global</div>
+      <div class="ocf-total-valor">${(() => { const m = ocMargen(venta, costo); return m == null ? '—' : m.toFixed(1) + '%'; })()}</div></div>`;
+
+  const btnEmitir = document.getElementById('ocf-btn-emitir');
+  if (btnEmitir) btnEmitir.textContent = (_ocfCtx.estado === OC_ESTADO_EMITIDA) ? 'Guardar cambios' : 'Emitir OC';
+}
+
+/* ── PERSISTENCIA ──────────────────────────────────────── */
+
+function _ocfValidar(destino) {
+  const c = _ocfCtx;
+  const conId = document.getElementById('ocf-contratista')?.value || '';
+  const fecha = document.getElementById('ocf-fecha')?.value || '';
+  if (!conId)        return 'Elegí un contratista.';
+  if (!c.sitioId)    return 'Elegí un sitio.';
+  if (!c.preciario)  return 'El cliente de ese sitio no tiene preciario: no se puede emitir la OC.';
+  if (!fecha)        return 'Poné una fecha.';
+  if (destino === OC_ESTADO_EMITIDA && !c.lineas.length) return 'Una OC emitida necesita al menos un ítem.';
+  if (c.lineas.some(l => l.cantidad <= 0)) return 'Hay líneas con cantidad en cero.';
+  return '';
+}
+
+async function guardarOC(destino) {
+  if (bloqueoViewer()) return;
+  if (!_ocfCtx) return;
+
+  const error = _ocfValidar(destino);
+  if (error) { toast(error, 'err'); return; }
+
+  const conId = document.getElementById('ocf-contratista').value;
+  const fecha = document.getElementById('ocf-fecha').value;
+  const notas = document.getElementById('ocf-notas').value || '';
+  const pct   = ocfPctActual();
+  const { venta, costo } = ocfTotales();
+  const esNueva = !_ocfCtx.ocId;
+  const ahora = new Date().toISOString();
+
+  /* El número se asigna AL EMITIR (D24/R7) y solo si todavía no tiene.
+     Reemitir una OC que ya fue emitida conserva su número. */
+  let nroOc = _ocfCtx.nroOc || '';
+  if (destino === OC_ESTADO_EMITIDA && !nroOc) nroOc = ocProximoNumero(fecha);
+
+  const ocId = _ocfCtx.ocId || nuevoId('OCH');
+  const cab = {
+    ID: ocId, NRO_OC: nroOc, FECHA: fecha, SITIO_ID: _ocfCtx.sitioId,
+    CONTRATISTA_ID: conId, CLIENTE_ID: ocClienteDeSitio(_ocfCtx.sitioId),
+    PRECIARIO: _ocfCtx.preciario, NOTAS: notas, ESTADO: destino,
+    TOTAL_VENTA: venta.toFixed(2), TOTAL_COSTO: costo.toFixed(2),
+    PCT_GLOBAL: String(pct),
+    USUARIO_CARGA: (_usuarioActual && (_usuarioActual.idUsuario || _usuarioActual.usuario)) || '',
+    CREADO_AT: _ocfCtx.creadoAt || ahora,
+    MODIFICADO_AT: esNueva ? '' : ahora
+  };
+
+  /* Los importes se escriben con PUNTO decimal y 2 decimales fijos (D22),
+     para que el ida y vuelta sea exacto. */
+  const filas = _ocfCtx.lineas.map((l, i) => ({
+    ID: nuevoId('OCL'), OC_ID: ocId, ORDEN: String(i + 1),
+    COD_SERV: l.codServ, DESCRIPCION: l.descripcion,
+    CANTIDAD: Number(l.cantidad).toFixed(2),
+    PU_VENTA: Number(l.puVenta).toFixed(2),
+    IMPORTE_VENTA: ocRound2(l.cantidad * l.puVenta).toFixed(2),
+    COSTO_LINEA: Number(l.costoLinea).toFixed(2),
+    MANUAL: l.manual ? '1' : '0'
+  }));
+
+  setLoading(true);
+  try {
+    /* Edición = 3 llamadas atómicas (por eso existe BULK_DELETE):
+       borrar líneas viejas → insertar las nuevas → actualizar cabecera. */
+    if (esNueva) {
+      await apiPost('INSERT', 'OC', cab);
+    } else {
+      await apiPostRaw({ action: 'BULK_DELETE', sheet: 'OC_LINEAS', matchColumn: 'OC_ID', matchValue: ocId });
+    }
+    if (filas.length) {
+      await apiPostRaw({ action: 'BULK_INSERT', sheet: 'OC_LINEAS', rows: filas });
+    }
+    if (!esNueva) {
+      await apiPost('UPDATE', 'OC', cab, ocId);
+    }
+
+    /* Estado local — solo después de que el server confirmó */
+    const local = {
+      id: ocId, nroOc, fecha, sitioId: _ocfCtx.sitioId, contratistaId: conId,
+      clienteId: cab.CLIENTE_ID, preciario: _ocfCtx.preciario, notas, estado: destino,
+      totalVenta: venta, totalCosto: costo, pctGlobal: pct,
+      usuarioCarga: cab.USUARIO_CARGA, creadoAt: cab.CREADO_AT, modificadoAt: cab.MODIFICADO_AT
+    };
+    if (esNueva) oc.push(local);
+    else oc = oc.map(o => (o.id === ocId ? local : o));
+
+    ocLineas = ocLineas.filter(l => l.ocId !== ocId).concat(filas.map(f => ({
+      id: f.ID, ocId, orden: parseInt(f.ORDEN, 10), codServ: f.COD_SERV,
+      descripcion: f.DESCRIPCION, cantidad: prParseMonto(f.CANTIDAD) || 0,
+      puVenta: prParseMonto(f.PU_VENTA) || 0, importeVenta: prParseMonto(f.IMPORTE_VENTA) || 0,
+      costoLinea: prParseMonto(f.COSTO_LINEA) || 0, manual: f.MANUAL === '1'
+    })));
+
+    toast(destino === OC_ESTADO_EMITIDA
+      ? `OC ${nroOc} emitida` : 'Borrador guardado', 'ok');
+    _ocfCtx = null;
+    cerrarFormOC();
+    renderOC();
+  } catch (err) {
+    toast('No se pudo guardar: ' + err.message, 'err');
+    console.error('ERROR guardarOC:', err);
+  } finally { setLoading(false); }
+}
+
 /* ══ LOGIN ══ */
 /* ═══════════════════════════════════════════════════════
    MODO VIEWER — perfil de SOLO LECTURA (cambio #68)
@@ -8064,6 +9084,12 @@ const VIEWER_PERMITIDO = new Set([
      Ninguna de estas funciones escribe al backend ni muta colas locales. */
   'renderPreciarios', 'prRender', 'prCargar', 'prRecargar', 'prSetBloque',
   'prSetSort', 'prOnBuscar', 'prVerMas', 'prLimpiar',
+  /* Emisión OC (cambio #82) — solo NAVEGACIÓN, FILTRO y CONSULTA.
+     Las de escritura (abrirFormOC, guardarOC, anularOC, reactivarOC, eliminarOC,
+     ocfAgregarLinea, ocfQuitarLinea, ocfSetCantidad, ocfSetCosto, ocfAplicarPct,
+     ocfLiberarLinea) quedan FUERA a propósito: así el barrido por lista blanca
+     les oculta el botón, además del guard bloqueoViewer() que ya tienen. */
+  'renderOC', 'ocLimpiarFiltros', 'cerrarFormOC',
   // Navegación general
   'showView', 'toggleNavGroup', 'cerrarSesion', 'navAsigMes',
   'intentarLogin', 'sincronizar', 'volverDeNuevaAsig',
