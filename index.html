@@ -203,7 +203,10 @@
     .progress-bar-fill { height: 100%; border-radius: 20px; transition: width 1.2s cubic-bezier(.4,0,.2,1); }
 
     /* TABLE */
-    .table-wrap { overflow-x: auto; }
+    /* overflow-x:auto obliga al navegador a computar overflow-y como auto, y eso
+       rompe el sticky del thead. Se deja visible; el scroll horizontal, si hace
+       falta, lo toma el contenedor principal. */
+    .table-wrap { overflow-x: visible; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; }
     thead th { text-align: left; padding: 0 14px 12px; font-size: 11px; font-weight: 600; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.7px; border-bottom: 1px solid rgba(200,205,220,0.4); white-space: nowrap; }
     tbody tr { border-bottom: 1px solid rgba(200,205,220,0.25); transition: var(--transition); }
@@ -335,7 +338,7 @@
     .sg-lista {
       background: var(--glass); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
       border: 1px solid var(--glass-border); border-radius: var(--radius);
-      box-shadow: var(--glass-shadow); overflow: hidden;
+      box-shadow: var(--glass-shadow); overflow: visible;
       position: relative; z-index: 1;
     }
     .sg-head {
@@ -1417,7 +1420,7 @@
 
     .pr-head, .pr-row {
       display: grid;
-      grid-template-columns: 120px 1fr 130px 130px 110px;
+      grid-template-columns: 140px 1fr 150px 150px;
       gap: 12px; padding: 12px 20px; align-items: center;
       /* Todo centrado, criterio del sistema (cambio #43). Única excepción:
          la columna Descripción, que va a la izquierda porque los textos del
@@ -1464,14 +1467,6 @@
       background: rgba(251,191,36,0.20); padding: 2px 7px; border-radius: 20px;
       text-transform: uppercase; letter-spacing: 0.4px;
     }
-    .pr-var {
-      font-size: 12.5px; font-weight: 700;
-      padding: 3px 10px; border-radius: 20px; display: inline-block;
-    }
-    .pr-var.up   { background: rgba(45,212,191,0.18); color: #0d9488; }
-    .pr-var.down { background: rgba(248,113,113,0.16); color: #b91c1c; }
-    .pr-var.eq   { background: rgba(150,160,190,0.16); color: var(--text-light); }
-    .pr-var.na   { background: transparent; color: var(--text-light); font-weight: 500; }
 
     .pr-row > div { min-width: 0; }
     .pr-footer {
@@ -1490,7 +1485,7 @@
 
     @media (max-width: 1100px) {
       .pr-tiles { grid-template-columns: repeat(2, 1fr); }
-      .pr-head, .pr-row { grid-template-columns: 100px 1fr 110px 110px 90px; gap: 8px; padding: 12px; }
+      .pr-head, .pr-row { grid-template-columns: 100px 1fr 110px 110px; gap: 8px; padding: 12px; }
     }
 
     /* ═══════════ EMISIÓN OC (fase 3) ═══════════ */
@@ -1647,6 +1642,31 @@
       .oc-tiles { grid-template-columns: repeat(2, 1fr); }
       .ocf-cab { grid-template-columns: 1fr 1fr; }
     }
+
+    /* ═══ Encabezados de tabla: azul oscuro + sticky (cambio #87) ═══
+       Aplica SOLO a las 5 tablas principales. Los modales y Clientes conservan
+       el encabezado claro: son tablas cortas donde el azul pesa de más.
+       ⚠ `position: sticky` solo funciona si NINGÚN ancestro tiene overflow
+       distinto de `visible`. Por eso las cards contenedoras pasan de
+       `overflow:hidden` a `visible`. */
+    .pr-head, .oc-head, .sg-head,
+    #table-sitios thead th, #table-seguimiento thead th {
+      background: #1e2a4a !important;
+      color: #ffffff !important;
+      border-bottom: none !important;
+      position: sticky; top: 0; z-index: 6;
+    }
+    .pr-head, .oc-head, .sg-head { border-radius: 0; }
+    /* Los th del sistema traen padding lateral pero no vertical: se empareja */
+    #table-sitios thead th, #table-seguimiento thead th {
+      padding: 12px 14px; letter-spacing: 0.7px;
+    }
+    /* Los headers ordenables deben seguir leyéndose sobre el azul */
+    .pr-th-sort:hover, .sg-head-sort:hover { color: #a8c4ff !important; }
+    .pr-th-sort.sort-active, .sg-head-sort.sort-active { color: #a8c4ff !important; }
+    .pr-th-sort.sort-active .sort-arrow, .sg-head-sort.sort-active .sort-arrow { color: #a8c4ff; }
+    /* El checkbox de "seleccionar todo" de PO sitios queda sobre fondo oscuro */
+    #table-sitios thead th input[type="checkbox"] { accent-color: #ffffff; }
 
   </style>
 </head>
@@ -2249,7 +2269,7 @@
   <div id="view-preciarios" class="view">
     <div class="topbar">
       <div>
-        <div class="page-title">Pre<span>ciarios</span></div>
+        <div class="page-title">Preciarios</div>
         <div style="font-size:13px;color:var(--text-light);margin-top:3px;">Comparación de precios entre AMX y Nokia</div>
       </div>
       <div style="display:flex;align-items:center;gap:10px;">
@@ -2257,9 +2277,6 @@
         <button class="btn btn-glass btn-sm" id="pr-btn-recargar" onclick="prRecargar()">Recargar</button>
       </div>
     </div>
-
-    <!-- Tiles de resumen -->
-    <div class="pr-tiles" id="pr-tiles"></div>
 
     <!-- Filtros -->
     <div class="card pr-filtros-card">
@@ -2280,7 +2297,7 @@
     </div>
 
     <!-- Lista -->
-    <div class="card" style="padding:0;overflow:hidden;">
+    <div class="card" style="padding:0;overflow:visible;">
       <div class="pr-head" id="pr-head"></div>
       <div id="pr-lista-body"></div>
       <div class="pr-footer" id="pr-footer"></div>
@@ -2309,7 +2326,7 @@
       </div>
     </div>
 
-    <div class="card" style="padding:0;overflow:hidden;">
+    <div class="card" style="padding:0;overflow:visible;">
       <div class="oc-head" id="oc-head"></div>
       <div id="oc-lista-body"></div>
       <div class="pr-footer" id="oc-footer"></div>
@@ -2976,7 +2993,7 @@ const PEQ = 90000000;
    a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
    Se pinta en el pie del sidebar (#sidebar-version).
    ═══════════════════════════════════════════════════════ */
-const APP_VERSION = 'V 110826 2217';
+const APP_VERSION = 'V 110826 2241';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
@@ -8238,7 +8255,6 @@ function prRender() {
   if (!body) return;
   const head   = document.getElementById('pr-head');
   const footer = document.getElementById('pr-footer');
-  const tiles  = document.getElementById('pr-tiles');
 
   const btnLimpiar = document.getElementById('pr-btn-limpiar');
   if (btnLimpiar) btnLimpiar.style.display = _prHayFiltros() ? '' : 'none';
@@ -8246,7 +8262,6 @@ function prRender() {
   if (!_prData) {
     if (head)   head.innerHTML = '';
     if (footer) footer.innerHTML = '';
-    if (tiles)  tiles.innerHTML = '';
     body.innerHTML = `<div class="pr-empty">${_prCargando ? 'Cargando preciarios...' : 'No hay datos de preciarios cargados.'}</div>`;
     return;
   }
@@ -8257,38 +8272,9 @@ function prRender() {
     if (el) el.textContent = grupos[k].length;
   });
 
-  /* ── Tiles de resumen (sobre "En ambos", que es donde hay comparación) ── */
-  if (tiles) {
-    const comparables = grupos.ambos.filter(r =>
-      r.variacion != null && !_prEsPlaceholder(r.amx) && !_prEsPlaceholder(r.nokia));
-    const prom = comparables.length
-      ? comparables.reduce((a, r) => a + r.variacion, 0) / comparables.length : null;
-    const nokiaMas   = comparables.filter(r => r.variacion > 0.01).length;
-    const nokiaMenos = comparables.filter(r => r.variacion < -0.01).length;
-    const total = grupos.ambos.length + grupos.amx.length + grupos.nokia.length;
-    tiles.innerHTML = `
-      <div class="pr-tile">
-        <div class="pr-tile-label">Ítems totales</div>
-        <div class="pr-tile-valor">${total.toLocaleString('es-AR')}</div>
-        <div class="pr-tile-sub">${grupos.ambos.length} en ambos preciarios</div>
-      </div>
-      <div class="pr-tile">
-        <div class="pr-tile-label">Variación promedio</div>
-        <div class="pr-tile-valor ${prom == null ? '' : (prom < 0 ? 'neg' : 'pos')}">${
-          prom == null ? '—' : (prom > 0 ? '+' : '') + prom.toFixed(1) + '%'}</div>
-        <div class="pr-tile-sub">Nokia respecto de AMX</div>
-      </div>
-      <div class="pr-tile">
-        <div class="pr-tile-label">Nokia paga más</div>
-        <div class="pr-tile-valor">${nokiaMas}</div>
-        <div class="pr-tile-sub">de ${comparables.length} comparables</div>
-      </div>
-      <div class="pr-tile">
-        <div class="pr-tile-label">Nokia paga menos</div>
-        <div class="pr-tile-valor">${nokiaMenos}</div>
-        <div class="pr-tile-sub">de ${comparables.length} comparables</div>
-      </div>`;
-  }
+  /* Los tiles de resumen se eliminaron en el #87: la variación entre preciarios
+     es constante (−13,9 % en todos los ítems), así que promediarla o contar
+     cuántos ítems paga más o menos cada cliente no aportaba información. */
 
   /* ── Filtrado ── */
   let lista = grupos[_prBloque].slice();
@@ -8308,7 +8294,6 @@ function prRender() {
     else if (_prSortKey === 'desc') r = a.desc.localeCompare(b.desc, 'es');
     else if (_prSortKey === 'amx')   r = nulUlt(a.amx)   - nulUlt(b.amx);
     else if (_prSortKey === 'nokia') r = nulUlt(a.nokia) - nulUlt(b.nokia);
-    else if (_prSortKey === 'var')   r = nulUlt(a.variacion) - nulUlt(b.variacion);
     if (r === 0) return a.cod.localeCompare(b.cod, 'es', { numeric: true });
     return r * dir;
   });
@@ -8323,8 +8308,7 @@ function prRender() {
       th('cod', 'Código') +
       th('desc', 'Descripción', ' col-desc') +
       th('amx', 'Monto AMX', ' num') +
-      th('nokia', 'Monto Nokia', ' num') +
-      th('var', 'Variación', ' num');
+      th('nokia', 'Monto Nokia', ' num');
   }
 
   /* ── Filas ── */
@@ -8337,12 +8321,6 @@ function prRender() {
       const celdaMonto = (v) => _prEsPlaceholder(v)
         ? `<span class="pr-conv">a convenir</span>`
         : `<span class="pr-monto${v == null ? ' vacio' : ''}">${prFmtMonto(v)}</span>`;
-      let varHtml = '<span class="pr-var na">—</span>';
-      if (r.variacion != null && !_prEsPlaceholder(r.amx) && !_prEsPlaceholder(r.nokia)) {
-        const cls = (r.variacion > 0.01) ? 'up' : (r.variacion < -0.01 ? 'down' : 'eq');
-        const sig = (r.variacion > 0) ? '+' : '';
-        varHtml = `<span class="pr-var ${cls}">${sig}${r.variacion.toFixed(1)}%</span>`;
-      }
       const alt = r.descAlt
         ? `<span class="pr-desc-alt" title="En Nokia: ${_escAttr(r.descAlt)}">N</span>` : '';
       return `<div class="pr-row">
@@ -8350,7 +8328,6 @@ function prRender() {
         <div class="pr-desc col-desc">${_escHtml(r.desc) || '<span style="color:var(--text-light)">(sin descripción)</span>'}${alt}</div>
         <div class="num">${celdaMonto(r.amx)}</div>
         <div class="num">${celdaMonto(r.nokia)}</div>
-        <div class="num">${varHtml}</div>
       </div>`;
     }).join('');
   }
@@ -8488,9 +8465,17 @@ function renderOC() {
   if (!body) return;
 
   if (!_ocFiltrosInit) {
-    msInit('oc-filtro-estado',      OC_ESTADOS.map(e => ({ v: e, l: e })), 'Estado',      renderOC);
-    msInit('oc-filtro-contratista', ocContratistas().map(c => ({ v: c.id, l: c.nombre })), 'Contratista', renderOC);
-    msInit('oc-filtro-cliente',     [...new Set(oc.map(o => o.clienteId).filter(Boolean))].map(c => ({ v: c, l: c })), 'Cliente', renderOC);
+    /* ⚠ msInit espera objetos { value, label }. Con {v,l} las etiquetas salían
+       "undefined" y —peor— la selección nunca matcheaba, así que los filtros
+       NO filtraban. (cambio #87) */
+    msInit('oc-filtro-estado', OC_ESTADOS.map(e => ({ value: e, label: e })), 'Estado', renderOC);
+    msInit('oc-filtro-contratista',
+      ocContratistas().map(c => ({ value: c.id, label: c.nombre || c.id })), 'Contratista', renderOC);
+    /* Cliente: se listan TODOS los clientes con preciario, no solo los que ya
+       tienen OC. Con pocas órdenes cargadas, lo segundo daba un filtro de una
+       sola opción, inútil. */
+    msInit('oc-filtro-cliente',
+      clientes.filter(c => c.preciario).map(c => ({ value: c.id, label: c.id })), 'Cliente', renderOC);
     _ocFiltrosInit = true;
   }
 
@@ -8555,12 +8540,13 @@ function renderOC() {
         ? `<span class="oc-nro">${_escHtml(o.nroOc)}</span>`
         : `<span class="oc-nro sin">sin emitir</span>`;
       const acciones = [];
-      acciones.push(`<button class="btn btn-glass btn-sm" onclick="abrirFormOC('${_escJs(o.id)}')">Editar</button>`);
+      /* El PDF va PRIMERO: es la acción más frecuente sobre una OC ya emitida.
+         Solo existe para las emitidas (D26). El viewer también puede descargarlo:
+         no escribe nada, es reimprimir algo ya emitido. */
       if (o.estado === OC_ESTADO_EMITIDA) {
-        /* El PDF solo existe para las emitidas (D26). El viewer también puede
-           descargarlo: no escribe nada, es reimprimir algo ya emitido. */
         acciones.push(`<button class="btn btn-primary btn-sm" onclick="descargarPdfOC('${_escJs(o.id)}')">PDF</button>`);
       }
+      acciones.push(`<button class="btn btn-glass btn-sm" onclick="abrirFormOC('${_escJs(o.id)}')">Editar</button>`);
       if (o.estado === OC_ESTADO_BORRADOR) {
         acciones.push(`<button class="btn btn-rose btn-sm" onclick="eliminarOC('${_escJs(o.id)}')">Eliminar</button>`);
       } else if (o.estado === OC_ESTADO_EMITIDA) {
