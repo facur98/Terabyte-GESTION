@@ -42,11 +42,11 @@
       padding: 24px 20px 20px;
       border-bottom: 1px solid rgba(200,205,220,0.25);
     }
-    .logo-placeholder {
+    .logo-placeholder { font-family: 'Syne', sans-serif;
       width: 34px; height: 34px; border-radius: 9px;
       background: linear-gradient(135deg, var(--accent-blue), var(--accent-violet));
       display: flex; align-items: center; justify-content: center;
-      color: #fff; font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700;
+      color: #fff; font-size: 15px; font-weight: 700;
       flex-shrink: 0; box-shadow: 0 3px 12px rgba(79,128,255,0.35);
     }
     .brand-name { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; color: var(--text-dark); letter-spacing: -0.2px; }
@@ -115,7 +115,7 @@
     .sidebar-version {
       font-size: 10px; color: var(--text-light); text-align: center;
       letter-spacing: 0.6px; padding: 9px 0 10px; user-select: text;
-      font-family: 'Syne', sans-serif; font-weight: 600; opacity: 0.75;
+      font-weight: 600; opacity: 0.75;
     }
 
     /* ── MODO VIEWER (cambio #68) — perfil de solo lectura ──
@@ -177,7 +177,7 @@
     .stat-card.rose  .stat-icon { background: rgba(248,113,113,0.13); color: var(--accent-rose); }
     .stat-card.amber .stat-icon { background: rgba(251,191,36,0.13);  color: var(--accent-amber); }
     .stat-label { font-size: 12px; color: var(--text-light); font-weight: 500; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
-    .stat-value { font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 700; color: var(--text-dark); line-height: 1; }
+    .stat-value { font-size: 26px; font-weight: 700; color: var(--text-dark); line-height: 1; }
     .stat-sub { font-size: 12px; color: var(--text-light); margin-top: 6px; }
 
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
@@ -332,10 +332,10 @@
       display: grid;
       grid-template-columns: 4px 1.4fr 1.2fr 1.1fr 1.4fr 0.7fr 1.4fr 90px;
       gap: 12px; padding: 12px 18px;
-      font-size: 10.5px; font-weight: 700; color: var(--text-light);
+      font-size: 10.5px; font-weight: 700; color: var(--text-dark);
       text-transform: uppercase; letter-spacing: 0.7px;
-      border-bottom: 1px solid rgba(200,205,225,0.4);
-      background: rgba(255,255,255,0.30);
+      border-bottom: 1px solid rgba(200,205,225,0.45);
+      background: rgba(220,225,240,0.85);
     }
     .sg-head > div { display: flex; align-items: center; }
     .sg-head .col-act { justify-content: flex-end; }
@@ -345,6 +345,7 @@
       gap: 5px;
     }
     .sg-head-sort:hover { color: var(--accent-blue); }
+    .pr-th-sort, .sg-head-sort { color: inherit; }
     .sg-head-sort.sort-active { color: var(--accent-blue); }
     .sg-head-sort .sort-arrow {
       display: inline-block; width: 9px; font-size: 9px; line-height: 1;
@@ -373,17 +374,17 @@
 
     .sg-cli-wrap { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
     .sg-cli-row { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--text-mid); font-weight: 500; }
-    .sg-id { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 17px; color: var(--text-dark); letter-spacing: -0.3px; }
+    .sg-id { font-weight: 700; font-size: 17px; color: var(--text-dark); letter-spacing: -0.3px; }
 
     .sg-monto-wrap { display: flex; flex-direction: column; gap: 2px; }
-    .sg-monto-big { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 16px; color: var(--text-dark); }
+    .sg-monto-big { font-weight: 700; font-size: 16px; color: var(--text-dark); }
     .sg-monto-sub { font-size: 11px; color: var(--text-light); }
 
     /* Chip de facturación con color según rango */
     .sg-fac-chip {
       display: inline-flex; align-items: center; justify-content: center;
       padding: 5px 14px; border-radius: 20px;
-      font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px;
+      font-weight: 700; font-size: 13px;
       letter-spacing: 0.2px; min-width: 56px;
     }
     .sg-fac-chip-0   { background: rgba(150,160,190,0.18); color: var(--text-light); }
@@ -393,7 +394,7 @@
 
     /* Columna Días: número grande */
     .sg-dias-num {
-      font-family: 'Syne', sans-serif; font-weight: 700; font-size: 18px;
+      font-weight: 700; font-size: 18px;
       color: var(--text-dark); line-height: 1;
     }
     .sg-dias-num-sub { font-size: 10px; color: var(--text-light); font-weight: 500; margin-top: 3px; }
@@ -414,7 +415,7 @@
 
     .sg-act-wrap { display: flex; flex-direction: column; gap: 2px; }
     .sg-act-stats { font-size: 12.5px; color: var(--text-dark); font-weight: 600; }
-    .sg-act-stats b { font-family: 'Syne', sans-serif; font-weight: 700; }
+    .sg-act-stats b { font-weight: 700; }
     .sg-act-sub { font-size: 10.5px; color: var(--text-light); }
     .sg-act-sub.hoy { color: #0d9488; font-weight: 700; }
 
@@ -456,8 +457,7 @@
       display: inline-block;
       background: rgba(79,128,255,0.12); color: #3a6bf0;
       padding: 4px 11px; border-radius: 20px;
-      font-size: 13px; font-weight: 700; font-family: 'Syne', sans-serif;
-      min-width: 34px;
+      font-size: 13px; font-weight: 700; min-width: 34px;
     }
 
     /* Asegurar que el botón conserve cursor pointer dentro de col-acciones */
@@ -622,8 +622,7 @@
     .kc-violet .kpi-icon { background: rgba(167,139,250,0.12); color: #7c3aed; }
     .kc-green  .kpi-icon { background: rgba(74,222,128,0.12);  color: #16a34a; }
 
-    .kpi-label {
-      font-family: 'Syne', sans-serif;
+    .kpi-label { font-family: 'Syne', sans-serif;
       font-size: 13px; font-weight: 700;
       color: var(--text-dark);
       margin-bottom: 10px;
@@ -636,7 +635,7 @@
     .kc-rose   .kpi-label { color: #be123c; }
     .kc-violet .kpi-label { color: #7c3aed; }
     .kc-green  .kpi-label { color: #16a34a; }
-    .kpi-value { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 700; color: var(--text-dark); line-height: 1.1; }
+    .kpi-value { font-size: 24px; font-weight: 700; color: var(--text-dark); line-height: 1.1; }
     .kpi-sub   { font-size: 12px; color: var(--text-light); margin-top: 5px; }
     .kpi-ref   { font-size: 12px; color: var(--text-mid); margin-top: 3px; font-weight: 500; }
 
@@ -716,7 +715,7 @@
     .dash-cli-info { min-width: 0; }
     .dash-cli-chip-col { display: flex; align-items: center; justify-content: center; }
     .dash-cli-chip {
-      font-family: 'Syne', sans-serif; font-weight: 700;
+      font-weight: 700;
       font-size: 18px;
       padding: 8px 16px;
       border-radius: 24px;
@@ -737,12 +736,12 @@
       align-items: center; justify-content: center;
     }
     .peq-ring-pct {
-      font-family: 'Syne', sans-serif; font-weight: 700; line-height: 1;
+      font-weight: 700; line-height: 1;
       font-size: 37px;
     }
     .peq-ring-cap { font-size: 11px; color: var(--text-light); font-weight: 600; margin-top: 4px; letter-spacing: .3px; }
     .peq-monto-label { font-size: 11.5px; color: var(--text-light); font-weight: 600; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 5px; }
-    .peq-monto-valor { font-family: 'Syne', sans-serif; font-size: 33px; font-weight: 700; line-height: 1; color: var(--text-dark); }
+    .peq-monto-valor { font-size: 33px; font-weight: 700; line-height: 1; color: var(--text-dark); }
 
     /* ── Calendario de asignaciones ── */
     .asig-cal-grid {
@@ -771,7 +770,7 @@
     .asig-cal-cell.is-weekend.has-data:hover { background: rgba(79,128,255,0.10); }
 
     .asig-cal-daynum {
-      font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; color: var(--text-dark);
+      font-size: 14px; font-weight: 700; color: var(--text-dark);
       line-height: 1;
     }
     .asig-cal-cell.outside-month .asig-cal-daynum { color: var(--text-light); font-weight: 500; }
@@ -826,7 +825,7 @@
       border-radius: 12px; padding: 12px 16px; margin-bottom: 10px;
     }
     .cola-grupo-fecha {
-      font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700;
+      font-size: 13px; font-weight: 700;
       color: var(--text-dark); margin-bottom: 8px;
       display: flex; align-items: center; gap: 8px;
     }
@@ -1107,11 +1106,11 @@
       width: 420px; max-width: 95vw;
       animation: fadeUp 0.5s ease;
     }
-    .login-logo {
+    .login-logo { font-family: 'Syne', sans-serif;
       width: 52px; height: 52px; border-radius: 14px;
       background: linear-gradient(135deg, var(--accent-blue), var(--accent-violet));
       display: flex; align-items: center; justify-content: center;
-      color: #fff; font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700;
+      color: #fff; font-size: 22px; font-weight: 700;
       margin: 0 auto 20px; box-shadow: 0 6px 18px rgba(79,128,255,0.35);
     }
     .login-title { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; text-align: center; margin-bottom: 4px; }
@@ -1135,8 +1134,8 @@
                   radial-gradient(ellipse 60% 60% at 75% 80%, rgba(45,212,191,0.10) 0%, transparent 65%);
       pointer-events: none;
     }
-    .bienvenida-nombre {
-      font-family: 'Syne', sans-serif; font-size: 42px; font-weight: 700;
+    .bienvenida-nombre { font-family: 'Syne', sans-serif;
+      font-size: 42px; font-weight: 700;
       text-align: center; line-height: 1.1; position: relative; z-index: 1;
       animation: fadeUp 0.6s ease;
     }
@@ -1263,12 +1262,12 @@
     .an-matrix thead th { background: rgba(220,225,240,0.85); color: var(--text-light); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .7px; padding: 12px 14px; text-align: center; border-bottom: 1px solid rgba(200,205,225,0.45); position: sticky; top: 0; z-index: 3; }
     .an-matrix thead th:first-child { position: sticky; left: 0; z-index: 4; }
     .an-matrix thead th.col-total { color: var(--accent-blue); background: rgba(79,128,255,0.18); }
-    .an-matrix tr.row-total td { background: rgba(79,128,255,0.10); color: var(--text-dark); font-weight: 700; font-family: 'Syne', sans-serif; border-bottom: 1px solid rgba(200,205,225,0.55); padding: 12px 14px; text-align: center; position: sticky; top: 41px; z-index: 2; }
+    .an-matrix tr.row-total td { background: rgba(79,128,255,0.10); color: var(--text-dark); font-weight: 700; border-bottom: 1px solid rgba(200,205,225,0.55); padding: 12px 14px; text-align: center; position: sticky; top: 41px; z-index: 2; }
     .an-matrix tr.row-total td:first-child { color: var(--accent-blue); position: sticky; left: 0; z-index: 3; background: rgba(79,128,255,0.20); }
     .an-matrix tr.row-total td.col-total { background: rgba(79,128,255,0.20); color: var(--accent-blue); }
     .an-matrix tbody td { padding: 12px 14px; text-align: center; border-bottom: 1px solid rgba(200,205,225,0.25); vertical-align: middle; }
     .an-matrix tbody td:first-child { font-weight: 600; position: sticky; left: 0; background: rgba(255,255,255,0.92); z-index: 1; }
-    .an-matrix tbody td.col-total { font-weight: 700; color: var(--accent-blue); font-family: 'Syne', sans-serif; background: rgba(79,128,255,0.06); }
+    .an-matrix tbody td.col-total { font-weight: 700; color: var(--accent-blue); background: rgba(79,128,255,0.06); }
     .an-matrix tbody tr:last-child td { border-bottom: none; }
     .an-cell-empty { color: var(--text-light); }
     .an-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 7px; vertical-align: middle; }
@@ -1366,12 +1365,13 @@
       background: var(--glass); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
       border: 1px solid var(--glass-border); border-radius: var(--radius-sm);
       box-shadow: var(--glass-shadow); padding: 14px 16px;
+      text-align: center;   /* criterio del sistema, igual que las cards del dashboard */
     }
     .pr-tile-label {
       font-size: 10px; font-weight: 700; color: var(--text-light);
       text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 6px;
     }
-    .pr-tile-valor { font-family: 'Syne', sans-serif; font-size: 21px; font-weight: 700; color: var(--text-dark); }
+    .pr-tile-valor { font-size: 21px; font-weight: 700; color: var(--text-dark); }
     .pr-tile-sub { font-size: 11px; color: var(--text-light); margin-top: 3px; }
     .pr-tile-valor.neg { color: #0d9488; }
     .pr-tile-valor.pos { color: #b45309; }
@@ -1416,10 +1416,12 @@
       text-align: center;
     }
     .pr-head {
-      font-size: 10.5px; font-weight: 700; color: var(--text-light);
+      font-size: 10.5px; font-weight: 700; color: var(--text-dark);
       text-transform: uppercase; letter-spacing: 0.7px;
-      border-bottom: 1px solid rgba(200,205,225,0.4);
-      background: rgba(255,255,255,0.30);
+      border-bottom: 1px solid rgba(200,205,225,0.45);
+      /* Gris apenas marcado + texto oscuro para que se lea como encabezado.
+         Mismo tono que .an-matrix thead th, el precedente del sistema. */
+      background: rgba(220,225,240,0.85);
     }
     .pr-head > div { display: flex; align-items: center; justify-content: center; gap: 5px; }
     .pr-head .col-desc, .pr-row .col-desc { text-align: left; justify-content: flex-start; }
@@ -1444,7 +1446,7 @@
       font-size: 9px; font-weight: 700; cursor: help; vertical-align: middle;
     }
     /* Los importes DENTRO de tablas van en DM Sans, como el resto del sistema.
-       Syne queda reservada para los números grandes de tiles y totales. */
+       Syne queda reservada para TÍTULOS y marca (cambio #84). */
     .pr-monto { font-weight: 600; font-size: 13px; color: var(--text-dark); }
     .pr-monto.vacio { color: var(--text-light); font-weight: 500; }
     .pr-conv {
@@ -1494,9 +1496,10 @@
       text-align: center;   /* criterio del sistema: todo centrado */
     }
     .oc-head {
-      font-size: 10.5px; font-weight: 700; color: var(--text-light);
+      font-size: 10.5px; font-weight: 700; color: var(--text-dark);
       text-transform: uppercase; letter-spacing: 0.7px;
-      border-bottom: 1px solid rgba(200,205,225,0.4); background: rgba(255,255,255,0.30);
+      border-bottom: 1px solid rgba(200,205,225,0.45);
+      background: rgba(220,225,240,0.85);
     }
     .oc-head > div { display: flex; align-items: center; justify-content: center; gap: 5px; }
     .oc-head .num, .oc-row .num { justify-content: center; text-align: center; }
@@ -1527,6 +1530,14 @@
        Usa el andamiaje de formularios del sistema: .form-row / .form-group /
        .form-label / .form-input / .form-select. No define clases propias para
        eso, para que se vea igual que el alta de sitios o de líneas. */
+    /* ⚠ .card tiene backdrop-filter, que CREA UN STACKING CONTEXT PROPIO. Sin esto,
+       el z-index:100 del .ac-panel solo compite dentro de su card y el panel del
+       autocomplete queda tapado por la card siguiente. Mismo patrón del cambio #54
+       (.sg-filtros-card sobre .sg-lista). El orden importa: cabecera (40) por
+       encima de ítems (30), e ítems por encima de notas. */
+    #ocf-card-cabecera { position: relative; z-index: 40; }
+    #ocf-card-lineas   { position: relative; z-index: 30; }
+    #ocf-card-notas    { position: relative; z-index: 10; }
     .ocf-cab { display: grid; grid-template-columns: 1.2fr 1.4fr 160px auto; gap: 16px; align-items: end; }
     /* Chip compacto: se dimensiona por su contenido, no por la columna */
     .ocf-chip-preciario {
@@ -1565,9 +1576,10 @@
       text-align: center;
     }
     .ocf-head {
-      font-size: 10.5px; font-weight: 700; color: var(--text-light);
+      font-size: 10.5px; font-weight: 700; color: var(--text-dark);
       text-transform: uppercase; letter-spacing: 0.7px;
-      border-bottom: 1px solid rgba(200,205,225,0.4); background: rgba(255,255,255,0.30);
+      border-bottom: 1px solid rgba(200,205,225,0.45);
+      background: rgba(220,225,240,0.85);
     }
     .ocf-head > div { display: flex; align-items: center; justify-content: center; gap: 4px; }
     .ocf-head .col-desc, .ocf-row .col-desc { text-align: left; justify-content: flex-start; }
@@ -1615,11 +1627,11 @@
       font-size: 10px; font-weight: 700; color: var(--text-light);
       text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 4px;
     }
-    .ocf-total-valor { font-family: 'Syne', sans-serif; font-size: 19px; font-weight: 700; color: var(--text-dark); }
+    .ocf-total-valor { font-size: 19px; font-weight: 700; color: var(--text-dark); }
 
-    .ac-panel .ocf-op-cod { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 11.5px; color: var(--accent-blue); }
+    .ac-panel .ocf-op-cod { font-weight: 700; font-size: 11.5px; color: var(--accent-blue); }
     .ac-panel .ocf-op-desc { font-size: 12px; color: var(--text-mid); }
-    .ac-panel .ocf-op-monto { font-family: 'Syne', sans-serif; font-size: 11.5px; color: var(--text-light); }
+    .ac-panel .ocf-op-monto { font-size: 11.5px; color: var(--text-light); }
 
     @media (max-width: 1250px) {
       .oc-tiles { grid-template-columns: repeat(2, 1fr); }
@@ -1836,7 +1848,7 @@
           <div class="card-title" style="font-size:16px;">GAP acumulado vs. PEQ</div>
           <div class="card-sub">Superávit o déficit mensual respecto al punto de equilibrio ($90.000.000)</div>
         </div>
-        <div id="dash-gap-total" style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;"></div>
+        <div id="dash-gap-total" style="font-size:22px;font-weight:700;"></div>
       </div>
       <div id="dash-gap-tabla" style="overflow-x:auto;"></div>
     </div>
@@ -2309,7 +2321,7 @@
     </div>
 
     <!-- Paso 1: cabecera -->
-    <div class="card" style="margin-bottom:16px;">
+    <div class="card" id="ocf-card-cabecera" style="margin-bottom:16px;">
       <div class="card-header">
         <div>
           <div class="card-title">Cabecera</div>
@@ -2367,7 +2379,7 @@
       <div class="ocf-totales" id="ocf-totales"></div>
     </div>
 
-    <div class="card" style="margin-top:16px;">
+    <div class="card" id="ocf-card-notas" style="margin-top:16px;">
       <div class="card-header">
         <div>
           <div class="card-title">Notas</div>
@@ -2898,7 +2910,7 @@
         <div id="kpi-modal-sub" style="font-size:13px;color:var(--text-light);margin-top:3px;"></div>
       </div>
       <div style="display:flex;align-items:center;gap:16px;">
-        <div id="kpi-modal-total" style="font-family:'Syne',sans-serif;font-size:24px;font-weight:700;color:var(--accent-blue);"></div>
+        <div id="kpi-modal-total" style="font-size:24px;font-weight:700;color:var(--accent-blue);"></div>
         <button onclick="cerrarModal()" style="width:38px;height:38px;border-radius:50%;background:rgba(200,205,220,0.25);border:none;cursor:pointer;font-size:18px;color:var(--text-mid);display:flex;align-items:center;justify-content:center;transition:all .2s;"
           onmouseover="this.style.background='rgba(248,113,113,0.15)';this.style.color='#b91c1c'"
           onmouseout="this.style.background='rgba(200,205,220,0.25)';this.style.color='var(--text-mid)'">✕</button>
@@ -2954,7 +2966,7 @@ const PEQ = 90000000;
    a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
    Se pinta en el pie del sidebar (#sidebar-version).
    ═══════════════════════════════════════════════════════ */
-const APP_VERSION = 'V 110826 2132';
+const APP_VERSION = 'V 110826 2145';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
@@ -3205,8 +3217,11 @@ async function cargarTodo() {
       preciario:     String(get(r, 'PRECIARIO') || '').trim().toUpperCase(),
       notas:         get(r, 'NOTAS'),
       estado:        String(get(r, 'ESTADO') || OC_ESTADO_BORRADOR).trim(),
-      totalVenta:    prParseMonto(get(r, 'TOTAL_VENTA')) || 0,
-      totalCosto:    prParseMonto(get(r, 'TOTAL_COSTO')) || 0,
+      /* Se redondea al LEER: las OC guardadas antes del #84 tienen centavos en
+         el Sheet y sin esto mostrarían totales que no cuadran con sus líneas.
+         El valor del Sheet se normaliza recién al volver a guardarlas. */
+      totalVenta:    Math.round(prParseMonto(get(r, 'TOTAL_VENTA')) || 0),
+      totalCosto:    Math.round(prParseMonto(get(r, 'TOTAL_COSTO')) || 0),
       pctGlobal:     parseInt(get(r, 'PCT_GLOBAL'), 10) || 0,
       usuarioCarga:  get(r, 'USUARIO_CARGA'),
       creadoAt:      get(r, 'CREADO_AT'),
@@ -3220,9 +3235,9 @@ async function cargarTodo() {
       codServ:      String(get(r, 'COD_SERV') || '').trim(),
       descripcion:  get(r, 'DESCRIPCION'),
       cantidad:     prParseMonto(get(r, 'CANTIDAD')) || 0,
-      puVenta:      prParseMonto(get(r, 'PU_VENTA')) || 0,
-      importeVenta: prParseMonto(get(r, 'IMPORTE_VENTA')) || 0,
-      costoLinea:   prParseMonto(get(r, 'COSTO_LINEA')) || 0,
+      puVenta:      Math.round(prParseMonto(get(r, 'PU_VENTA')) || 0),
+      importeVenta: Math.round(prParseMonto(get(r, 'IMPORTE_VENTA')) || 0),
+      costoLinea:   Math.round(prParseMonto(get(r, 'COSTO_LINEA')) || 0),
       manual:       String(get(r, 'MANUAL') || '').trim() === '1'
     })).filter(l => l.id && l.ocId);
 
@@ -7722,7 +7737,7 @@ function actualizarDashboard() {
           onmouseout="this.style.transform='';this.style.boxShadow=''">
           <div class="dash-cli-info">
             <div style="display:flex;align-items:center;justify-content:center;gap:8px;font-weight:600;font-size:13px;margin-bottom:4px;">${dot(c.color)}${c.id}</div>
-            <div style="text-align:center;font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:${c.color};margin-bottom:11px;">${fmt(valFac)}</div>
+            <div style="text-align:center;font-size:17px;font-weight:700;color:${c.color};margin-bottom:11px;">${fmt(valFac)}</div>
             <div style="height:5px;background:rgba(200,205,220,0.3);border-radius:20px;overflow:hidden;">
               <div style="height:100%;width:${pct}%;background:${c.color};border-radius:20px;transition:.4s ease;"></div>
             </div>
@@ -7856,7 +7871,7 @@ function renderGapAcumulado() {
               : `⚠️ GAP negativo: se necesitan ${fmt(Math.abs(gapFinal))} adicionales sobre el PEQ para recuperar`}
           </td>
           <td colspan="3" style="padding:14px 0 0;text-align:right;">
-            <span style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:${gapFinal >= 0 ? '#0d9488' : '#be123c'};">
+            <span style="font-size:15px;font-weight:700;color:${gapFinal >= 0 ? '#0d9488' : '#be123c'};">
               GAP total: ${gapFinal >= 0 ? '+' : ''}${fmt(Math.round(gapFinal))}
             </span>
           </td>
@@ -8068,22 +8083,21 @@ function prParseMonto(v) {
   return isFinite(n) ? n : null;
 }
 
-/* Formato es-AR CON centavos: 3488.33 → "$3.488,33".
-   Sin espacio después del $, igual que fmt() del sistema.
-   Se usa donde el centavo es el dato: precios unitarios del preciario,
-   líneas de la OC y totales del formulario. */
-function prFmtMonto(n) {
-  if (n == null || !isFinite(n)) return '—';
-  return '$' + n.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
+/* Formato de importes SIN decimales: 3488.33 → "$3.488" (cambio #84).
+   Delega en fmt(), el helper del sistema, así el criterio de formato vive en
+   un solo lugar.
 
-/* Formato SIN centavos para cifras de resumen: 3488.33 → "$3.488".
-   En tiles y en el listado de OC los centavos solo hacen ruido; el detalle
-   fino vive en el formulario. Delega en fmt(), el helper del sistema. */
-function prFmtEntero(n) {
+   ⚠ El redondeo NO es solo de presentación: los importes se CALCULAN y se
+   GUARDAN enteros (ver ocRoundImporte). Si se redondeara únicamente al mostrar,
+   las líneas dejarían de sumar el total en pantalla — con 10 ítems el desvío
+   ya es visible, y en un papel que recibe un contratista eso genera preguntas.
+
+   prFmtEntero se conserva como alias por compatibilidad: hoy son la misma cosa. */
+function prFmtMonto(n) {
   if (n == null || !isFinite(n)) return '—';
   return fmt(Math.round(n));
 }
+function prFmtEntero(n) { return prFmtMonto(n); }
 
 function _prEsPlaceholder(n) {
   return n != null && PR_PLACEHOLDERS.some(p => Math.abs(n - p) < 0.0001);
@@ -8367,9 +8381,27 @@ const OC_ESTADO_ANULADA  = 'Anulada';
 const OC_ESTADOS = [OC_ESTADO_BORRADOR, OC_ESTADO_EMITIDA, OC_ESTADO_ANULADA];
 const OC_PCT_DEFAULT = 65;
 
-/* Redondeo a 2 decimales (D20). El +Number.EPSILON corrige el clásico
-   Math.round(1.005*100)/100 === 1 por representación binaria. */
-function ocRound2(n) {
+/* Redondeo de IMPORTES a peso entero (cambio #84 — reemplaza a D20).
+   Todo importe de una OC —precio unitario, importe de línea, costo y totales—
+   se redondea acá y se guarda así en el Sheet.
+
+   El redondeo se aplica EN EL ORIGEN, incluido el PU_VENTA al congelarlo desde
+   el preciario. Es lo que garantiza que la aritmética cierre a la vista: si el
+   PU mostrara 3.488 pero se calculara con 3488.33, una línea de cantidad 2
+   mostraría importe 6.977 mientras el usuario espera 6.976.
+
+   Las CANTIDADES conservan sus 2 decimales: 0,5 de un servicio es un dato real,
+   no un importe. */
+function ocRoundImporte(n) {
+  if (n == null || !isFinite(n)) return 0;
+  return Math.round(n);
+}
+/* Alias histórico: el nombre quedó de cuando los importes iban a 2 decimales.
+   Se conserva para no tocar las 20 llamadas existentes. */
+function ocRound2(n) { return ocRoundImporte(n); }
+
+/* Redondeo de CANTIDADES, que sí admiten 2 decimales. */
+function ocRoundCantidad(n) {
   if (n == null || !isFinite(n)) return 0;
   return Math.round((n + Number.EPSILON) * 100) / 100;
 }
@@ -8788,10 +8820,13 @@ function ocfAgregarLinea(cod) {
   const it = _ocfItemsPreciario().find(x => x.cod === cod);
   if (!it) { toast('No se encontró el ítem en el preciario', 'err'); return; }
   const pct = ocfPctActual();
-  const importe = ocRound2(1 * (it.monto || 0));
+  /* El PU se congela ENTERO: es lo que hace que importe = cantidad × PU cierre
+     exacto a la vista. El preciario conserva sus centavos como dato de origen. */
+  const pu = ocRoundImporte(it.monto || 0);
+  const importe = ocRoundImporte(1 * pu);
   _ocfCtx.lineas.push({
     codServ: it.cod, descripcion: it.desc, cantidad: 1,
-    puVenta: it.monto || 0, costoLinea: ocRound2(importe * pct / 100), manual: false
+    puVenta: pu, costoLinea: ocRoundImporte(importe * pct / 100), manual: false
   });
   document.getElementById('ocf-buscar-item').value = '';
   ocfCerrarPaneles();
@@ -8839,7 +8874,7 @@ function ocfSetCantidad(idx, valor) {
   if (!_ocfCtx || !_ocfCtx.lineas[idx]) return;
   const l = _ocfCtx.lineas[idx];
   const n = prParseMonto(valor);
-  l.cantidad = (n == null || n < 0) ? 0 : ocRound2(n);
+  l.cantidad = (n == null || n < 0) ? 0 : ocRoundCantidad(n);
   if (!l.manual) {
     l.costoLinea = ocRound2(ocRound2(l.cantidad * l.puVenta) * ocfPctActual() / 100);
   } else {
@@ -9037,7 +9072,7 @@ async function guardarOC(destino) {
     ID: ocId, NRO_OC: nroOc, FECHA: fecha, SITIO_ID: _ocfCtx.sitioId,
     CONTRATISTA_ID: conId, CLIENTE_ID: ocClienteDeSitio(_ocfCtx.sitioId),
     PRECIARIO: _ocfCtx.preciario, NOTAS: notas, ESTADO: destino,
-    TOTAL_VENTA: venta.toFixed(2), TOTAL_COSTO: costo.toFixed(2),
+    TOTAL_VENTA: String(ocRoundImporte(venta)), TOTAL_COSTO: String(ocRoundImporte(costo)),
     PCT_GLOBAL: String(pct),
     USUARIO_CARGA: (_usuarioActual && (_usuarioActual.idUsuario || _usuarioActual.usuario)) || '',
     CREADO_AT: _ocfCtx.creadoAt || ahora,
@@ -9049,10 +9084,11 @@ async function guardarOC(destino) {
   const filas = _ocfCtx.lineas.map((l, i) => ({
     ID: nuevoId('OCL'), OC_ID: ocId, ORDEN: String(i + 1),
     COD_SERV: l.codServ, DESCRIPCION: l.descripcion,
+    /* Cantidad con 2 decimales; importes SIEMPRE enteros (cambio #84). */
     CANTIDAD: Number(l.cantidad).toFixed(2),
-    PU_VENTA: Number(l.puVenta).toFixed(2),
-    IMPORTE_VENTA: ocRound2(l.cantidad * l.puVenta).toFixed(2),
-    COSTO_LINEA: Number(l.costoLinea).toFixed(2),
+    PU_VENTA: String(ocRoundImporte(l.puVenta)),
+    IMPORTE_VENTA: String(ocRoundImporte(l.cantidad * l.puVenta)),
+    COSTO_LINEA: String(ocRoundImporte(l.costoLinea)),
     MANUAL: l.manual ? '1' : '0'
   }));
 
@@ -9076,7 +9112,7 @@ async function guardarOC(destino) {
     const local = {
       id: ocId, nroOc, fecha, sitioId: _ocfCtx.sitioId, contratistaId: conId,
       clienteId: cab.CLIENTE_ID, preciario: _ocfCtx.preciario, notas, estado: destino,
-      totalVenta: venta, totalCosto: costo, pctGlobal: pct,
+      totalVenta: ocRoundImporte(venta), totalCosto: ocRoundImporte(costo), pctGlobal: pct,
       usuarioCarga: cab.USUARIO_CARGA, creadoAt: cab.CREADO_AT, modificadoAt: cab.MODIFICADO_AT
     };
     if (esNueva) oc.push(local);
