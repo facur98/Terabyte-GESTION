@@ -7,6 +7,16 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@600;700&display=swap" rel="stylesheet"/>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <!-- PDF de las órdenes de compra (fase 4). Mismo CDN que Chart.js y Font Awesome.
+       jsPDF 4.2.1: la 4.1.0 parcheó CVE-2026-24737 (inyección vía AcroForm); además
+       este feature no usa el módulo AcroForm.
+       autotable resuelve la paginación: una OC de 40 líneas no entra en una hoja y el
+       plugin corta repitiendo el encabezado de la tabla. Programar eso a mano es donde
+       más se rompen estos PDFs.
+       Se cargan con `defer` para no bloquear el primer render: recién se necesitan
+       cuando el usuario pide descargar una OC. -->
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/4.2.1/jspdf.umd.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/5.0.8/jspdf.plugin.autotable.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -1491,7 +1501,7 @@
 
     .oc-head, .oc-row {
       display: grid;
-      grid-template-columns: 125px 95px 1fr 1fr 110px 110px 85px 100px 150px;
+      grid-template-columns: 120px 90px 1fr 1fr 105px 105px 80px 95px 195px;
       gap: 10px; padding: 12px 18px; align-items: center;
       text-align: center;   /* criterio del sistema: todo centrado */
     }
@@ -2966,7 +2976,7 @@ const PEQ = 90000000;
    a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
    Se pinta en el pie del sidebar (#sidebar-version).
    ═══════════════════════════════════════════════════════ */
-const APP_VERSION = 'V 110826 2145';
+const APP_VERSION = 'V 110826 2158';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
@@ -8546,6 +8556,11 @@ function renderOC() {
         : `<span class="oc-nro sin">sin emitir</span>`;
       const acciones = [];
       acciones.push(`<button class="btn btn-glass btn-sm" onclick="abrirFormOC('${_escJs(o.id)}')">Editar</button>`);
+      if (o.estado === OC_ESTADO_EMITIDA) {
+        /* El PDF solo existe para las emitidas (D26). El viewer también puede
+           descargarlo: no escribe nada, es reimprimir algo ya emitido. */
+        acciones.push(`<button class="btn btn-primary btn-sm" onclick="descargarPdfOC('${_escJs(o.id)}')">PDF</button>`);
+      }
       if (o.estado === OC_ESTADO_BORRADOR) {
         acciones.push(`<button class="btn btn-rose btn-sm" onclick="eliminarOC('${_escJs(o.id)}')">Eliminar</button>`);
       } else if (o.estado === OC_ESTADO_EMITIDA) {
@@ -9136,6 +9151,171 @@ async function guardarOC(destino) {
   } finally { setLoading(false); }
 }
 
+/* ═══════════════════════════════════════════════════════
+   PDF DE LA ORDEN DE COMPRA — fase 4 (cambio #85)
+
+   ⚠ CRÍTICO — ESTE PAPEL LO RECIBE EL CONTRATISTA.
+   NUNCA debe contener: PU_VENTA, IMPORTE_VENTA, márgenes en ninguna forma,
+   PCT_GLOBAL ni COD_SERV. La columna "Monto" es COSTO_LINEA y el TOTAL es
+   TOTAL_COSTO — o sea, lo que se le paga, nunca lo que Terabyte le cobra al
+   cliente. Si mañana se agrega una columna a este PDF, verificar esto primero.
+
+   Solo se emite el PDF de una OC en estado "Emitida" (D26): un borrador no
+   tiene número asignado, y un papel sin número no sirve como orden de compra.
+   ═══════════════════════════════════════════════════════ */
+
+/* Resuelve el constructor de jsPDF sea cual sea la forma en que el CDN lo
+   exponga (UMD moderno: window.jspdf.jsPDF; builds viejos: window.jsPDF). */
+function _pdfJsPDF() {
+  if (window.jspdf && window.jspdf.jsPDF) return window.jspdf.jsPDF;
+  if (window.jsPDF) return window.jsPDF;
+  return null;
+}
+
+/* autotable puede venir como método del documento (dist clásico) o como
+   función suelta (builds modulares). Se soportan las dos, y si no está
+   ninguna se avisa en vez de romper. */
+function _pdfAutoTable(doc, opciones) {
+  if (typeof doc.autoTable === 'function') { doc.autoTable(opciones); return true; }
+  const fn = (window.jspdf && window.jspdf.autoTable) || window.autoTable;
+  if (typeof fn === 'function') { fn(doc, opciones); return true; }
+  return false;
+}
+
+/* dd/mm/aaaa a partir de "YYYY-MM-DD", sin construir un Date
+   (evita el corrimiento de un día por zona horaria). */
+function _pdfFecha(iso) {
+  const m = String(iso || '').match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return m ? `${m[3]}/${m[2]}/${m[1]}` : String(iso || '');
+}
+
+/* Nombre de archivo seguro: sin caracteres que el sistema de archivos rechace. */
+function _pdfNombreArchivo(nroOc, contratista) {
+  const limpio = String(contratista || 'contratista')
+    .replace(/[\\/:*?"<>|]/g, '').replace(/\s+/g, ' ').trim();
+  return `${nroOc} - ${limpio}.pdf`;
+}
+
+function descargarPdfOC(ocId) {
+  const o = oc.find(x => x.id === ocId);
+  if (!o) { toast('No se encontró la OC', 'err'); return; }
+
+  if (o.estado !== OC_ESTADO_EMITIDA) {
+    toast(o.estado === OC_ESTADO_BORRADOR
+      ? 'El borrador todavía no tiene número: emitilo para descargar el PDF'
+      : 'Esta OC está anulada. Reactivala para descargar el PDF', 'err');
+    return;
+  }
+
+  const JsPDF = _pdfJsPDF();
+  if (!JsPDF) {
+    toast('No se pudo cargar el generador de PDF. Revisá la conexión y refrescá la página.', 'err');
+    return;
+  }
+
+  const lineas = ocLineasDe(ocId);
+  if (!lineas.length) { toast('La OC no tiene ítems para imprimir', 'err'); return; }
+
+  try {
+    const doc = new JsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+    const M = 18;                                   // margen lateral
+    const ancho = doc.internal.pageSize.getWidth();
+    const derecha = ancho - M;
+
+    /* ── Encabezado ── */
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(17);
+    doc.text('TERABYTE SRL', M, 22);
+
+    doc.setFontSize(14);
+    doc.text('ORDEN DE COMPRA', derecha, 22, { align: 'right' });
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10.5);
+    doc.text(`N° ${o.nroOc}`,            derecha, 29, { align: 'right' });
+    doc.text(`Fecha: ${_pdfFecha(o.fecha)}`, derecha, 34.5, { align: 'right' });
+    doc.text(`Sitio: ${o.sitioId}`,      derecha, 40, { align: 'right' });
+
+    doc.setDrawColor(190, 195, 210);
+    doc.setLineWidth(0.4);
+    doc.line(M, 46, derecha, 46);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.text('Contratista:', M, 55);
+    doc.setFont('helvetica', 'normal');
+    doc.text(nombreEmpleado(o.contratistaId) || o.contratistaId, M + 26, 55);
+
+    /* ── Tabla: SOLO descripción y monto (D27) ──
+       El monto es COSTO_LINEA: lo que se le paga al contratista. */
+    const cuerpo = lineas.map(l => [l.descripcion || '', prFmtMonto(l.costoLinea)]);
+    const ok = _pdfAutoTable(doc, {
+      startY: 63,
+      head: [['Descripción', 'Monto']],
+      body: cuerpo,
+      theme: 'grid',
+      margin: { left: M, right: M },
+      styles: {
+        font: 'helvetica', fontSize: 9.5, cellPadding: 2.6,
+        lineColor: [200, 205, 220], lineWidth: 0.2, textColor: [30, 32, 46],
+        overflow: 'linebreak'
+      },
+      headStyles: {
+        fillColor: [232, 236, 248], textColor: [26, 29, 46],
+        fontStyle: 'bold', fontSize: 9.5, halign: 'left'
+      },
+      columnStyles: {
+        0: { cellWidth: 'auto', halign: 'left' },
+        1: { cellWidth: 34, halign: 'right' }
+      },
+      /* autotable repite el encabezado en cada página automáticamente */
+      showHead: 'everyPage'
+    });
+
+    if (!ok) {
+      toast('No se pudo cargar el generador de tablas del PDF. Refrescá la página.', 'err');
+      return;
+    }
+
+    /* ── Total ── */
+    let y = (doc.lastAutoTable && doc.lastAutoTable.finalY) ? doc.lastAutoTable.finalY + 10 : 120;
+    const altoPag = doc.internal.pageSize.getHeight();
+    if (y > altoPag - 30) { doc.addPage(); y = 25; }   // que el total no quede huérfano
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11.5);
+    doc.text('TOTAL:', derecha - 42, y, { align: 'right' });
+    doc.text(prFmtMonto(o.totalCosto), derecha, y, { align: 'right' });
+
+    /* ── Notas (solo si existen) ── */
+    const notas = String(o.notas || '').trim();
+    if (notas) {
+      y += 13;
+      if (y > altoPag - 25) { doc.addPage(); y = 25; }
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.text('Notas:', M, y);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9.5);
+      /* splitTextToSize corta el texto al ancho útil; sin esto una nota larga
+         se dibuja en una sola línea que se sale de la hoja. */
+      const partes = doc.splitTextToSize(notas, derecha - M);
+      partes.forEach((linea, i) => {
+        let yy = y + 5.5 + (i * 4.6);
+        if (yy > altoPag - 15) { doc.addPage(); y = 25 - 5.5 - (i * 4.6); yy = 25; }
+        doc.text(linea, M, yy);
+      });
+    }
+
+    doc.save(_pdfNombreArchivo(o.nroOc, nombreEmpleado(o.contratistaId)));
+    toast(`PDF de ${o.nroOc} generado`, 'ok');
+
+  } catch (err) {
+    console.error('ERROR descargarPdfOC:', err);
+    toast('No se pudo generar el PDF: ' + err.message, 'err');
+  }
+}
+
 /* ══ LOGIN ══ */
 /* ═══════════════════════════════════════════════════════
    MODO VIEWER — perfil de SOLO LECTURA (cambio #68)
@@ -9203,6 +9383,8 @@ const VIEWER_PERMITIDO = new Set([
      ocfLiberarLinea) quedan FUERA a propósito: así el barrido por lista blanca
      les oculta el botón, además del guard bloqueoViewer() que ya tienen. */
   'renderOC', 'ocLimpiarFiltros', 'cerrarFormOC',
+  /* El PDF no escribe nada: el viewer puede reimprimir una OC ya emitida (D15). */
+  'descargarPdfOC',
   // Navegación general
   'showView', 'toggleNavGroup', 'cerrarSesion', 'navAsigMes',
   'intentarLogin', 'sincronizar', 'volverDeNuevaAsig',
