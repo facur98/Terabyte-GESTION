@@ -2976,7 +2976,7 @@ const PEQ = 90000000;
    a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
    Se pinta en el pie del sidebar (#sidebar-version).
    ═══════════════════════════════════════════════════════ */
-const APP_VERSION = 'V 110826 2158';
+const APP_VERSION = 'V 110826 2217';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
@@ -9189,11 +9189,15 @@ function _pdfFecha(iso) {
   return m ? `${m[3]}/${m[2]}/${m[1]}` : String(iso || '');
 }
 
-/* Nombre de archivo seguro: sin caracteres que el sistema de archivos rechace. */
-function _pdfNombreArchivo(nroOc, contratista) {
-  const limpio = String(contratista || 'contratista')
-    .replace(/[\\/:*?"<>|]/g, '').replace(/\s+/g, ' ').trim();
-  return `${nroOc} - ${limpio}.pdf`;
+/* Nombre de archivo: "OC-2026-0001 - CB00206 - Ojeda.pdf".
+   Lleva el número además del sitio y el contratista porque se permiten varias OC
+   para la misma obra y el mismo contratista (D30): sin el número, dos descargas
+   colisionarían y el navegador agregaría "(1)".
+   Se sanean los caracteres que el sistema de archivos rechaza. */
+function _pdfNombreArchivo(nroOc, sitioId, contratista) {
+  const limpiar = (v, fallback) => String(v || fallback)
+    .replace(/[\\/:*?"<>|]/g, '').replace(/\s+/g, ' ').trim() || fallback;
+  return `${limpiar(nroOc, 'OC')} - ${limpiar(sitioId, 'sitio')} - ${limpiar(contratista, 'contratista')}.pdf`;
 }
 
 function descargarPdfOC(ocId) {
@@ -9232,25 +9236,49 @@ function descargarPdfOC(ocId) {
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(10.5);
-    doc.text(`N° ${o.nroOc}`,            derecha, 29, { align: 'right' });
+    doc.text(`N° ${o.nroOc}`,                derecha, 29, { align: 'right' });
     doc.text(`Fecha: ${_pdfFecha(o.fecha)}`, derecha, 34.5, { align: 'right' });
-    doc.text(`Sitio: ${o.sitioId}`,      derecha, 40, { align: 'right' });
 
     doc.setDrawColor(190, 195, 210);
     doc.setLineWidth(0.4);
-    doc.line(M, 46, derecha, 46);
+    doc.line(M, 41, derecha, 41);
+
+    /* ── SITIO: es el dato más importante del papel ──
+       El contratista trabaja en varias obras a la vez; lo primero que necesita
+       saber al recibir la orden es a cuál corresponde. Va en una banda propia,
+       en cuerpo grande, antes que cualquier otro dato. */
+    const bandaY = 47, bandaAlto = 15;
+    doc.setFillColor(238, 241, 250);
+    doc.setDrawColor(200, 208, 228);
+    doc.setLineWidth(0.3);
+    doc.rect(M, bandaY, derecha - M, bandaAlto, 'FD');
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(110, 118, 140);
+    doc.text('SITIO', M + 4, bandaY + 5.4);
 
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(11);
-    doc.text('Contratista:', M, 55);
+    doc.setFontSize(16);
+    doc.setTextColor(26, 29, 46);
+    doc.text(String(o.sitioId || '—'), M + 4, bandaY + 12);
+
+    /* Contratista, alineado a la derecha dentro de la misma banda */
     doc.setFont('helvetica', 'normal');
-    doc.text(nombreEmpleado(o.contratistaId) || o.contratistaId, M + 26, 55);
+    doc.setFontSize(8.5);
+    doc.setTextColor(110, 118, 140);
+    doc.text('CONTRATISTA', derecha - 4, bandaY + 5.4, { align: 'right' });
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11.5);
+    doc.setTextColor(26, 29, 46);
+    doc.text(nombreEmpleado(o.contratistaId) || o.contratistaId, derecha - 4, bandaY + 12, { align: 'right' });
 
     /* ── Tabla: SOLO descripción y monto (D27) ──
        El monto es COSTO_LINEA: lo que se le paga al contratista. */
     const cuerpo = lineas.map(l => [l.descripcion || '', prFmtMonto(l.costoLinea)]);
     const ok = _pdfAutoTable(doc, {
-      startY: 63,
+      startY: 72,
       head: [['Descripción', 'Monto']],
       body: cuerpo,
       theme: 'grid',
@@ -9261,12 +9289,15 @@ function descargarPdfOC(ocId) {
         overflow: 'linebreak'
       },
       headStyles: {
-        fillColor: [232, 236, 248], textColor: [26, 29, 46],
-        fontStyle: 'bold', fontSize: 9.5, halign: 'left'
+        fillColor: [220, 225, 240], textColor: [26, 29, 46],
+        fontStyle: 'bold', fontSize: 9.5, halign: 'center'
       },
+      /* Todo centrado menos la Descripción: los textos del preciario son largos
+         y de ancho muy variable, y centrados quedan desalineados entre filas.
+         Mismo criterio que las tablas de la aplicación (.col-desc). */
       columnStyles: {
         0: { cellWidth: 'auto', halign: 'left' },
-        1: { cellWidth: 34, halign: 'right' }
+        1: { cellWidth: 38, halign: 'center' }
       },
       /* autotable repite el encabezado en cada página automáticamente */
       showHead: 'everyPage'
@@ -9277,19 +9308,34 @@ function descargarPdfOC(ocId) {
       return;
     }
 
-    /* ── Total ── */
-    let y = (doc.lastAutoTable && doc.lastAutoTable.finalY) ? doc.lastAutoTable.finalY + 10 : 120;
+    /* ── Total, en banda propia ──
+       Antes era texto suelto alineado a la derecha y quedaba a la deriva bajo la
+       tabla. La banda lo ata visualmente al cuerpo y lo cierra. */
+    let y = (doc.lastAutoTable && doc.lastAutoTable.finalY) ? doc.lastAutoTable.finalY + 6 : 120;
     const altoPag = doc.internal.pageSize.getHeight();
-    if (y > altoPag - 30) { doc.addPage(); y = 25; }   // que el total no quede huérfano
+    const totAlto = 13;
+    if (y + totAlto > altoPag - 22) { doc.addPage(); y = 25; }   // que no quede huérfano
 
+    const totAncho = 92;
+    const totX = derecha - totAncho;
+    doc.setFillColor(232, 236, 248);
+    doc.setDrawColor(180, 190, 215);
+    doc.setLineWidth(0.4);
+    doc.rect(totX, y, totAncho, totAlto, 'FD');
+
+    doc.setTextColor(26, 29, 46);
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(11.5);
-    doc.text('TOTAL:', derecha - 42, y, { align: 'right' });
-    doc.text(prFmtMonto(o.totalCosto), derecha, y, { align: 'right' });
+    doc.setFontSize(10.5);
+    doc.text('TOTAL', totX + 6, y + 8.6);
+    doc.setFontSize(13);
+    doc.text(prFmtMonto(o.totalCosto), derecha - 6, y + 8.8, { align: 'right' });
+
+    y += totAlto;
 
     /* ── Notas (solo si existen) ── */
     const notas = String(o.notas || '').trim();
     if (notas) {
+      doc.setTextColor(30, 32, 46);
       y += 13;
       if (y > altoPag - 25) { doc.addPage(); y = 25; }
       doc.setFont('helvetica', 'bold');
@@ -9307,7 +9353,7 @@ function descargarPdfOC(ocId) {
       });
     }
 
-    doc.save(_pdfNombreArchivo(o.nroOc, nombreEmpleado(o.contratistaId)));
+    doc.save(_pdfNombreArchivo(o.nroOc, o.sitioId, nombreEmpleado(o.contratistaId)));
     toast(`PDF de ${o.nroOc} generado`, 'ok');
 
   } catch (err) {
