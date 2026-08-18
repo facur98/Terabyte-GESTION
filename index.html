@@ -1171,6 +1171,49 @@
     @keyframes loadBar { from { width: 0; } to { width: 100%; } }
 
     /* Barra de progreso global */
+    /* ══ OVERLAY DE CARGA (cambio #91) ══
+       z-index 4000: por encima de los modales (200) y por debajo de la pantalla
+       de bienvenida (4999) y del login (5000), así el cargarTodo posterior al
+       login no le mete un blur encima a la bienvenida. */
+    #load-overlay {
+      display: none; position: fixed; inset: 0; z-index: 4000;
+      background: rgba(238,240,245,0.45);
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      align-items: center; justify-content: center;
+    }
+    #load-overlay.open { display: flex; }
+    .load-box {
+      background: var(--glass); border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow); backdrop-filter: var(--blur);
+      border-radius: var(--radius); padding: 30px 42px;
+      display: flex; flex-direction: column; align-items: center; gap: 14px;
+      min-width: 260px; max-width: 420px; text-align: center;
+      animation: fadeUp 0.25s ease;
+    }
+    .load-spinner {
+      width: 40px; height: 40px; border-radius: 50%;
+      border: 3px solid rgba(79,128,255,0.18);
+      border-top-color: var(--accent-blue);
+      animation: loadSpin 0.75s linear infinite;
+    }
+    @keyframes loadSpin { to { transform: rotate(360deg); } }
+    .load-titulo {
+      font-size: 15px; font-weight: 700; color: var(--text-dark); letter-spacing: -0.2px;
+    }
+    .load-paso {
+      font-size: 12.5px; color: var(--text-mid); min-height: 16px;
+    }
+    .load-barra {
+      width: 100%; height: 4px; border-radius: 4px;
+      background: rgba(79,128,255,0.15); overflow: hidden; display: none;
+    }
+    .load-barra.visible { display: block; }
+    .load-barra span {
+      display: block; height: 100%; width: 0%; border-radius: 4px;
+      background: linear-gradient(90deg, var(--accent-blue), var(--accent-teal));
+      transition: width 0.25s ease;
+    }
+
     #global-progress-bar {
       position: fixed; top: 0; left: 0; right: 0;
       height: 3px; z-index: 9999; pointer-events: none;
@@ -2645,6 +2688,24 @@
   </div>
 </div>
 
+<!-- MODAL — Eliminar sitio con líneas de facturación (cambio #89) -->
+<div class="modal-overlay" id="modal-eliminar-sitio">
+  <div class="modal" style="max-width:520px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <div class="modal-title" style="margin:0;color:var(--accent-rose);">Eliminar sitio</div>
+      <button onclick="cerrarModal()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--text-light);line-height:1;">✕</button>
+    </div>
+    <div id="elim-sitio-detalle" style="background:rgba(248,113,113,0.07);border:1px solid rgba(248,113,113,0.22);border-radius:var(--radius-sm);padding:16px 20px;margin-bottom:18px;"></div>
+    <div id="elim-sitio-lineas" style="margin-bottom:20px;"></div>
+    <input type="hidden" id="elim-sitio-uid" />
+    <div class="modal-footer">
+      <button class="btn btn-glass" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn btn-glass" onclick="confirmarEliminarSitio(false)">Borrar solo el sitio</button>
+      <button class="btn" id="elim-sitio-btn-cascada" style="background:rgba(248,113,113,0.15);color:#b91c1c;border:1px solid rgba(248,113,113,0.35);font-weight:600;padding:9px 20px;border-radius:var(--radius-sm);cursor:pointer;" onclick="confirmarEliminarSitio(true)">Borrar todo</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL — Proyectar sitio -->
 <div class="modal-overlay" id="modal-proyectar-sitio">
   <div class="modal" style="max-width:520px;">
@@ -2974,6 +3035,16 @@
 </div>
 
 <div id="global-progress-bar"><div id="global-progress-fill"></div></div>
+
+<!-- OVERLAY DE CARGA (cambio #91) -->
+<div id="load-overlay">
+  <div class="load-box">
+    <div class="load-spinner"></div>
+    <div class="load-titulo" id="load-titulo">Procesando</div>
+    <div class="load-paso" id="load-paso"></div>
+    <div class="load-barra" id="load-barra"><span id="load-barra-fill"></span></div>
+  </div>
+</div>
 <!-- Tooltip global para sitios -->
 <div id="sit-global-tooltip" class="sit-tooltip"></div>
 
@@ -2993,22 +3064,96 @@ const PEQ = 90000000;
    a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
    Se pinta en el pie del sidebar (#sidebar-version).
    ═══════════════════════════════════════════════════════ */
-const APP_VERSION = 'V 180826 1540';
+const APP_VERSION = 'V 180826 1933';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
 // ═══════════════════════════════════════════════════════
+/* ══ TRANSPORTE HTTP (cambio #90) ═══════════════════════════════════
+   Antes todas las llamadas hacían `res.json()` a secas. Cuando Apps Script
+   devuelve su página HTML de error —sesión vencida, timeout del ?sheet=ALL,
+   cuota momentánea— el navegador tira `Unexpected token '<', "<!DOCTYPE"...`,
+   que no le dice nada al usuario y, en una escritura, tampoco aclara si la
+   operación llegó a aplicarse.
+
+   ⚠ EL REINTENTO AUTOMÁTICO ES SOLO PARA GET, y es a propósito.
+   Un GET es idempotente: repetirlo no cambia nada. Un POST NO: si el pedido
+   llegó al servidor y se ejecutó pero la respuesta se perdió en el camino,
+   reintentarlo DUPLICARÍA el INSERT. Por eso las escrituras fallan a la
+   primera y el mensaje pide sincronizar para verificar antes de reintentar.
+   No agregar reintentos a los POST. */
+const API_MSG_GET      = 'El servidor no respondió correctamente. Reintentá en unos segundos con Sincronizar.';
+const API_MSG_POST     = 'El servidor no respondió correctamente. Sincronizá para verificar si el cambio se aplicó antes de reintentar.';
+const API_MSG_SIN_CONN = 'No se pudo conectar con el servidor. Revisá tu conexión.';
+const API_GET_INTENTOS = 2;      // 1 original + 1 reintento
+const API_GET_ESPERA   = 1200;   // ms entre intentos
+
+/* Marca los errores de transporte para distinguirlos de los de negocio
+   (los que el backend devuelve como { ok:false, error }), que NO se reintentan
+   ni se disfrazan: esos mensajes son útiles y tienen que llegar tal cual. */
+function _errTransporte(msg) {
+  const e = new Error(msg);
+  e._transporte = true;
+  return e;
+}
+
+function _esRespuestaHtml(txt) {
+  return String(txt || '').trim().slice(0, 120).toLowerCase().startsWith('<');
+}
+
+function _dormir(ms) {
+  return new Promise(r => setTimeout(r, ms));
+}
+
+/* Convierte la respuesta en JSON o lanza un error de transporte legible. */
+async function _apiLeerJson(res, msgHtml) {
+  let txt;
+  try { txt = await res.text(); }
+  catch (e) { throw _errTransporte(msgHtml); }
+  if (!res.ok)               throw _errTransporte(`${msgHtml} (HTTP ${res.status})`);
+  if (_esRespuestaHtml(txt)) throw _errTransporte(msgHtml);
+  try { return JSON.parse(txt); }
+  catch (e) { throw _errTransporte(msgHtml); }
+}
+
+/* GET con un reintento. Devuelve el JSON crudo: validar `ok` es del llamador,
+   que es donde estaba antes y donde están los mensajes específicos de cada uno. */
+async function _apiGetJson(url) {
+  let ultimo = null;
+  for (let intento = 1; intento <= API_GET_INTENTOS; intento++) {
+    try {
+      let res;
+      try { res = await fetch(url); }
+      catch (e) { throw _errTransporte(API_MSG_SIN_CONN); }
+      return await _apiLeerJson(res, API_MSG_GET);
+    } catch (e) {
+      ultimo = e;
+      if (intento < API_GET_INTENTOS) {
+        // cambio #91 — que el usuario vea por qué la espera se alargó
+        if (typeof setLoadingDetalle === 'function') setLoadingDetalle('Reintentando...');
+        await _dormir(API_GET_ESPERA);
+      }
+    }
+  }
+  throw ultimo;
+}
+
+/* POST sin reintento (ver la advertencia de arriba). */
+async function _apiPostJson(bodyStr) {
+  let res;
+  try { res = await fetch(API_URL, { method: 'POST', body: bodyStr }); }
+  catch (e) { throw _errTransporte(`${API_MSG_SIN_CONN} Sincronizá para verificar si el cambio se aplicó.`); }
+  return await _apiLeerJson(res, API_MSG_POST);
+}
+
 async function apiGet(sheet = 'ALL') {
-  const res = await fetch(`${API_URL}?sheet=${sheet}`);
-  const data = await res.json();
+  const data = await _apiGetJson(`${API_URL}?sheet=${sheet}`);
   if (!data.ok) throw new Error(data.error || 'Error en GET');
   return data;
 }
 
 async function apiPost(action, sheet, payload = {}, id = '') {
-  const body = JSON.stringify({ action, sheet, data: payload, id });
-  const res  = await fetch(API_URL, { method: 'POST', body });
-  const data = await res.json();
+  const data = await _apiPostJson(JSON.stringify({ action, sheet, data: payload, id }));
   if (!data.ok) throw new Error(data.error || 'Error en POST');
   return data;
 }
@@ -3021,8 +3166,7 @@ async function apiPost(action, sheet, payload = {}, id = '') {
  * backend no los vea y respondiera "requiere matchColumn".
  */
 async function apiPostRaw(body) {
-  const res  = await fetch(API_URL, { method: 'POST', body: JSON.stringify(body) });
-  const data = await res.json();
+  const data = await _apiPostJson(JSON.stringify(body));
   if (!data.ok) throw new Error(data.error || 'Error en POST');
   return data;
 }
@@ -3068,7 +3212,106 @@ function toast(msg, tipo = 'ok') {
 let _progressTimer = null;
 let _progressVal   = 0;
 
-function setLoading(on) {
+/* ══ INDICADOR DE CARGA (cambio #91) ═══════════════════════════════
+   Antes el único indicador era la barra de 3px del borde superior: en pantallas
+   grandes no se veía, no bloqueaba la interfaz (se podía disparar una segunda
+   operación encima de la primera) y su progreso era simulado por temporizador.
+
+   Ahora se suma un overlay con blur, spinner y texto de lo que está pasando.
+   La barra superior se mantiene: sirve de refuerzo periférico y sacarla no
+   aportaba nada.
+
+   API — retrocompatible: `setLoading(true)` sigue funcionando sin mensaje.
+     setLoading(true, 'Guardando la línea')   → abre el overlay con ese título
+     setLoadingPaso(3, 12, 'Guardando')       → "Guardando 3 de 12" + barra real
+     setLoading(false)                        → cierra todo y resetea el paso */
+const LOAD_TITULO_DEFAULT = 'Procesando';
+
+let _loadWatchdog = null;
+const LOAD_WATCHDOG_MS = 90000;
+
+function setLoading(on, mensaje) {
+  _setBarraSuperior(on);
+
+  const ov = document.getElementById('load-overlay');
+  if (!ov) return;
+
+  /* Red de seguridad: el overlay bloquea la interfaz, así que si por un camino
+     imprevisto nadie llama a setLoading(false), a los 90 s se cierra solo y se
+     avisa. Nunca debería dispararse — todas las rutas cierran en un finally—,
+     pero una pantalla trabada sin salida es peor que un aviso de más. */
+  clearTimeout(_loadWatchdog);
+  if (on) {
+    _loadWatchdog = setTimeout(() => {
+      const o = document.getElementById('load-overlay');
+      if (o && o.classList.contains('open')) {
+        o.classList.remove('open');
+        _setBarraSuperior(false);
+        toast('La operación está tardando más de lo normal. Sincronizá para ver el estado real.', 'err');
+      }
+    }, LOAD_WATCHDOG_MS);
+  }
+
+  if (on) {
+    const tit = document.getElementById('load-titulo');
+    if (tit) tit.textContent = mensaje || LOAD_TITULO_DEFAULT;
+    _loadResetPaso();
+    /* Si la pantalla de login o la de bienvenida están a la vista, el overlay
+       queda tapado por z-index igual; no abrirlo evita el parpadeo del blur
+       cuando cargarTodo corre justo detrás de la bienvenida. */
+    if (_loadPantallaInicialVisible()) { ov.classList.remove('open'); return; }
+    ov.classList.add('open');
+  } else {
+    ov.classList.remove('open');
+    _loadResetPaso();
+  }
+}
+
+/* Avance real de una operación de varios pasos. Llamar DESPUÉS de setLoading(true).
+   `actual` es 1-based. Con total <= 1 no muestra contador ni barra: un único paso
+   no tiene progreso que mostrar. */
+function setLoadingPaso(actual, total, mensaje) {
+  const paso = document.getElementById('load-paso');
+  const bar  = document.getElementById('load-barra');
+  const fill = document.getElementById('load-barra-fill');
+  if (!paso) return;
+
+  if (mensaje) {
+    const tit = document.getElementById('load-titulo');
+    if (tit) tit.textContent = mensaje;
+  }
+  const n = Number(total) || 0;
+  if (n <= 1) { _loadResetPaso(); return; }
+
+  const i = Math.min(Math.max(Number(actual) || 0, 0), n);
+  paso.textContent = `${i} de ${n}`;
+  if (bar)  bar.classList.add('visible');
+  if (fill) fill.style.width = Math.round(i / n * 100) + '%';
+}
+
+/* Texto libre bajo el título, sin contador (ej. "Reintentando..."). */
+function setLoadingDetalle(txt) {
+  const paso = document.getElementById('load-paso');
+  if (paso) paso.textContent = txt || '';
+}
+
+function _loadResetPaso() {
+  const paso = document.getElementById('load-paso');
+  const bar  = document.getElementById('load-barra');
+  const fill = document.getElementById('load-barra-fill');
+  if (paso) paso.textContent = '';
+  if (bar)  bar.classList.remove('visible');
+  if (fill) fill.style.width = '0%';
+}
+
+function _loadPantallaInicialVisible() {
+  return ['screen-login', 'screen-bienvenida'].some(id => {
+    const el = document.getElementById(id);
+    return el && el.style.display && el.style.display !== 'none';
+  });
+}
+
+function _setBarraSuperior(on) {
   const bar  = document.getElementById('global-progress-bar');
   const fill = document.getElementById('global-progress-fill');
   if (!bar) return;
@@ -3122,7 +3365,7 @@ function nuevoId(prefix) {
 }
 
 async function cargarTodo() {
-  setLoading(true);
+  setLoading(true, 'Cargando datos');
   try {
     const data = await apiGet('ALL');
     console.log('=== RESPUESTA APPS SCRIPT ===', JSON.stringify(data));
@@ -3505,7 +3748,7 @@ async function guardarCliente() {
   const color = document.getElementById('cli-color').value;
   if (!id) return alert('Ingresá un ID de cliente.');
   if (clientes.find(c => c.id === id)) return alert('Ya existe ese ID.');
-  setLoading(true);
+  setLoading(true, 'Guardando el cliente');
   try {
     await apiPost('INSERT', 'CLIENTES', { ID: id, COLOR: color });
     clientes.push({ id, color });
@@ -3536,7 +3779,7 @@ function filtrarClientes(v) { renderClientes(v); }
 async function eliminarCliente(id) {
   if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   if (!confirm('¿Eliminar cliente '+id+'?')) return;
-  setLoading(true);
+  setLoading(true, 'Eliminando el cliente');
   try {
     await apiPost('DELETE', 'CLIENTES', {}, id);
     clientes = clientes.filter(c => c.id !== id);
@@ -3608,7 +3851,7 @@ async function confirmarGuardarSitio() {
   if (!_sitioTemp) return;
   const { id, loc, cid, con, poNro, po, obs } = _sitioTemp;
   cerrarModal();
-  setLoading(true);
+  setLoading(true, 'Guardando el sitio');
   try {
     await apiPost('INSERT', 'SITIOS', {
       ID: `${id}||${poNro}`, LOCALIDAD: loc, CLIENTE_ID: cid, CONCEPTO: con,
@@ -3707,16 +3950,9 @@ async function guardarEdicionSitio() {
   const cambioMonto = po !== poAnterior;
 
   // Buscar líneas vinculadas a este sitio
-  const sitiosConMismoId = sitios.filter(x => x.id === s.id);
-  const lineasVinculadas = lineas.filter(l => {
-    if (l.sitioId !== s.id) return false;
-    if (sitiosConMismoId.length === 1) return true;
-    if (l.poNroLinea && s.poNro) return l.poNroLinea === s.poNro;
-    const montoEsperado = s.po * l.pct / 100;
-    return Math.abs(l.monto - montoEsperado) < Math.max(1, montoEsperado * 0.01);
-  });
+  const lineasVinculadas = _lineasVinculadasASitio(s);
 
-  setLoading(true);
+  setLoading(true, 'Guardando los cambios del sitio');
   try {
     const compoundId = `${s.id}||${poNro}`;
     // Fallback: nuevos sitios están en el Sheet como `${id}||${poNro}` (uid).
@@ -3733,6 +3969,7 @@ async function guardarEdicionSitio() {
     if (cambioMonto && lineasVinculadas.length > 0) {
       let okLineas = 0, errLineas = 0;
       for (const l of lineasVinculadas) {
+        setLoadingPaso(okLineas + errLineas + 1, lineasVinculadas.length, 'Actualizando líneas');   // cambio #91
         const nuevoMonto = Math.round(po * l.pct / 100);
         try {
           await apiPost('UPDATE', 'FACTURACION', { MONTO: nuevoMonto }, l.id);
@@ -3755,18 +3992,38 @@ async function guardarEdicionSitio() {
   finally { setLoading(false); }
 }
 
-function getSitStatus(uid) {
-  const s = getSit(uid);
-  if (!s) return { label: 'Sin asignar', color: 'rgba(150,160,190,0.15)', text: '#9aa0b8' };
+/* ══ LÍNEAS DE FACTURACIÓN VINCULADAS A UN SITIO (cambio #89) ══════
+   Criterio único, extraído sin cambios de guardarEdicionSitio, getSitStatus y
+   showSitTooltip, donde estaba repetido textualmente en los tres. Se centraliza
+   acá porque el borrado en cascada tiene que usar EXACTAMENTE el mismo criterio
+   que el que decide el status y el tooltip: si difirieran, el modal contaría
+   unas líneas y el borrado tocaría otras.
 
+   La vinculación no es trivial porque FACTURACION guarda `SITIO_ID` a veces con
+   el patrón `ID||PO` y a veces con el ID corto (registros viejos):
+     1. Distinto ID corto ⇒ no es del sitio.
+     2. Si hay UN solo sitio con ese ID, no hay ambigüedad posible ⇒ es suyo.
+     3. Con varias POs del mismo sitio, manda el N° de PO cuando la línea lo trae.
+     4. Último recurso para líneas viejas sin PO: se acepta si el monto coincide
+        con el % del total de la PO, con 1 % de tolerancia.
+   Devuelve [] si `s` es null. */
+function _lineasVinculadasASitio(s) {
+  if (!s) return [];
   const sitiosConMismoId = sitios.filter(x => x.id === s.id);
-  const ls = lineas.filter(l => {
+  return lineas.filter(l => {
     if (l.sitioId !== s.id) return false;
     if (sitiosConMismoId.length === 1) return true;
     if (l.poNroLinea && s.poNro) return l.poNroLinea === s.poNro;
     const montoEsperado = s.po * l.pct / 100;
     return Math.abs(l.monto - montoEsperado) < Math.max(1, montoEsperado * 0.01);
   });
+}
+
+function getSitStatus(uid) {
+  const s = getSit(uid);
+  if (!s) return { label: 'Sin asignar', color: 'rgba(150,160,190,0.15)', text: '#9aa0b8' };
+
+  const ls = _lineasVinculadasASitio(s);
   const lp  = (_proyPendientes || []).filter(p => p.sitioId === uid);
   const all = [...ls, ...lp];
 
@@ -4989,18 +5246,139 @@ function mostrarModalInfo(mensaje) {
   document.body.appendChild(overlay);
 }
 
+/* ══ ELIMINAR SITIO (cambio #89) ═══════════════════════════════════
+   Antes borraba SOLO la fila de SITIOS y nunca tocaba FACTURACION, así que las
+   líneas del sitio quedaban HUÉRFANAS en Seguimiento: seguían sumando al total
+   y no había forma de llegar a ellas desde PO sitios. Ahora, si el sitio tiene
+   líneas vinculadas, se abre un modal que las muestra y deja elegir.
+
+   Sin líneas vinculadas el flujo es el de siempre (confirm nativo y a otra
+   cosa): no se le agrega fricción al caso más común. */
 async function eliminarSitio(uid) {
   if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   const s = getSit(uid);
   if (!s) return;
+
+  const vinculadas = _lineasVinculadasASitio(s);
+  if (vinculadas.length) { _abrirEliminarSitio(uid, vinculadas); return; }
+
   if (!confirm(`¿Eliminar sitio ${s.id} (PO: ${s.poNro || '—'})?`)) return;
-  setLoading(true);
+  await _ejecutarEliminarSitio(uid, false);
+}
+
+/* Modal con el detalle de lo que se va a perder. */
+function _abrirEliminarSitio(uid, vinculadas) {
+  const s   = getSit(uid);
+  const cli = getCli(s.clienteId);
+  document.getElementById('elim-sitio-uid').value = uid;
+
+  document.getElementById('elim-sitio-detalle').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;font-size:13px;">
+      <div><span style="font-size:11px;color:var(--text-light);text-transform:uppercase;letter-spacing:.4px;">Sitio</span>
+        <div style="font-weight:700;font-size:15px;margin-top:3px;">${_escHtml(s.id)}</div></div>
+      <div><span style="font-size:11px;color:var(--text-light);text-transform:uppercase;letter-spacing:.4px;">Cliente</span>
+        <div style="display:flex;align-items:center;gap:7px;margin-top:3px;font-weight:600;">${cli?dot(cli.color):''}${_escHtml(s.clienteId)}</div></div>
+      <div><span style="font-size:11px;color:var(--text-light);text-transform:uppercase;letter-spacing:.4px;">N° PO</span>
+        <div style="margin-top:3px;font-weight:600;">${_escHtml(s.poNro || '—')}</div></div>
+      <div><span style="font-size:11px;color:var(--text-light);text-transform:uppercase;letter-spacing:.4px;">Total PO</span>
+        <div style="margin-top:3px;font-weight:700;color:var(--accent-blue);">${fmt(s.po)}</div></div>
+    </div>`;
+
+  const n         = vinculadas.length;
+  const total     = vinculadas.reduce((a, l) => a + l.monto, 0);
+  const facturadas = vinculadas.filter(l => l.estado === 'Facturado');
+
+  const filas = vinculadas.map(l => `
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;">
+      <span style="color:var(--text-mid);">${_escHtml(mesLabel(l.mes))} · ${l.pct}%</span>
+      <span style="display:flex;align-items:center;gap:10px;">
+        <b>${fmt(l.monto)}</b>
+        <span style="font-size:11px;color:var(--text-light);">${_escHtml(l.estado)}</span>
+      </span>
+    </div>`).join('');
+
+  /* Una línea Facturada representa una factura ya emitida: borrarla es perder el
+     registro contable, no un dato de trabajo. Se avisa aparte y bien visible. */
+  const avisoFact = facturadas.length ? `
+    <div style="background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.35);border-radius:var(--radius-sm);padding:10px 14px;margin-top:12px;font-size:12px;color:#92400e;">
+      <b>Atención:</b> ${facturadas.length} de estas líneas ${facturadas.length===1?'está facturada':'están facturadas'}.
+      Si las borrás perdés el registro de ${facturadas.length===1?'esa factura':'esas facturas'}.
+    </div>` : '';
+
+  document.getElementById('elim-sitio-lineas').innerHTML = `
+    <div style="font-size:13px;color:var(--text-mid);margin-bottom:8px;">
+      Este sitio tiene <b>${n} línea${n!==1?'s':''} de facturación</b> por <b>${fmt(total)}</b>:
+    </div>
+    ${filas}
+    ${avisoFact}
+    <div style="font-size:12px;color:var(--text-light);margin-top:12px;line-height:1.5;">
+      <b>Borrar solo el sitio</b> deja las líneas en Seguimiento, sin PO que las respalde.<br>
+      <b>Borrar todo</b> elimina el sitio y sus ${n} línea${n!==1?'s':''}.
+    </div>`;
+
+  const btn = document.getElementById('elim-sitio-btn-cascada');
+  if (btn) btn.textContent = `Borrar sitio y ${n} línea${n!==1?'s':''}`;
+
+  document.getElementById('modal-eliminar-sitio').classList.add('open');
+}
+
+function confirmarEliminarSitio(conLineas) {
+  const uid = document.getElementById('elim-sitio-uid').value;
+  cerrarModal();
+  if (uid) _ejecutarEliminarSitio(uid, conLineas);
+}
+
+/* Ejecuta el borrado. Las líneas van PRIMERO y el sitio al final, a propósito:
+   si falla un DELETE de línea se aborta sin tocar el sitio, y queda todo
+   visible y reintentable desde PO sitios. Al revés, un fallo a mitad de camino
+   dejaría el sitio borrado y las líneas huérfanas — el bug que se está
+   arreglando. */
+async function _ejecutarEliminarSitio(uid, conLineas) {
+  if (bloqueoViewer()) return;
+  const s = getSit(uid);
+  if (!s) return;
+
+  const vinculadas = conLineas ? _lineasVinculadasASitio(s) : [];
+  setLoading(true, 'Eliminando el sitio');
   try {
+    const borradas = [];
+    for (const l of vinculadas) {
+      setLoadingPaso(borradas.length + 1, vinculadas.length, 'Eliminando líneas');   // cambio #91
+      try {
+        await apiPost('DELETE', 'FACTURACION', {}, l.id);
+        borradas.push(l.id);
+      } catch (e) {
+        if (borradas.length) {
+          lineas = lineas.filter(x => !borradas.includes(x.id));
+          renderSeguimiento(); renderSitios(); actualizarDashboard(); actualizarBadge();
+        }
+        throw new Error(`Se borraron ${borradas.length} de ${vinculadas.length} líneas y falló la siguiente (${e.message}). El sitio NO se eliminó.`);
+      }
+    }
+    if (borradas.length) lineas = lineas.filter(x => !borradas.includes(x.id));
+
     // Fallback uid → id (ver comentario en apiPostWithIdFallback)
     await apiPostWithIdFallback('DELETE', 'SITIOS', {}, s.uid, s.id);
     sitios = sitios.filter(x => x.uid !== uid);
-    renderSitios(); renderClientes(); actualizarDashboard();
-    toast('Sitio eliminado');
+
+    /* Colas locales: una proyección o una solicitud pendiente sobre algo que ya
+       no existe no se puede confirmar nunca, y al intentarlo el POST fallaría.
+       Se descartan y se avisa. */
+    const nProy = (_proyPendientes || []).filter(p => p.sitioId === uid).length;
+    const nSol  = (_solPendientes  || []).filter(p => borradas.includes(p.lineaId)).length;
+    const nFac  = (_facPendientes  || []).filter(p => borradas.includes(p.lineaId)).length;
+    if (nProy) { _proyPendientes = _proyPendientes.filter(p => p.sitioId !== uid); actualizarBannerProyecciones(); }
+    if (nSol)  { _solPendientes  = _solPendientes.filter(p => !borradas.includes(p.lineaId)); actualizarBannerSolicitudes(); }
+    if (nFac)  { _facPendientes  = _facPendientes.filter(p => !borradas.includes(p.lineaId)); actualizarBannerFacturas(); }
+
+    renderSitios(); renderClientes(); renderSeguimiento();
+    actualizarDashboard(); actualizarBadge();
+
+    const partes = ['Sitio eliminado'];
+    if (borradas.length) partes.push(`${borradas.length} línea${borradas.length!==1?'s':''} de facturación`);
+    const descartados = nProy + nSol + nFac;
+    if (descartados) partes.push(`${descartados} pendiente${descartados!==1?'s':''} descartado${descartados!==1?'s':''}`);
+    toast(partes.join(' · '));
     setTimeout(autoSync, 1000);
   } catch(e) { toast('Error: ' + e.message, 'err'); }
   finally { setLoading(false); }
@@ -5192,7 +5570,7 @@ async function ejecutarTraspaso() {
   if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   if (!_proyPendientes.length) return;
   cerrarModal();
-  setLoading(true);
+  setLoading(true, 'Traspasando líneas');
   const pendientes = [..._proyPendientes];
   const rows = pendientes.map(p => ({
     ID: p.id, SITIO_ID: p.sitioId, CLIENTE_ID: p.clienteId,
@@ -5200,11 +5578,7 @@ async function ejecutarTraspaso() {
     FECHA_SOLICITUD: '', FECHA_FACTURA: '', NRO_FACTURA: '', ESTADO: 'Proyectado'
   }));
   try {
-    const res = await fetch(API_URL, {
-      method: 'POST',
-      body: JSON.stringify({ action: 'BULK_INSERT', sheet: 'FACTURACION', rows })
-    });
-    const json = await res.json();
+    const json = await _apiPostJson(JSON.stringify({ action: 'BULK_INSERT', sheet: 'FACTURACION', rows }));
     if (!json.ok) throw new Error(json.error || 'Error en BULK_INSERT');
 
     // Normalizar al formato del resto del estado local (ID corto + poNroLinea separado)
@@ -5405,7 +5779,7 @@ async function guardarNuevaLinea() {
   const sit   = getSit(sitId);
   const monto = (sit && sit.po) ? Math.round(sit.po * pct / 100) : 0;
   const id    = nuevoId('FAC');
-  setLoading(true);
+  setLoading(true, 'Creando la línea');
   try {
     await apiPost('INSERT', 'FACTURACION', {
       ID: id, SITIO_ID: sitId, CLIENTE_ID: sit ? sit.clienteId : '',
@@ -5610,7 +5984,7 @@ async function guardarEdicionLinea() {
     payload.FECHA_FACTURA = ff;
     payload.NRO_FACTURA   = nf;
   }
-  setLoading(true);
+  setLoading(true, 'Guardando la línea');
   try {
     await apiPost('UPDATE', 'FACTURACION', payload, lineaId);
     const l = lineas.find(x => x.id === lineaId);
@@ -5658,7 +6032,7 @@ async function confirmarEliminarLinea() {
   if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   const lineaId = document.getElementById('elim-linea-id').value;
   cerrarModal();
-  setLoading(true);
+  setLoading(true, 'Eliminando la línea');
   try {
     await apiPost('DELETE', 'FACTURACION', {}, lineaId);
     lineas = lineas.filter(l => l.id !== lineaId);
@@ -5736,29 +6110,35 @@ async function ejecutarSolicitudes() {
   const sinFecha = _solPendientes.find(p => !p.fecha);
   if (sinFecha) return toast('Todas las líneas deben tener fecha de solicitud.', 'err');
   cerrarModal();
-  setLoading(true);
-  const pendientes = [..._solPendientes];
-  let ok = 0, err = 0;
-  // Procesamos de a una para evitar condiciones de carrera en el backend
-  for (const p of pendientes) {
-    try {
-      await apiPost('UPDATE', 'FACTURACION', {
-        FECHA_SOLICITUD: p.fecha,
-        ESTADO: 'Solicitado',
-        _SITIO_ID: p.sitioId,  // contexto extra para el backend
-        _PCT: p.pct
-      }, p.lineaId);
-      const l = lineas.find(x => x.id === p.lineaId);
-      if (l) { l.fechaSolicitud = p.fecha; l.estado = 'Solicitado'; }
-      ok++;
-    } catch(e) { err++; }
-  }
-  _solPendientes = err > 0 ? _solPendientes.slice(ok) : [];
-  actualizarBannerSolicitudes();
-  renderSeguimiento(); actualizarDashboard(); actualizarBadge();
-  setLoading(false);
-  if (err === 0) { toast(`${ok} solicitud${ok!==1?'es':''} confirmada${ok!==1?'s':''} ✓`); setTimeout(autoSync, 1000); }
-  else toast(`${ok} OK, ${err} con error.`, 'err');
+  setLoading(true, 'Registrando solicitudes');
+  /* cambio #91 — try/finally: con un overlay que bloquea la pantalla, el
+     cierre del indicador tiene que estar garantizado aunque algo de acá
+     abajo lance. Antes, un fallo dejaba la barra visible; ahora dejaría
+     la interfaz trabada. */
+  try {
+    const pendientes = [..._solPendientes];
+    let ok = 0, err = 0;
+    // Procesamos de a una para evitar condiciones de carrera en el backend
+    for (const p of pendientes) {
+      setLoadingPaso(ok + err + 1, pendientes.length, 'Registrando solicitudes');   // cambio #91
+      try {
+        await apiPost('UPDATE', 'FACTURACION', {
+          FECHA_SOLICITUD: p.fecha,
+          ESTADO: 'Solicitado',
+          _SITIO_ID: p.sitioId,  // contexto extra para el backend
+          _PCT: p.pct
+        }, p.lineaId);
+        const l = lineas.find(x => x.id === p.lineaId);
+        if (l) { l.fechaSolicitud = p.fecha; l.estado = 'Solicitado'; }
+        ok++;
+      } catch(e) { err++; }
+    }
+    _solPendientes = err > 0 ? _solPendientes.slice(ok) : [];
+    actualizarBannerSolicitudes();
+    renderSeguimiento(); actualizarDashboard(); actualizarBadge();
+    if (err === 0) { toast(`${ok} solicitud${ok!==1?'es':''} confirmada${ok!==1?'s':''} ✓`); setTimeout(autoSync, 1000); }
+    else toast(`${ok} OK, ${err} con error.`, 'err');
+  } finally { setLoading(false); }
 }
 
 function descartarSolicitudes() {
@@ -5837,30 +6217,36 @@ async function ejecutarFacturas() {
   if (sinFecha)   return toast('Todas las líneas deben tener fecha de facturación.', 'err');
   if (sinFactura) return toast('Todas las líneas deben tener N° de factura.', 'err');
   cerrarModal();
-  setLoading(true);
-  const pendientes = [..._facPendientes];
-  let ok = 0, err = 0;
-  // Procesamos de a una para evitar condiciones de carrera en el backend
-  for (const p of pendientes) {
-    try {
-      await apiPost('UPDATE', 'FACTURACION', {
-        FECHA_FACTURA: p.fecha,
-        NRO_FACTURA: p.nroFactura,
-        ESTADO: 'Facturado',
-        _SITIO_ID: p.sitioId,
-        _PCT: p.pct
-      }, p.lineaId);
-      const l = lineas.find(x => x.id === p.lineaId);
-      if (l) { l.fechaFactura = p.fecha; l.nroFactura = p.nroFactura; l.estado = 'Facturado'; }
-      ok++;
-    } catch(e) { err++; }
-  }
-  _facPendientes = err > 0 ? _facPendientes.slice(ok) : [];
-  actualizarBannerFacturas();
-  renderSeguimiento(); actualizarDashboard(); actualizarBadge();
-  setLoading(false);
-  if (err === 0) { toast(`${ok} factura${ok!==1?'s':''} confirmada${ok!==1?'s':''} ✓`); setTimeout(autoSync, 1000); }
-  else toast(`${ok} OK, ${err} con error.`, 'err');
+  setLoading(true, 'Registrando facturas');
+  /* cambio #91 — try/finally: con un overlay que bloquea la pantalla, el
+     cierre del indicador tiene que estar garantizado aunque algo de acá
+     abajo lance. Antes, un fallo dejaba la barra visible; ahora dejaría
+     la interfaz trabada. */
+  try {
+    const pendientes = [..._facPendientes];
+    let ok = 0, err = 0;
+    // Procesamos de a una para evitar condiciones de carrera en el backend
+    for (const p of pendientes) {
+      setLoadingPaso(ok + err + 1, pendientes.length, 'Registrando facturas');   // cambio #91
+      try {
+        await apiPost('UPDATE', 'FACTURACION', {
+          FECHA_FACTURA: p.fecha,
+          NRO_FACTURA: p.nroFactura,
+          ESTADO: 'Facturado',
+          _SITIO_ID: p.sitioId,
+          _PCT: p.pct
+        }, p.lineaId);
+        const l = lineas.find(x => x.id === p.lineaId);
+        if (l) { l.fechaFactura = p.fecha; l.nroFactura = p.nroFactura; l.estado = 'Facturado'; }
+        ok++;
+      } catch(e) { err++; }
+    }
+    _facPendientes = err > 0 ? _facPendientes.slice(ok) : [];
+    actualizarBannerFacturas();
+    renderSeguimiento(); actualizarDashboard(); actualizarBadge();
+    if (err === 0) { toast(`${ok} factura${ok!==1?'s':''} confirmada${ok!==1?'s':''} ✓`); setTimeout(autoSync, 1000); }
+    else toast(`${ok} OK, ${err} con error.`, 'err');
+  } finally { setLoading(false); }
 }
 
 function descartarFacturas() {
@@ -6440,13 +6826,9 @@ async function eliminarAsignacionConfirmada(asigId) {
   const empNombre = nombreEmpleado(item.empleadoId);
   if (!confirm(`¿Quitar a ${empNombre} (${item.empleadoId}) del sitio ${item.sitioId} del ${item.fecha}?`)) return;
 
-  setLoading(true);
+  setLoading(true, 'Eliminando la asignación');
   try {
-    const res = await fetch(API_URL, {
-      method: 'POST',
-      body: JSON.stringify({ action: 'DELETE', sheet: 'ASIGNACIONES', id: asigId })
-    });
-    const json = await res.json();
+    const json = await _apiPostJson(JSON.stringify({ action: 'DELETE', sheet: 'ASIGNACIONES', id: asigId }));
     if (!json.ok) throw new Error(json.error || 'Error al eliminar');
 
     // D2: solo borrar local si server confirmó
@@ -6470,35 +6852,37 @@ async function eliminarObraConfirmada(sitioId) {
   if (!items.length) return;
   if (!confirm(`¿Eliminar la obra "${sitioId}" del ${fechaStr}? Se van a quitar ${items.length} registro${items.length!==1?'s':''} (todos los empleados de esa obra ese día).`)) return;
 
-  setLoading(true);
-  let okCount = 0;
-  let primerError = null;
-  for (const item of items) {
-    try {
-      const res = await fetch(API_URL, {
-        method: 'POST',
-        body: JSON.stringify({ action: 'DELETE', sheet: 'ASIGNACIONES', id: item.id })
-      });
-      const json = await res.json();
-      if (!json.ok) throw new Error(json.error || 'Error al eliminar');
-      // D2: solo borrar local si server confirmó
-      asignaciones = asignaciones.filter(a => a.id !== item.id);
-      okCount++;
-    } catch (err) {
-      primerError = err.message;
-      break; // detener al primer error para no seguir desincronizando
+  setLoading(true, 'Eliminando la obra del día');
+  /* cambio #91 — try/finally: con un overlay que bloquea la pantalla, el
+     cierre del indicador tiene que estar garantizado aunque algo de acá
+     abajo lance. Antes, un fallo dejaba la barra visible; ahora dejaría
+     la interfaz trabada. */
+  try {
+    let okCount = 0;
+    let primerError = null;
+    for (const item of items) {
+      setLoadingPaso(okCount + 1, items.length, 'Eliminando la obra del día');   // cambio #91
+      try {
+        const json = await _apiPostJson(JSON.stringify({ action: 'DELETE', sheet: 'ASIGNACIONES', id: item.id }));
+        if (!json.ok) throw new Error(json.error || 'Error al eliminar');
+        // D2: solo borrar local si server confirmó
+        asignaciones = asignaciones.filter(a => a.id !== item.id);
+        okCount++;
+      } catch (err) {
+        primerError = err.message;
+        break; // detener al primer error para no seguir desincronizando
+      }
     }
-  }
-  setLoading(false);
 
-  renderModalAsigDia();
-  renderAsigCalendario();
+    renderModalAsigDia();
+    renderAsigCalendario();
 
-  if (primerError) {
-    toast(`Eliminaron ${okCount} de ${items.length}. Error: ${primerError}`, 'err');
-  } else {
-    toast(`Obra eliminada: ${okCount} registro${okCount!==1?'s':''} ✓`);
-  }
+    if (primerError) {
+      toast(`Eliminaron ${okCount} de ${items.length}. Error: ${primerError}`, 'err');
+    } else {
+      toast(`Obra eliminada: ${okCount} registro${okCount!==1?'s':''} ✓`);
+    }
+  } finally { setLoading(false); }
 }
 
 /* ── COLA VIRTUAL: persistencia ── */
@@ -6789,7 +7173,7 @@ async function _jorGuardarInmediato(fecha, sitioId, esImp, motivo, obs) {
   const conf = incidenciaConfirmada(fecha, sitioId);
   if (!esImp && !conf) { cerrarModalJornada(); return; }   // ya estaba normal: nada que hacer
 
-  setLoading(true);
+  setLoading(true, 'Guardando la jornada');
   try {
     if (esImp && conf) {
       await apiPost('UPDATE', 'INCIDENCIAS', {
@@ -6835,6 +7219,7 @@ async function _confirmarColaIncidencias() {
   let ok = 0, error = null;
 
   for (const item of pendientes) {
+    setLoadingPaso(ok + 1, pendientes.length, 'Aplicando marcas de jornada');   // cambio #91
     try {
       // Releer el estado confirmado en el momento de aplicar (pudo cambiar por otra vía)
       const conf = incidenciaConfirmada(item.fecha, item.sitioId);
@@ -7680,16 +8065,12 @@ async function confirmarCola() {
     });
   });
 
-  setLoading(true);
+  setLoading(true, 'Confirmando la cola');
   try {
     /* Paso 1 — asignaciones (BULK_INSERT atómico). Solo si hay filas: con la
        cola de asignaciones vacía y marcas pendientes, este paso se saltea. */
     if (rows.length) {
-      const res = await fetch(API_URL, {
-        method: 'POST',
-        body: JSON.stringify({ action: 'BULK_INSERT', sheet: 'ASIGNACIONES', rows })
-      });
-      const json = await res.json();
+      const json = await _apiPostJson(JSON.stringify({ action: 'BULK_INSERT', sheet: 'ASIGNACIONES', rows }));
       if (!json.ok) throw new Error(json.error || 'Error al guardar');
 
       // Optimistic: agregar al array local (en formato normalizado)
@@ -7976,14 +8357,8 @@ const _tip = () => document.getElementById('sit-global-tooltip');
 function showSitTooltip(event, uid) {
   const s = getSit(uid);
   if (!s) return;
-  const sitiosConMismoId = sitios.filter(x => x.id === s.id);
-  const lineasSitio = lineas.filter(l => {
-    if (l.sitioId !== s.id) return false;
-    if (sitiosConMismoId.length === 1) return true;
-    if (l.poNroLinea && s.poNro) return l.poNroLinea === s.poNro;
-    const montoEsperado = s.po * l.pct / 100;
-    return Math.abs(l.monto - montoEsperado) < Math.max(1, montoEsperado * 0.01);
-  });
+  const sitiosConMismoId = sitios.filter(x => x.id === s.id);   // lo usa poLabel más abajo
+  const lineasSitio = _lineasVinculadasASitio(s);
   const poLabel = (sitiosConMismoId.length > 1 && s.poNro) ? `<div style="font-size:11px;color:#94a3b8;margin-bottom:8px;">PO ${s.poNro}</div>` : '';
   let html = `
     <div style="font-size:20px;font-weight:800;color:#ffffff;letter-spacing:-.5px;margin-bottom:2px;">${s.id}</div>
@@ -8212,8 +8587,7 @@ function _prNormalizarHoja(filas) {
 }
 
 async function _prFetchHoja(sheet) {
-  const res  = await fetch(`${API_URL}?sheet=${sheet}`);
-  const data = await res.json();
+  const data = await _apiGetJson(`${API_URL}?sheet=${sheet}`);
   if (data.ok === false) throw new Error(data.error || ('No se pudo leer ' + sheet));
   return _prNormalizarHoja(data.data);
 }
@@ -8668,7 +9042,7 @@ async function anularOC(ocId) {
   const o = oc.find(x => x.id === ocId);
   if (!o) return;
   if (!confirm(`¿Anular la OC ${o.nroOc || '(sin número)'}?\n\nDeja de contar en los totales y en la rentabilidad. Se puede reactivar después.`)) return;
-  setLoading(true);
+  setLoading(true, 'Anulando la OC');
   try {
     await apiPost('UPDATE', 'OC', { ESTADO: OC_ESTADO_ANULADA, MODIFICADO_AT: new Date().toISOString() }, ocId);
     o.estado = OC_ESTADO_ANULADA;
@@ -8687,7 +9061,7 @@ async function reactivarOC(ocId) {
      borrador— vuelve a Borrador; si ya se había emitido, conserva su número. */
   const destino = o.nroOc ? OC_ESTADO_EMITIDA : OC_ESTADO_BORRADOR;
   if (!confirm(`¿Reactivar la OC ${o.nroOc || '(sin número)'}?\n\nVuelve al estado "${destino}".`)) return;
-  setLoading(true);
+  setLoading(true, 'Reactivando la OC');
   try {
     await apiPost('UPDATE', 'OC', { ESTADO: destino, MODIFICADO_AT: new Date().toISOString() }, ocId);
     o.estado = destino;
@@ -8707,7 +9081,7 @@ async function eliminarOC(ocId) {
     return;
   }
   if (!confirm('¿Eliminar este borrador?\n\nSe borra junto con todas sus líneas. No se puede deshacer.')) return;
-  setLoading(true);
+  setLoading(true, 'Eliminando la OC');
   try {
     /* Primero las líneas (BULK_DELETE, atómico), después la cabecera.
        En ese orden: si falla el segundo paso queda una cabecera sin líneas,
@@ -9171,7 +9545,7 @@ async function guardarOC(destino) {
     MANUAL: l.manual ? '1' : '0'
   }));
 
-  setLoading(true);
+  setLoading(true, 'Guardando la OC');
   try {
     /* Edición = 3 llamadas atómicas (por eso existe BULK_DELETE):
        borrar líneas viejas → insertar las nuevas → actualizar cabecera. */
@@ -9578,10 +9952,9 @@ function saludo(nombre) {
 
 async function cargarUsuariosAdmin() {
   try {
-    const res  = await fetch(`${API_URL}?sheet=ADMIN`);
-    const text = await res.text();
-    let data;
-    try { data = JSON.parse(text); } catch(e) { return []; }
+    // cambio #90 — pasa por el transporte con reintento; el catch de abajo
+    // sigue devolviendo [] ante cualquier fallo, como antes.
+    const data = await _apiGetJson(`${API_URL}?sheet=ADMIN`);
     if (!data.ok || !data.data || !data.data.length) return [];
     const get = (row, key) => {
       const k = Object.keys(row).find(k => k.trim().toUpperCase() === key.trim().toUpperCase());
@@ -9689,8 +10062,7 @@ function cerrarSesion() {
   }, 130);
   const t0 = Date.now();
   try {
-    const res  = await fetch(`${API_URL}?sheet=CLIENTES`);
-    const data = await res.json();
+    const data = await _apiGetJson(`${API_URL}?sheet=CLIENTES`);   // cambio #90 — con reintento
     const ms   = Date.now() - t0;
     clearInterval(timer);
     if (data.ok !== false) {
