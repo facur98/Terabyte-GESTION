@@ -1171,47 +1171,78 @@
     @keyframes loadBar { from { width: 0; } to { width: 100%; } }
 
     /* Barra de progreso global */
-    /* ══ OVERLAY DE CARGA (cambio #91) ══
+    /* ══ OVERLAY DE CARGA (cambios #91 y #92) ══
        z-index 4000: por encima de los modales (200) y por debajo de la pantalla
        de bienvenida (4999) y del login (5000), así el cargarTodo posterior al
-       login no le mete un blur encima a la bienvenida. */
+       login no le mete un blur encima a la bienvenida.
+
+       El padding-left del ancho del sidebar centra la caja sobre el ÁREA DE
+       CONTENIDO, no sobre la ventana: el sidebar mide 240px, así que centrar
+       respecto del viewport dejaba la caja visiblemente corrida a la izquierda
+       de lo que el usuario está mirando. El blur sí cubre todo. */
     #load-overlay {
       display: none; position: fixed; inset: 0; z-index: 4000;
-      background: rgba(238,240,245,0.45);
-      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      background: rgba(232,235,243,0.55);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
       align-items: center; justify-content: center;
+      padding-left: var(--sidebar-w); box-sizing: border-box;
     }
     #load-overlay.open { display: flex; }
+
     .load-box {
-      background: var(--glass); border: 1px solid var(--glass-border);
-      box-shadow: var(--glass-shadow); backdrop-filter: var(--blur);
-      border-radius: var(--radius); padding: 30px 42px;
-      display: flex; flex-direction: column; align-items: center; gap: 14px;
-      min-width: 260px; max-width: 420px; text-align: center;
-      animation: fadeUp 0.25s ease;
+      width: 292px; box-sizing: border-box;
+      padding: 30px 30px 30px;
+      background: rgba(255,255,255,0.78);
+      border: 1px solid rgba(255,255,255,0.9);
+      box-shadow: 0 20px 56px rgba(70,85,130,0.20), 0 2px 8px rgba(70,85,130,0.06);
+      backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+      border-radius: 22px;
+      display: flex; flex-direction: column; align-items: center;
+      text-align: center;
+      animation: loadBoxIn 0.28s cubic-bezier(.34,1.16,.64,1);
     }
+    @keyframes loadBoxIn {
+      from { opacity: 0; transform: translateY(10px) scale(0.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
     .load-spinner {
-      width: 40px; height: 40px; border-radius: 50%;
-      border: 3px solid rgba(79,128,255,0.18);
+      width: 44px; height: 44px; border-radius: 50%;
+      border: 3.5px solid rgba(100,120,175,0.18);
       border-top-color: var(--accent-blue);
-      animation: loadSpin 0.75s linear infinite;
+      animation: loadSpin 0.7s cubic-bezier(.5,.15,.5,.85) infinite;
+      margin-bottom: 20px;
     }
     @keyframes loadSpin { to { transform: rotate(360deg); } }
+
     .load-titulo {
-      font-size: 15px; font-weight: 700; color: var(--text-dark); letter-spacing: -0.2px;
+      font-size: 15.5px; font-weight: 700; color: var(--text-dark);
+      letter-spacing: -0.25px; line-height: 1.35;
     }
+    /* El contador y la barra COLAPSAN cuando no hay progreso que mostrar, en vez
+       de ocupar un espacio invisible: reservándolo, la caja de una operación
+       simple quedaba con un hueco muerto abajo y el conjunto desbalanceado.
+       Las alturas son fijas y conocidas, así que la transición es limpia y la
+       caja crece sin saltos. */
     .load-paso {
-      font-size: 12.5px; color: var(--text-mid); min-height: 16px;
+      font-size: 12.5px; color: var(--text-light);
+      height: 0; line-height: 17px; margin-top: 0; opacity: 0; overflow: hidden;
+      font-variant-numeric: tabular-nums;
+      transition: height 0.22s ease, margin-top 0.22s ease, opacity 0.18s ease;
     }
+    .load-box.con-paso .load-paso { height: 17px; margin-top: 8px; opacity: 1; }
+
     .load-barra {
-      width: 100%; height: 4px; border-radius: 4px;
-      background: rgba(79,128,255,0.15); overflow: hidden; display: none;
+      width: 100%; height: 0; border-radius: 4px; margin-top: 0;
+      background: rgba(100,115,160,0.14); overflow: hidden;
+      opacity: 0;
+      transition: height 0.22s ease, margin-top 0.22s ease, opacity 0.18s ease;
     }
-    .load-barra.visible { display: block; }
+    .load-box.con-barra .load-barra { height: 5px; margin-top: 18px; opacity: 1; }
     .load-barra span {
       display: block; height: 100%; width: 0%; border-radius: 4px;
       background: linear-gradient(90deg, var(--accent-blue), var(--accent-teal));
-      transition: width 0.25s ease;
+      transition: width 0.3s cubic-bezier(.4,0,.2,1);
     }
 
     #global-progress-bar {
@@ -3038,7 +3069,7 @@
 
 <!-- OVERLAY DE CARGA (cambio #91) -->
 <div id="load-overlay">
-  <div class="load-box">
+  <div class="load-box" id="load-box">
     <div class="load-spinner"></div>
     <div class="load-titulo" id="load-titulo">Procesando</div>
     <div class="load-paso" id="load-paso"></div>
@@ -3064,7 +3095,7 @@ const PEQ = 90000000;
    a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
    Se pinta en el pie del sidebar (#sidebar-version).
    ═══════════════════════════════════════════════════════ */
-const APP_VERSION = 'V 180826 1933';
+const APP_VERSION = 'V 180826 1943';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
@@ -3196,7 +3227,16 @@ function toast(msg, tipo = 'ok') {
   if (!t) {
     t = document.createElement('div');
     t.id = 'toast';
-    t.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9999;padding:14px 28px;border-radius:14px;font-size:14px;font-weight:600;box-shadow:0 12px 36px rgba(0,0,0,0.2);transition:opacity 0.4s;backdrop-filter:blur(12px);text-align:center;max-width:380px;pointer-events:none;';
+    /* cambio #92 — el toast estaba en el CENTRO de la pantalla, exactamente
+       donde ahora aparece la caja del overlay de carga: "Sincronizando datos"
+       caía encima de "Cargando datos". Se mueve a la franja superior, que es
+       donde no compite con nada: los banners de cola viven abajo (bottom 148px
+       en adelante) y el overlay, al centro. */
+    t.style.cssText = 'position:fixed;top:26px;left:50%;transform:translateX(-50%) translateY(-8px);' +
+      'z-index:9999;padding:13px 26px;border-radius:14px;font-size:13.5px;font-weight:600;' +
+      'letter-spacing:-0.1px;box-shadow:0 10px 30px rgba(30,40,70,0.22);' +
+      'transition:opacity 0.35s ease, transform 0.35s cubic-bezier(.4,0,.2,1);' +
+      'backdrop-filter:blur(12px);text-align:center;max-width:420px;pointer-events:none;';
     document.body.appendChild(t);
   }
   t.textContent = msg;
@@ -3205,8 +3245,12 @@ function toast(msg, tipo = 'ok') {
                                          'rgba(79,128,255,0.95)';
   t.style.color   = '#fff';
   t.style.opacity = '1';
+  t.style.transform = 'translateX(-50%) translateY(0)';
   clearTimeout(t._timer);
-  t._timer = setTimeout(() => { t.style.opacity = '0'; }, 2800);
+  t._timer = setTimeout(() => {
+    t.style.opacity = '0';
+    t.style.transform = 'translateX(-50%) translateY(-8px)';
+  }, 2800);
 }
 
 let _progressTimer = null;
@@ -3285,22 +3329,26 @@ function setLoadingPaso(actual, total, mensaje) {
 
   const i = Math.min(Math.max(Number(actual) || 0, 0), n);
   paso.textContent = `${i} de ${n}`;
-  if (bar)  bar.classList.add('visible');
+  const box = document.getElementById('load-box');
+  if (box) box.classList.add('con-paso', 'con-barra');
   if (fill) fill.style.width = Math.round(i / n * 100) + '%';
 }
 
 /* Texto libre bajo el título, sin contador (ej. "Reintentando..."). */
 function setLoadingDetalle(txt) {
   const paso = document.getElementById('load-paso');
+  const box  = document.getElementById('load-box');
   if (paso) paso.textContent = txt || '';
+  // Texto libre: se despliega el renglón, pero NO la barra (no hay progreso real).
+  if (box) box.classList.toggle('con-paso', !!txt);
 }
 
 function _loadResetPaso() {
   const paso = document.getElementById('load-paso');
-  const bar  = document.getElementById('load-barra');
+  const box  = document.getElementById('load-box');
   const fill = document.getElementById('load-barra-fill');
   if (paso) paso.textContent = '';
-  if (bar)  bar.classList.remove('visible');
+  if (box)  box.classList.remove('con-paso', 'con-barra');
   if (fill) fill.style.width = '0%';
 }
 
@@ -3364,8 +3412,8 @@ function nuevoId(prefix) {
   return prefix + '-' + Date.now() + '-' + _idCounter + '-' + Math.floor(Math.random() * 9999);
 }
 
-async function cargarTodo() {
-  setLoading(true, 'Cargando datos');
+async function cargarTodo(mensaje) {
+  setLoading(true, mensaje || 'Cargando datos');
   try {
     const data = await apiGet('ALL');
     console.log('=== RESPUESTA APPS SCRIPT ===', JSON.stringify(data));
@@ -8429,8 +8477,11 @@ async function mostrarDebug() {
 }
 
 async function sincronizar(silencioso = false) {
-  if (!silencioso) toast('🔄 Sincronizando datos...', 'info');
-  await cargarTodo();
+  /* cambio #92 — antes esto tosteaba "Sincronizando datos" y acto seguido
+     cargarTodo abría el overlay con "Cargando datos": dos mensajes distintos,
+     encimados y contradictorios. Ahora la intención viaja al overlay y hay un
+     solo cartel. */
+  await cargarTodo('Sincronizando datos');
   const vistaActiva = document.querySelector('.view.active');
   if (vistaActiva) {
     const id = vistaActiva.id.replace('view-', '');
@@ -8441,8 +8492,7 @@ async function sincronizar(silencioso = false) {
 }
 
 async function autoSync() {
-  toast('🔄 Sincronizando datos...', 'info');
-  await sincronizar(true);
+  await sincronizar(true);   // cambio #92 — el overlay ya avisa; el toast duplicaba
 }
 
 /* ═══════════════════════════════════════════════════════
