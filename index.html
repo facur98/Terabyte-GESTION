@@ -2993,7 +2993,7 @@ const PEQ = 90000000;
    a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
    Se pinta en el pie del sidebar (#sidebar-version).
    ═══════════════════════════════════════════════════════ */
-const APP_VERSION = 'V 110826 2241';
+const APP_VERSION = 'V 180826 1540';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
@@ -3195,7 +3195,14 @@ async function cargarTodo() {
     const rawEmpleados = (data.empleados || []).map(r => ({
       id:        String(get(r, 'EMPLEADOID') || '').trim(),
       nombre:    String(get(r, 'EMPLEADONOMBRE') || '').trim(),
-      relacion:  String(get(r, 'RELACION') || '').trim().toUpperCase()  // 'P' | 'C' | '' (sin definir)
+      relacion:  String(get(r, 'RELACION') || '').trim().toUpperCase(),  // 'P' | 'C' | '' (sin definir)
+      /* BAJA DE EMPLEADOS (cambio #88) — columna opcional "Activo" en la hoja.
+         VACÍO = ACTIVO (criterio inverso al de HABILITADO en ADMIN), para que la
+         columna sea opcional: si no existe, o si la celda está en blanco, todo se
+         comporta exactamente como antes. Solo los valores de EMPLEADO_BAJA dan
+         de baja. La baja NO borra nada: el histórico sigue mostrando nombre y
+         badge; el empleado solo desaparece de las listas de CARGA. */
+      activo:    _empleadoEstaActivo(get(r, 'ACTIVO'))
     })).filter(e => e.id);
 
     // Deduplicar por EmpleadoID (U1); si hubiera repetidos, se queda con la primera aparición
@@ -6175,6 +6182,11 @@ function renderAsigCalendario() {
   const nombresMes = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
   labelEl.textContent = nombresMes[mes] + ' ' + año;
 
+  /* cambio #88 — el warning "N S/A" cuenta solo empleados ACTIVOS: un dado de
+     baja no puede asignarse, así que contarlo dejaría el aviso encendido para
+     siempre. Se calcula una vez acá y no por celda. */
+  const idsActivos = empleadosActivos().map(e => e.id);
+
   // Indexar asignaciones por fecha YYYY-MM-DD para acceso O(1)
   const porFecha = new Map();
   asignaciones.forEach(a => {
@@ -6230,8 +6242,14 @@ function renderAsigCalendario() {
     const tieneData = items.length > 0;
     // Empleados con CUALQUIER registro ese día (sitio real o estado especial)
     const empleadosAsignados = new Set(items.map(a => a.empleadoId));
-    // Sin asignar = empleados totales del sistema sin registro ese día (los con estado especial cuentan como asignados)
-    const sinAsignar = tieneData ? Math.max(0, empleados.length - empleadosAsignados.size) : 0;
+    /* Sin asignar = empleados ACTIVOS sin registro ese día (los que tienen estado
+       especial cuentan como asignados). Se cuenta por diferencia de conjuntos y
+       no restando tamaños: un día viejo puede tener registros de gente ya dada de
+       baja, y la resta los descontaría de los activos subestimando el faltante.
+       Con todos los empleados activos, ambas formas dan idéntico resultado. */
+    const sinAsignar = tieneData
+      ? idsActivos.filter(id => !empleadosAsignados.has(id)).length
+      : 0;
 
     // Estadísticas mes en curso (solo obras reales, los estados especiales no cuentan como actividad)
     if (!outside) {
@@ -6498,6 +6516,32 @@ function fechaHoyStr() {
 function nombreEmpleado(empId) {
   const e = empleados.find(x => x.id === empId);
   return e ? e.nombre : empId;
+}
+
+/* ══ BAJA DE EMPLEADOS (cambio #88) ══════════════════════════════
+   La hoja EMPLEADOS admite una columna OPCIONAL "Activo".
+
+   - VACÍO / columna ausente ⇒ ACTIVO. Es el criterio inverso al de HABILITADO
+     en ADMIN, y es deliberado: hace la columna retrocompatible al 100%, así no
+     hay que tocar las filas existentes ni redesplegar Code.gs (la columna viaja
+     sola en el ALL porque leerHoja lee la cabecera real de la hoja).
+   - Solo los valores de EMPLEADO_BAJA marcan la baja.
+
+   Qué hace la baja: saca al empleado de las listas de CARGA (lista de Nueva
+   asignación y selector de contratista del formulario de OC).
+   Qué NO toca: el histórico. Nombre, badge P/C, chips, modal de días, filtro
+   Contratista de Sitios globales, filtro del listado de OC y las OC ya emitidas
+   siguen mostrando todo igual — nombreEmpleado y relacionEmpleado no filtran. */
+const EMPLEADO_BAJA = ['NO', 'N', 'FALSE', 'FALSO', '0', 'BAJA', 'INACTIVO'];
+
+function _empleadoEstaActivo(v) {
+  return !EMPLEADO_BAJA.includes(String(v ?? '').trim().toUpperCase());
+}
+
+/* Empleados que siguen en actividad. Único punto de verdad de la baja:
+   cualquier lista de carga nueva debe partir de acá, no de `empleados`. */
+function empleadosActivos() {
+  return empleados.filter(e => e.activo);
 }
 
 /* ── Helper: relación de un empleado por ID ('P' | 'C' | '') ── */
@@ -7116,7 +7160,10 @@ function precargaAplicar(modo) {
    modo 'rellenar' → solo completa empleados que hoy están sin asignar. */
 function _aplicarPrecarga(origen, modo) {
   const mapaOrigen = _mapaAsignacionesDeFecha(origen);
-  const idsValidos = new Set(empleados.map(e => e.id));
+  /* cambio #88 — un empleado dado de baja se trata igual que uno que ya no está
+     en la hoja: no se copia (no tendría fila donde editarlo ni corresponde
+     asignarle trabajo nuevo). Se informa en el contador de omitidos. */
+  const idsValidos = new Set(empleadosActivos().map(e => e.id));
 
   let copiados = 0, omitidosConf = 0, ignorados = 0, respetados = 0;
 
@@ -7143,7 +7190,10 @@ function _aplicarPrecarga(origen, modo) {
   const extras = [];
   if (omitidosConf) extras.push(`${omitidosConf} ya confirmado${omitidosConf!==1?'s':''}`);
   if (respetados)   extras.push(`${respetados} respetado${respetados!==1?'s':''}`);
-  if (ignorados)    extras.push(`${ignorados} empleado${ignorados!==1?'s':''} inexistente${ignorados!==1?'s':''}`);
+  /* "fuera de lista" cubre los dos casos: ya no está en la hoja EMPLEADOS, o
+     está dado de baja (cambio #88). Antes decía "inexistente", que con la baja
+     pasaría a ser inexacto. */
+  if (ignorados)    extras.push(`${ignorados} empleado${ignorados!==1?'s':''} fuera de lista`);
   toast(`${copiados} empleado${copiados!==1?'s':''} precargado${copiados!==1?'s':''} del ${fechaCorta(origen)}` +
         (extras.length ? ` · ${extras.join(' · ')}` : '') + ' ✓');
 }
@@ -7154,10 +7204,21 @@ function renderModalEmpleados() {
   const resumen = document.getElementById('asig-emp-resumen');
   if (!lista) return;
 
-  const total = empleados.length;
+  /* cambio #88 — la fila se muestra si el empleado está ACTIVO, o si ya tiene
+     algo cargado ese día (confirmado en el Sheet o elegido en la selección en
+     curso). Motivo: un dado de baja con asignación confirmada sigue apareciendo
+     en la card de "Obras del día" de la derecha, así que ocultarle la fila
+     descuadraría el resumen y parecería un bug. Sus filas confirmadas ya están
+     bloqueadas, así que mostrarlas no habilita ninguna carga nueva.
+     El orden se conserva: filter sobre `empleados`, que ya viene ordenado. */
+  const visibles = empleados.filter(e =>
+    e.activo || _asigEmpConfirmados[e.id] || _asigSitioPorEmpleado[e.id]
+  );
+
+  const total = visibles.length;
   let asignados = 0;
 
-  lista.innerHTML = empleados.map(e => {
+  lista.innerHTML = visibles.map(e => {
     const confirmadoSitio = _asigEmpConfirmados[e.id];
     const sitioElegido    = _asigSitioPorEmpleado[e.id] || '';
     const estaConfirmado  = !!confirmadoSitio;
@@ -7439,7 +7500,10 @@ function agregarAsigCola() {
     ...Object.keys(_asigEmpConfirmados),
     ...pares.map(([eid]) => eid)
   ]);
-  const sinAsignar = empleados.filter(e => !cubiertos.has(e.id));
+  /* cambio #88 — solo los ACTIVOS pueden quedar "sin asignar": un dado de baja
+     no tiene fila en la lista, así que nunca podría cubrirse y el confirm
+     saltaría en todas las cargas. */
+  const sinAsignar = empleadosActivos().filter(e => !cubiertos.has(e.id));
   if (sinAsignar.length) {
     const ok = confirm(`Quedan ${sinAsignar.length} empleado${sinAsignar.length!==1?'s':''} sin asignar para el ${fecha}. ¿Continuar igual?`);
     if (!ok) return;
@@ -8418,8 +8482,22 @@ function ocSitiosHabilitados() {
   return out.sort((a, b) => a.id.localeCompare(b.id, 'es', { numeric: true }));
 }
 
+/* TODOS los contratistas, incluidos los dados de baja. Se usa para poblar el
+   filtro del listado de OC: una OC vieja de un contratista dado de baja tiene
+   que seguir siendo filtrable (cambio #88 — la baja no toca los filtros). */
 function ocContratistas() {
   return empleados.filter(e => String(e.relacion || '').trim().toUpperCase() === 'C');
+}
+
+/* Contratistas seleccionables en el FORMULARIO de OC: solo los activos, más el
+   de la OC que se está editando aunque esté de baja (cambio #88).
+   ⚠ Sin esa excepción, al reeditar una OC vieja el <select> no tendría la
+   opción, `select.value = id` caería en '' y el contratista se perdería al
+   guardar. Mismo criterio que la lista de Nueva asignación: activo, o ya
+   cargado en lo que se está editando. */
+function ocContratistasParaForm(incluirId) {
+  const id = String(incluirId || '').trim();
+  return ocContratistas().filter(e => e.activo || (id && e.id === id));
 }
 
 function ocLineasDe(ocId) {
@@ -8687,7 +8765,7 @@ async function abrirFormOC(ocId) {
 
   // Contratistas
   const selCon = document.getElementById('ocf-contratista');
-  const cons = ocContratistas();
+  const cons = ocContratistasParaForm(existente ? existente.contratistaId : '');
   selCon.innerHTML = '<option value="">Elegí un contratista...</option>' +
     cons.map(c => `<option value="${_escAttr(c.id)}">${_escHtml(c.nombre)}</option>`).join('');
   selCon.value = existente ? existente.contratistaId : '';
