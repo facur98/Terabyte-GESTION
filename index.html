@@ -3113,7 +3113,7 @@ const PEQ = 90000000;
    a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
    Se pinta en el pie del sidebar (#sidebar-version).
    ═══════════════════════════════════════════════════════ */
-const APP_VERSION = 'V 200826 1310';
+const APP_VERSION = 'V 200826 1333';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
@@ -9928,9 +9928,11 @@ function descargarPdfOC(ocId) {
    QUE AGREGARLO ACÁ o esa persona entra en solo lectura sin aviso.
    ═══════════════════════════════════════════════════════ */
 
-const ROL_VIEWER      = 'viewer';
-const ROL_FACTURACION = 'facturacion';
-const ROLES_PLENOS    = ['administrador', 'gerente'];
+const ROL_VIEWER        = 'viewer';
+const ROL_FACTURACION   = 'facturacion';
+const ROL_ADMINISTRADOR = 'administrador';
+const ROL_GERENTE       = 'gerente';
+const ROLES_PLENOS      = [ROL_ADMINISTRADOR, ROL_GERENTE];
 
 const PERFIL_PLENO       = 'pleno';
 const PERFIL_VIEWER      = 'viewer';
@@ -10133,11 +10135,22 @@ function aterrizajeInicial() {
 let _usuariosAdmin = [];
 let _usuarioActual = null;
 
-function saludo(nombre) {
-  const n = nombre.trim().split(' ')[0].toLowerCase();
-  const fem = ['a','ia','ina','ana','ela','era','ita','osa','esa','cia'];
-  const esFem = fem.some(t => n.endsWith(t));
-  return esFem ? 'Bienvenida de vuelta,' : 'Bienvenido de vuelta,';
+/* Saludo de la pantalla de bienvenida (cambio #94).
+
+   Antes se adivinaba el género por la TERMINACIÓN del nombre, con una lista
+   de sufijos ('a', 'ia', 'ina'...). Fallaba con cualquier nombre femenino que
+   no terminara así: "Valery" saludaba "Bienvenido de vuelta".
+
+   Ahora la forma femenina es el DEFAULT y solo el rol Administrador conserva
+   la masculina, que es como está compuesto el plantel real.
+
+   ⚠ Es una regla por ROL, no por persona. Si alguna vez hay una
+   administradora o un gerente varón, va a saludar mal: la salida limpia sería
+   una columna propia en la hoja ADMIN, no seguir estirando esta regla. */
+function saludo(rol) {
+  return _normRol(rol) === ROL_ADMINISTRADOR
+    ? 'Bienvenido de vuelta,'
+    : 'Bienvenida de vuelta,';
 }
 
 async function cargarUsuariosAdmin() {
@@ -10206,7 +10219,7 @@ function mostrarBienvenida(user) {
   const nombre       = user.idUsuario || user.usuario;
   const primerNombre = nombre.split(' ')[0];
   document.getElementById('bienvenida-texto').innerHTML =
-    `${saludo(nombre)}<br><span>${nombre}</span>`;
+    `${saludo(user.rol)}<br><span>${nombre}</span>`;
   document.getElementById('bienvenida-rol').textContent = user.rol || 'Usuario';
   bienvenida.style.display = 'flex';
   document.getElementById('sidebar-avatar').textContent = primerNombre.charAt(0).toUpperCase();
