@@ -166,6 +166,21 @@
     body.modo-facturacion #nav-sitios-globales,
     body.modo-facturacion #cola-card { display: none !important; }
 
+    /* PO sitios de SOLO LECTURA para este perfil (cambio #95).
+       .sit-wr marca los 6 controles de escritura de la vista: los 3 botones
+       de fila (+Seg / editar / eliminar), los dos checkboxes de tanda y el
+       botón "Nuevo sitio". Los bloques con ID propio van aparte.
+       ⚠ #banner-proyecciones se oculta aunque su cola sea de memoria y este
+       perfil no pueda alimentarla: si un usuario pleno dejó proyecciones
+       pendientes y cerró sesión SIN recargar, seguirían en `_proyPendientes`
+       y el banner aparecería. El guard bloquea el traspaso igual; esto
+       evita además el botón huérfano.
+       El doble click de la fila (ir a Seguimiento) NO se toca: es navegación. */
+    body.modo-facturacion .sit-wr,
+    body.modo-facturacion #sit-bulk-bar,
+    body.modo-facturacion #form-sitio,
+    body.modo-facturacion #banner-proyecciones { display: none !important; }
+
     /* MAIN */
     .main { margin-left: var(--sidebar-w); flex: 1; padding: 32px 32px 40px; position: relative; z-index: 1; }
     .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; }
@@ -2125,7 +2140,7 @@
       </div>
       <div class="topbar-actions">
         <button class="btn btn-glass" onclick="sincronizar()" style="font-size:12px;">🔄 Sincronizar</button>
-        <button class="btn btn-primary" onclick="toggleFormSitio()"><i class="fa-solid fa-plus"></i> Nuevo sitio</button>
+        <button class="btn btn-primary sit-wr" onclick="toggleFormSitio()"><i class="fa-solid fa-plus"></i> Nuevo sitio</button>
       </div>
     </div>
 
@@ -2200,7 +2215,7 @@
       <div class="table-wrap">
         <table>
           <thead><tr>
-            <th class="sit-check-col"><input type="checkbox" class="sit-check" id="sit-check-all" onclick="toggleSelAllSitios(this)" title="Seleccionar/deseleccionar todos los disponibles" /></th>
+            <th class="sit-check-col"><input type="checkbox" class="sit-check sit-wr" id="sit-check-all" onclick="toggleSelAllSitios(this)" title="Seleccionar/deseleccionar todos los disponibles" /></th>
             <th>ID Sitio</th><th>Provincia</th><th>Cliente</th><th>Concepto</th><th>N° PO</th><th>Total PO</th><th>Status</th><th>Observación</th><th>Acciones</th>
           </tr></thead>
           <tbody id="tabla-sitios">
@@ -3113,7 +3128,7 @@ const PEQ = 90000000;
    a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
    Se pinta en el pie del sidebar (#sidebar-version).
    ═══════════════════════════════════════════════════════ */
-const APP_VERSION = 'V 200826 1333';
+const APP_VERSION = 'V 200826 1352';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
@@ -3872,6 +3887,7 @@ let _sitioTemp = null;
 
 function toggleFormSitio() {
   if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
+  if (bloqueoSitiosRO()) return;   // cambio #95 — PO sitios es de solo lectura para Facturacion
   const f = document.getElementById('form-sitio');
   f.style.display = f.style.display === 'none' ? 'block' : 'none';
   if (f.style.display === 'block') poblarSelect('sit-cliente');
@@ -3888,6 +3904,7 @@ function poblarSelect(id) {
 
 function guardarSitio() {
   if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
+  if (bloqueoSitiosRO()) return;   // cambio #95 — PO sitios es de solo lectura para Facturacion
   const id    = document.getElementById('sit-id').value.trim();
   const loc   = document.getElementById('sit-localidad').value;
   const cid   = document.getElementById('sit-cliente').value;
@@ -3925,6 +3942,7 @@ function guardarSitio() {
 
 async function confirmarGuardarSitio() {
   if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
+  if (bloqueoSitiosRO()) return;   // cambio #95 — PO sitios es de solo lectura para Facturacion
   if (!_sitioTemp) return;
   const { id, loc, cid, con, poNro, po, obs } = _sitioTemp;
   cerrarModal();
@@ -3951,6 +3969,7 @@ async function confirmarGuardarSitio() {
 
 function abrirEditarSitio(uid) {
   if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
+  if (bloqueoSitiosRO()) return;   // cambio #95 — PO sitios es de solo lectura para Facturacion
   const s = getSit(uid);
   if (!s) return;
   document.getElementById('edit-sit-original-id').value = uid;
@@ -4010,6 +4029,7 @@ function abrirEditarSitio(uid) {
 
 async function guardarEdicionSitio() {
   if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
+  if (bloqueoSitiosRO()) return;   // cambio #95 — PO sitios es de solo lectura para Facturacion
   const uid    = document.getElementById('edit-sit-original-id').value;
   const s      = getSit(uid);
   if (!s) return;
@@ -4227,7 +4247,7 @@ function renderSitios(filtro = '', filtros = null) {
       onmousemove="moveSitTooltip(event)"
       onmouseleave="hideSitTooltip()">
       <td class="sit-check-col" ondblclick="event.stopPropagation()">
-        <input type="checkbox" class="sit-check" ${disponibleTanda ? '' : 'disabled'} ${checked ? 'checked' : ''}
+        <input type="checkbox" class="sit-check sit-wr" ${disponibleTanda ? '' : 'disabled'} ${checked ? 'checked' : ''}
           onclick="event.stopPropagation();toggleSelSitio('${s.uid}',this.checked)"
           title="${disponibleTanda ? 'Seleccionar para tanda' : 'Solo sitios con 100% disponible se pueden seleccionar para una tanda'}" />
       </td>
@@ -4240,9 +4260,9 @@ function renderSitios(filtro = '', filtros = null) {
       <td><span style="display:inline-block;padding:4px 11px;border-radius:20px;font-size:12px;font-weight:600;background:${st.color};color:${st.text};">${st.label}</span></td>
       <td style="color:var(--text-mid);font-size:12px;">${s.obs||'—'}</td>
       <td class="col-acciones" ondblclick="event.stopPropagation()"><span style="display:flex;align-items:center;gap:6px;">
-        <button class="btn btn-glass btn-sm" onclick="abrirProyectarSitio('${s.uid}')" title="Proyectar" style="color:var(--accent-blue);font-size:11px;font-weight:700;padding:5px 9px;">+Seg</button>
-        <button class="btn btn-glass btn-sm" onclick="abrirEditarSitio('${s.uid}')" title="Editar">✏️</button>
-        <button class="btn btn-rose btn-sm" onclick="eliminarSitio('${s.uid}')" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
+        <button class="btn btn-glass btn-sm sit-wr" onclick="abrirProyectarSitio('${s.uid}')" title="Proyectar" style="color:var(--accent-blue);font-size:11px;font-weight:700;padding:5px 9px;">+Seg</button>
+        <button class="btn btn-glass btn-sm sit-wr" onclick="abrirEditarSitio('${s.uid}')" title="Editar">✏️</button>
+        <button class="btn btn-rose btn-sm sit-wr" onclick="eliminarSitio('${s.uid}')" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
       </span></td>
     </tr>`;
   }).join('');
@@ -4421,6 +4441,7 @@ function abrirModalSgDias(idSitio) {
 
 function toggleSelSitio(uid, checked) {
   if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
+  if (bloqueoSitiosRO()) return;   // cambio #95 — PO sitios es de solo lectura para Facturacion
   if (checked) _sitSeleccionados.add(uid);
   else _sitSeleccionados.delete(uid);
   // Actualizar visual sin re-render completo
@@ -4432,6 +4453,7 @@ function toggleSelSitio(uid, checked) {
 
 function toggleSelAllSitios(cb) {
   if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
+  if (bloqueoSitiosRO()) return;   // cambio #95 — PO sitios es de solo lectura para Facturacion
   // Toma todas las filas visibles con checkbox habilitado
   document.querySelectorAll('#tabla-sitios .sit-check:not(:disabled)').forEach(chk => {
     const uid = (chk.getAttribute('onclick') || '').match(/'([^']+)'/)?.[1];
@@ -4472,6 +4494,7 @@ function actualizarBulkBar() {
 
 function limpiarSelSitios() {
   if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
+  if (bloqueoSitiosRO()) return;   // cambio #95 — PO sitios es de solo lectura para Facturacion
   _sitSeleccionados.clear();
   document.querySelectorAll('#tabla-sitios .sit-check').forEach(c => { c.checked = false; });
   document.querySelectorAll('#tabla-sitios tr.row-seleccionada').forEach(r => r.classList.remove('row-seleccionada'));
@@ -4481,6 +4504,7 @@ function limpiarSelSitios() {
 /* ──── MODAL DE TANDA ──── */
 function abrirModalTanda() {
   if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
+  if (bloqueoSitiosRO()) return;   // cambio #95 — PO sitios es de solo lectura para Facturacion
   if (_sitSeleccionados.size === 0) return toast('No hay sitios seleccionados.', 'err');
   // Reset: empieza con 1 tanda (D1)
   _tandas = [{ pct: '', mes: '' }];
@@ -4572,6 +4596,7 @@ function actualizarTandaResumen() {
 
 function confirmarTanda() {
   if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
+  if (bloqueoSitiosRO()) return;   // cambio #95 — PO sitios es de solo lectura para Facturacion
   const suma = _tandas.reduce((a,t) => a + (parseInt(t.pct) || 0), 0);
   if (suma !== 100) return toast('La suma de tandas debe ser 100%.', 'err');
   if (_tandas.some(t => !t.pct || !t.mes)) return toast('Completá todas las tandas.', 'err');
@@ -5333,6 +5358,7 @@ function mostrarModalInfo(mensaje) {
    cosa): no se le agrega fricción al caso más común. */
 async function eliminarSitio(uid) {
   if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
+  if (bloqueoSitiosRO()) return;   // cambio #95 — PO sitios es de solo lectura para Facturacion
   const s = getSit(uid);
   if (!s) return;
 
@@ -5400,6 +5426,7 @@ function _abrirEliminarSitio(uid, vinculadas) {
 }
 
 function confirmarEliminarSitio(conLineas) {
+  if (bloqueoSitiosRO()) return;   // cambio #95 — PO sitios es de solo lectura para Facturacion
   const uid = document.getElementById('elim-sitio-uid').value;
   cerrarModal();
   if (uid) _ejecutarEliminarSitio(uid, conLineas);
@@ -5412,6 +5439,7 @@ function confirmarEliminarSitio(conLineas) {
    arreglando. */
 async function _ejecutarEliminarSitio(uid, conLineas) {
   if (bloqueoViewer()) return;
+  if (bloqueoSitiosRO()) return;   // cambio #95 — PO sitios es de solo lectura para Facturacion
   const s = getSit(uid);
   if (!s) return;
 
@@ -5464,6 +5492,7 @@ async function _ejecutarEliminarSitio(uid, conLineas) {
 /* ══ PROYECTAR SITIO ══ */
 function abrirProyectarSitio(uid) {
   if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
+  if (bloqueoSitiosRO()) return;   // cambio #95 — PO sitios es de solo lectura para Facturacion
   const s = getSit(uid);
   if (!s) return;
 
@@ -5555,6 +5584,7 @@ let _proyPendientes = [];
 
 function confirmarProyectarSitio() {
   if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
+  if (bloqueoSitiosRO()) return;   // cambio #95 — PO sitios es de solo lectura para Facturacion
   const sitioId = document.getElementById('proy-sitio-id-hidden').value;
   const pct     = parseInt(document.getElementById('proy-pct').value);
   const mesM    = document.getElementById('proy-mes-mes').value;
@@ -5617,6 +5647,7 @@ function actualizarBannerProyecciones() {
 
 function abrirConfirmarTraspaso() {
   if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
+  if (bloqueoSitiosRO()) return;   // cambio #95 — PO sitios es de solo lectura para Facturacion
   const resumen = document.getElementById('traspaso-resumen');
   resumen.innerHTML = _proyPendientes.map(p => {
     const cli = getCli(p.clienteId);
@@ -5637,6 +5668,7 @@ function abrirConfirmarTraspaso() {
 
 function quitarDeCola(id) {
   if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
+  if (bloqueoSitiosRO()) return;   // cambio #95 — PO sitios es de solo lectura para Facturacion
   _proyPendientes = _proyPendientes.filter(p => p.id !== id);
   actualizarBannerProyecciones();
   if (_proyPendientes.length === 0) { cerrarModal(); renderSitios(); return; }
@@ -5645,6 +5677,7 @@ function quitarDeCola(id) {
 
 async function ejecutarTraspaso() {
   if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
+  if (bloqueoSitiosRO()) return;   // cambio #95 — PO sitios es de solo lectura para Facturacion
   if (!_proyPendientes.length) return;
   cerrarModal();
   setLoading(true, 'Traspasando líneas');
@@ -5681,6 +5714,7 @@ async function ejecutarTraspaso() {
 
 function descartarProyecciones() {
   if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
+  if (bloqueoSitiosRO()) return;   // cambio #95 — PO sitios es de solo lectura para Facturacion
   if (!confirm(`¿Descartás las ${_proyPendientes.length} proyección(es) pendientes?`)) return;
   _proyPendientes = [];
   actualizarBannerProyecciones();
@@ -10091,6 +10125,25 @@ function desactivarModoViewer() {
   document.body.classList.remove('modo-viewer');
   if (_viewerObserver) _viewerObserver.disconnect();
   document.querySelectorAll('.vw-hide').forEach(el => el.classList.remove('vw-hide'));
+}
+
+/* Guard de escritura de PO SITIOS (cambio #95).
+
+   El perfil Facturacion VE PO sitios pero no la escribe: puede consultar las
+   POs y saltar al Seguimiento de un sitio con doble click, y nada más.
+
+   ⚠ Incluye +Seg y "Proyectar tanda", aunque lo que generan sean líneas de
+   FACTURACION y no toquen la hoja SITIOS. Es una decisión explícita: PO
+   sitios queda 100% de solo lectura y el alta de líneas se hace desde
+   Seguimiento con "+ Nueva línea".
+
+   Devuelve true (y avisa) si hay que abortar. Va SIEMPRE debajo del
+   bloqueoViewer() existente, nunca en su lugar: son dos perfiles distintos
+   con dos mensajes distintos. */
+function bloqueoSitiosRO() {
+  if (!esFacturacion()) return false;
+  toast('PO sitios es de solo lectura para tu perfil', 'err');
+  return true;
 }
 
 /* Punto de entrada único: se llama tras establecer _usuarioActual. */
