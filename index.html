@@ -148,6 +148,24 @@
     body.modo-viewer #nav-sitios-globales,
     body.modo-viewer #nav-seguimiento { display: none !important; }
 
+    /* ── MODO FACTURACION (cambio #93) — perfil de carga administrativa ──
+       Solo PO sitios y Seguimiento, con permisos completos DENTRO de esas
+       dos vistas: no hay barrido de UI ni guards de escritura, a propósito.
+       Este bloque solo saca los accesos del sidebar; el bloqueo real de la
+       navegación está en showView(), que es el embudo por el que pasan
+       todas las rutas, incluidas las cruzadas.
+       ⚠ #cola-card es la cola de Asignación personal: se oculta porque
+       pertenece a Operativa. Si un usuario pleno dejó ítems pendientes en
+       la misma pestaña, este perfil no debe poder confirmarlos. */
+    body.modo-facturacion #sec-principal,
+    body.modo-facturacion #sec-operativa,
+    body.modo-facturacion #sec-comercial,
+    body.modo-facturacion #sep-nav-1,
+    body.modo-facturacion #sep-nav-2,
+    body.modo-facturacion #sep-nav-3,
+    body.modo-facturacion #nav-sitios-globales,
+    body.modo-facturacion #cola-card { display: none !important; }
+
     /* MAIN */
     .main { margin-left: var(--sidebar-w); flex: 1; padding: 32px 32px 40px; position: relative; z-index: 1; }
     .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; }
@@ -1794,7 +1812,7 @@
   </div>
 
   <!-- Grupo: Facturación (colapsable) -->
-  <div class="sidebar-section" style="padding-top:14px;">
+  <div class="sidebar-section" id="sec-principal" style="padding-top:14px;">
     <!-- Dashboard: ítem principal suelto, sin sección agrupadora -->
     <a class="nav-item active" id="nav-dashboard" onclick="showView('dashboard',this)">
       <span style="margin-left:6px;">Dashboard</span>
@@ -1805,7 +1823,7 @@
     </a>
   </div>
 
-  <div class="sidebar-sep"></div>
+  <div class="sidebar-sep" id="sep-nav-1"></div>
 
   <div class="sidebar-section" style="padding-top:6px;">
     <div class="nav-group-header open" id="grp-sitios" onclick="toggleNavGroup('sitios')">
@@ -1821,9 +1839,9 @@
     </div>
   </div>
 
-  <div class="sidebar-sep"></div>
+  <div class="sidebar-sep" id="sep-nav-2"></div>
 
-  <div class="sidebar-section" style="padding-top:6px;">
+  <div class="sidebar-section" id="sec-operativa" style="padding-top:6px;">
     <div class="nav-group-header open" id="grp-operativa" onclick="toggleNavGroup('operativa')">
       <span>Operativa</span>
       <span class="nav-group-arrow">▶</span>
@@ -1833,10 +1851,10 @@
     </div>
   </div>
 
-  <div class="sidebar-sep"></div>
+  <div class="sidebar-sep" id="sep-nav-3"></div>
 
   <!-- Grupo: Comercial (emisión de OC) — fase 2 -->
-  <div class="sidebar-section" style="padding-top:6px;">
+  <div class="sidebar-section" id="sec-comercial" style="padding-top:6px;">
     <div class="nav-group-header open" id="grp-comercial" onclick="toggleNavGroup('comercial')">
       <span>Comercial</span>
       <span class="nav-group-arrow">▶</span>
@@ -3095,7 +3113,7 @@ const PEQ = 90000000;
    a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
    Se pinta en el pie del sidebar (#sidebar-version).
    ═══════════════════════════════════════════════════════ */
-const APP_VERSION = 'V 180826 1943';
+const APP_VERSION = 'V 200826 1310';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
@@ -3629,14 +3647,25 @@ function toggleNavGroup(group) {
   subitems.classList.toggle('open');
 }
 
-function showView(name, el) {
+/* opts.sinRender (cambio #93): posiciona la vista SIN disparar su hook de
+   render. Lo usa el aterrizaje del perfil Facturacion, que corre antes de
+   que cargarTodo() traiga los datos: renderizar ahí dejaría el formulario
+   de sitio con el select de clientes vacío, porque poblarSelect() no se
+   vuelve a ejecutar después. El render real llega con cargarTodo y el
+   showView completo se dispara al terminar. */
+function showView(name, el, opts) {
   // cambio #71 — el viewer no accede a estas vistas por ninguna vía. Silencioso a propósito.
   if (viewerVistaBloqueada(name)) return;
+  // cambio #93 — ídem para Facturacion, que solo tiene PO sitios y Seguimiento.
+  if (factVistaBloqueada(name)) return;
+  const vista = document.getElementById('view-' + name);
+  if (!vista) return;   // null-safe: antes tiraba excepción con un nombre inexistente
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.getElementById('view-' + name).classList.add('active');
+  vista.classList.add('active');
   document.querySelectorAll('.nav-item, .nav-subitem').forEach(n => n.classList.remove('active'));
   const target = document.getElementById('nav-' + name);
   if (target) target.classList.add('active');
+  if (opts && opts.sinRender) return;
   if (name === 'dashboard')    actualizarDashboard();
   if (name === 'clientes')     renderClientes();
   if (name === 'sitios')       { poblarSelect('sit-cliente'); aplicarFiltrosSitios(); }
@@ -9878,7 +9907,78 @@ function descargarPdfOC(ocId) {
    a mano desde afuera. Es un control de aplicación, no un candado de servidor.
    ═══════════════════════════════════════════════════════ */
 
-const ROL_VIEWER = 'viewer';
+/* ═══════════════════════════════════════════════════════
+   PERFILES DE USUARIO (cambio #93)
+
+   Hasta el #92 el sistema era FAIL-OPEN: solo reconocía 'Viewer' y
+   cualquier otro valor de ROL —incluido uno mal escrito— daba permisos
+   totales. Ahora la resolución es por LISTA BLANCA y falla cerrada:
+
+     ROL              → perfil        → qué puede
+     ───────────────────────────────────────────────────────────────
+     Administrador    → pleno         → todo (comportamiento histórico)
+     Gerente          → pleno         → todo (comportamiento histórico)
+     Viewer           → viewer        → solo lectura (idéntico al #68)
+     Facturacion      → facturacion   → PO sitios + Seguimiento, R/W
+     (vacío)          → sin-rol       → NO puede ingresar
+     (desconocido)    → viewer        → solo lectura, silencioso
+
+   ⚠ ROLES_PLENOS son los valores REALES de la hoja ADMIN verificados el
+   20/08/2026. Si se suma un rol nuevo con permisos totales al Sheet, HAY
+   QUE AGREGARLO ACÁ o esa persona entra en solo lectura sin aviso.
+   ═══════════════════════════════════════════════════════ */
+
+const ROL_VIEWER      = 'viewer';
+const ROL_FACTURACION = 'facturacion';
+const ROLES_PLENOS    = ['administrador', 'gerente'];
+
+const PERFIL_PLENO       = 'pleno';
+const PERFIL_VIEWER      = 'viewer';
+const PERFIL_FACTURACION = 'facturacion';
+const PERFIL_SIN_ROL     = 'sin-rol';
+
+/* Normaliza el ROL tal como viene del Sheet: quita espacios, baja a
+   minúsculas y SACA LAS TILDES. Sin lo último, "Facturación" —que es como
+   se va a tipear la mayoría de las veces— no matchearía con 'facturacion'
+   y el usuario caería en solo lectura sin entender por qué. */
+function _normRol(v) {
+  return String(v ?? '')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .trim().toLowerCase();
+}
+
+/* Punto de verdad ÚNICO de la resolución de permisos.
+   Cualquier chequeo de rol nuevo debe partir de acá, nunca comparar
+   _usuarioActual.rol a mano. */
+function perfilDe(rol) {
+  const r = _normRol(rol);
+  if (!r)                        return PERFIL_SIN_ROL;
+  if (ROLES_PLENOS.includes(r))  return PERFIL_PLENO;
+  if (r === ROL_FACTURACION)     return PERFIL_FACTURACION;
+  if (r === ROL_VIEWER)          return PERFIL_VIEWER;
+  return PERFIL_VIEWER;   // desconocido ⇒ solo lectura (fail-closed)
+}
+
+/* Perfil de la sesión abierta. Sin sesión devuelve null, no un perfil:
+   en la pantalla de login no hay permisos que evaluar. */
+function perfilActual() {
+  return _usuarioActual ? perfilDe(_usuarioActual.rol) : null;
+}
+
+/* Vistas que el perfil Facturacion SÍ puede abrir. Es lista BLANCA —al
+   revés de VIEWER_VISTAS_BLOQUEADAS— porque el alcance del perfil se
+   define por lo poco que ve, no por lo mucho que no ve: así una vista
+   nueva queda vedada por omisión y no hay que acordarse de bloquearla. */
+const FACT_VISTAS_PERMITIDAS = ['sitios', 'seguimiento'];
+const FACT_VISTA_INICIAL     = 'sitios';
+
+function esFacturacion() {
+  return perfilActual() === PERFIL_FACTURACION;
+}
+
+function factVistaBloqueada(name) {
+  return esFacturacion() && !FACT_VISTAS_PERMITIDAS.includes(name);
+}
 
 /* Vistas que el viewer NO puede abrir (cambio #71).
    Se ocultan del sidebar por CSS y se bloquean en showView(), que es el
@@ -9891,10 +9991,17 @@ function viewerVistaBloqueada(name) {
   return esViewer() && VIEWER_VISTAS_BLOQUEADAS.includes(name);
 }
 
-/* ¿El usuario logueado es viewer? Null-safe: sin sesión devuelve false. */
+/* ¿El usuario logueado está en solo lectura? Null-safe: sin sesión devuelve
+   false. Desde el #93 delega en perfilDe(), así que devuelve true también
+   para los ROL desconocidos (fail-closed).
+
+   PERFIL_SIN_ROL entra acá por defensa en profundidad: el login ya rechaza
+   esas filas, así que en la práctica nunca llega una sesión con ROL vacío.
+   Si por alguna vía llegara, el sistema la trata como solo lectura en vez
+   de darle permisos totales. */
 function esViewer() {
-  return !!_usuarioActual &&
-         String(_usuarioActual.rol || '').trim().toLowerCase() === ROL_VIEWER;
+  const p = perfilActual();
+  return p === PERFIL_VIEWER || p === PERFIL_SIN_ROL;
 }
 
 /* Guard de escritura. Devuelve true (y avisa) si hay que abortar la acción. */
@@ -9990,6 +10097,39 @@ function aplicarModoViewer() {
   else            desactivarModoViewer();
 }
 
+/* ── Modo Facturacion (cambio #93) ──
+   Solo clases de body: no hay barrido de UI ni guards de escritura, porque
+   dentro de PO sitios y Seguimiento este perfil escribe todo. Al igual que
+   el viewer, cuelga entero de una clase, así que es reversible. */
+function activarModoFacturacion() {
+  document.body.classList.add('modo-facturacion');
+}
+
+function desactivarModoFacturacion() {
+  document.body.classList.remove('modo-facturacion');
+}
+
+/* Punto de entrada ÚNICO de permisos: reemplaza a aplicarModoViewer() en
+   los call sites. Aplica los dos modos, que son mutuamente excluyentes por
+   construcción (perfilDe devuelve un solo perfil), y preposiciona la vista
+   inicial del perfil para que no se vea el Dashboard un instante.
+   Cualquier perfil nuevo se engancha acá. */
+function aplicarPerfil() {
+  aplicarModoViewer();
+  if (esFacturacion()) {
+    activarModoFacturacion();
+    showView(FACT_VISTA_INICIAL, null, { sinRender: true });
+  } else {
+    desactivarModoFacturacion();
+  }
+}
+
+/* Aterrizaje post-carga: corre DESPUÉS de cargarTodo(), cuando ya hay datos.
+   Recién acá el showView completo puebla los selects del formulario. */
+function aterrizajeInicial() {
+  if (esFacturacion()) showView(FACT_VISTA_INICIAL);
+}
+
 let _usuariosAdmin = [];
 let _usuarioActual = null;
 
@@ -10046,6 +10186,15 @@ async function intentarLogin() {
     errEl.style.display = 'block';
     btn.textContent = 'Ingresar'; btn.disabled = false; return;
   }
+  /* cambio #93 — ROL vacío no ingresa. Este caso SÍ lleva mensaje: el
+     usuario ve el botón fallar y sin texto no tendría forma de saber
+     qué pedirle al administrador. El fallback silencioso a solo lectura
+     (ROL desconocido) es el otro caso, y ese sí es mudo a propósito. */
+  if (perfilDe(match.rol) === PERFIL_SIN_ROL) {
+    errEl.textContent = 'Tu usuario no tiene un rol asignado. Contactá al administrador.';
+    errEl.style.display = 'block';
+    btn.textContent = 'Ingresar'; btn.disabled = false; return;
+  }
   _usuarioActual = match;
   try { sessionStorage.setItem('terabyte_user', match.usuario); } catch(e) {}
   mostrarBienvenida(match);
@@ -10063,8 +10212,9 @@ function mostrarBienvenida(user) {
   document.getElementById('sidebar-avatar').textContent = primerNombre.charAt(0).toUpperCase();
   document.getElementById('sidebar-nombre').textContent = nombre;
   document.getElementById('sidebar-rol').textContent    = user.rol || 'Usuario';
-  aplicarModoViewer();   // cambio #68 — activa/desactiva el modo solo lectura
+  aplicarPerfil();   // cambio #93 — antes aplicarModoViewer(); ahora resuelve todos los perfiles
   cargarTodo().then(() => {
+    aterrizajeInicial();   // cambio #93 — con datos ya cargados
     setTimeout(() => {
       bienvenida.style.opacity = '1';
       bienvenida.style.transition = 'opacity 0.5s ease';
@@ -10079,7 +10229,8 @@ function mostrarBienvenida(user) {
 function cerrarSesion() {
   if (!confirm('¿Cerrar sesión?')) return;
   _usuarioActual = null; _usuariosAdmin = [];
-  desactivarModoViewer();   // cambio #68 — limpiar el modo solo lectura
+  desactivarModoViewer();       // cambio #68 — limpiar el modo solo lectura
+  desactivarModoFacturacion();  // cambio #93 — ídem para el perfil de carga
   try { sessionStorage.removeItem('terabyte_user'); } catch(e) {}
   document.getElementById('login-user').value = '';
   document.getElementById('login-error').style.display = 'none';
@@ -10143,7 +10294,9 @@ function cerrarSesion() {
     if (btn.disabled) return; // ping falló, no restaurar
     _usuariosAdmin = await cargarUsuariosAdmin();
     const match = _usuariosAdmin.find(u => u.usuario.toLowerCase() === userGuardado.toLowerCase());
-    if (!match || !match.habilitado) {
+    /* cambio #93 — mismo criterio que intentarLogin: si le vaciaron el ROL
+       con la sesión abierta, el F5 devuelve al login en vez de restaurar. */
+    if (!match || !match.habilitado || perfilDe(match.rol) === PERFIL_SIN_ROL) {
       sessionStorage.removeItem('terabyte_user');
       return;
     }
@@ -10153,9 +10306,10 @@ function cerrarSesion() {
     document.getElementById('sidebar-avatar').textContent = primerNombre.charAt(0).toUpperCase();
     document.getElementById('sidebar-nombre').textContent = nombre;
     document.getElementById('sidebar-rol').textContent    = match.rol || 'Usuario';
-    aplicarModoViewer();   // cambio #68 — reaplicar el modo tras F5
+    aplicarPerfil();   // cambio #93 — reaplicar el perfil tras F5
     document.getElementById('screen-login').style.display = 'none';
     await cargarTodo();
+    aterrizajeInicial();   // cambio #93 — con datos ya cargados
   } catch(e) { /* sessionStorage bloqueado u otro error: queda en login */ }
 })();
 </script>
