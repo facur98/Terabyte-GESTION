@@ -400,11 +400,13 @@
     .sg-row:hover { background: rgba(79,128,255,0.06); }
     .row-obra-clickable { cursor: pointer; user-select: none; -webkit-user-select: none; }
 
+    /* ⚠ El marcador VERDE de "actividad reciente" (.sg-row.activo) se eliminó en
+       el cambio #115. Marcaba la obra que tuvo movimiento el último día cargado
+       del sistema, un dato que no accionaba nada: siempre estaba encendido en
+       las mismas pocas filas y no distinguía lo urgente de lo normal. La barra
+       pasa a usarse para SIN CARGA HOY, que sí pide una acción. Dos semánticas
+       en la misma marca serían ilegibles, por eso salió una. */
     .sg-row-marker { width: 4px; height: 36px; border-radius: 2px; background: transparent; }
-    .sg-row.activo .sg-row-marker {
-      background: linear-gradient(180deg, #2dd4bf, #0d9488);
-      box-shadow: 0 0 8px rgba(45,212,191,0.4);
-    }
 
     .sg-cli-wrap { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
     .sg-cli-row { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--text-mid); font-weight: 500; }
@@ -1719,6 +1721,59 @@
       text-transform: uppercase; vertical-align: middle;
     }
 
+    /* ── #115 · SIN CARGA HOY ────────────────────────────────────
+       NARANJA, no ámbar y no rosa, y los tres colores ya tenían dueño:
+         · ámbar  (#fbbf24) = falta un DATO administrativo — "Sin plazo", pausa
+         · rosa   (#f87171) = error o borrado
+         · naranja(#fb923c) = falta una ACCIÓN OPERATIVA de hoy
+       El naranja es más saturado que el ámbar y se despega de él incluso a
+       tamaño de chip, que es lo que hace que las dos situaciones no se
+       confundan cuando conviven en la misma tabla (una obra puede estar sin
+       plazo Y sin carga).
+       No colisiona con el ámbar de PAUSA en la misma fila porque una obra
+       pausada nunca se marca sin carga: no se le asigna gente a propósito. */
+    .ob-chip-sincarga {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 8px; border-radius: 20px; margin-left: 7px;
+      background: rgba(251,146,60,0.22); color: #c2410c;
+      border: 1px solid rgba(234,88,12,0.35);
+      font-size: 10px; font-weight: 800; letter-spacing: 0.4px;
+      text-transform: uppercase; vertical-align: middle;
+    }
+    .sg-row.sincarga { background: rgba(251,146,60,0.07); }
+    .sg-row.sincarga:hover { background: rgba(251,146,60,0.13); }
+    .sg-row.sincarga .sg-row-marker {
+      background: linear-gradient(180deg, #fb923c, #ea580c);
+      box-shadow: 0 0 8px rgba(234,88,12,0.45);
+    }
+
+    /* Banda sobre el Gantt, en la vista de la obra. Es el mismo aviso que el
+       chip del panel pero con la acción al lado: quien entró a la obra ya está
+       en el lugar donde se resuelve, así que el botón ahorra el rodeo. */
+    .gt-aviso-carga {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 16px; margin-bottom: 16px;
+      border-radius: var(--radius-sm);
+      background: linear-gradient(135deg, rgba(251,146,60,0.16), rgba(234,88,12,0.10));
+      border: 1px solid rgba(234,88,12,0.30);
+    }
+    .gt-aviso-carga .gt-av-ico {
+      width: 34px; height: 34px; border-radius: 9px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(234,88,12,0.16); color: #c2410c; font-size: 15px;
+    }
+    .gt-aviso-carga .gt-av-txt  { flex: 1; min-width: 0; }
+    .gt-aviso-carga .gt-av-tit  { font-size: 13.5px; font-weight: 700; color: #9a3412; }
+    .gt-aviso-carga .gt-av-sub  { font-size: 11.5px; color: var(--text-mid); margin-top: 2px; }
+    .gt-aviso-carga .gt-av-btn  {
+      flex-shrink: 0; padding: 8px 14px; border-radius: var(--radius-sm);
+      border: none; cursor: pointer; font-size: 12.5px; font-weight: 700;
+      background: linear-gradient(135deg, #fb923c, #ea580c); color: #fff;
+      transition: var(--transition);
+    }
+    .gt-aviso-carga .gt-av-btn:hover { background: linear-gradient(135deg, #ea580c, #c2410c); }
+    .gt-aviso-carga .gt-av-btn:disabled { opacity: .45; cursor: not-allowed; }
+
     /* Plazo P — número o aviso de que falta cargarlo (R2) */
     .ob-plazo-cell {
       cursor: pointer; padding: 4px 8px; border-radius: 8px;
@@ -2504,6 +2559,33 @@
       .act-btn.hay, .act-btn.hay i { animation: none; }
     }
 
+    /* ── #115 · Estado URGENTE: hay obras sin carga ──
+       Pisa al azul de "hay novedades" porque son cosas de distinta naturaleza y
+       distinta urgencia: una factura registrada es una NOVEDAD (se lee una vez
+       y se archiva), una obra sin cargar es una TAREA PENDIENTE del día que
+       sigue estando después de mirarla. El naranja las separa de un vistazo sin
+       tener que abrir el panel, y es el mismo naranja del chip de la fila. */
+    .act-btn.urgente,
+    .act-btn.hay.urgente {
+      background: linear-gradient(135deg, #fb923c, #ea580c);
+      border-color: rgba(234,88,12,0.55);
+      color: #fff; font-weight: 700;
+      box-shadow: 0 6px 18px rgba(234,88,12,0.34), 0 0 0 1px rgba(234,88,12,0.22);
+      animation: actLatidoUrg 2.4s ease-in-out infinite;
+    }
+    .act-btn.urgente:hover,
+    .act-btn.hay.urgente:hover {
+      background: linear-gradient(135deg, #ea580c, #c2410c);
+      color: #fff;
+    }
+    .act-btn.urgente i { animation: actCampana 3.2s ease-in-out infinite; transform-origin: 50% 12%; }
+    @keyframes actLatidoUrg {
+      0%, 100% { box-shadow: 0 6px 18px rgba(234,88,12,0.34), 0 0 0 1px rgba(234,88,12,0.22); }
+      50%      { box-shadow: 0 8px 26px rgba(234,88,12,0.52), 0 0 0 4px rgba(234,88,12,0.16); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .act-btn.urgente, .act-btn.urgente i { animation: none; }
+    }
     .act-badge {
       margin-left: auto; min-width: 20px; height: 20px; padding: 0 6px;
       border-radius: 10px; background: #fff; color: #2952cc;
@@ -2512,6 +2594,39 @@
       box-shadow: 0 2px 6px rgba(20,30,60,0.22);
     }
     .act-badge.on { display: inline-flex; }
+    .act-btn.urgente .act-badge { color: #c2410c; }
+
+    /* ── #115 · Bloque "obras sin carga" dentro del panel de actividad ── */
+    .act-bloque { margin-bottom: 20px; }
+    .act-bloque:last-child { margin-bottom: 0; }
+    .act-bloque-tit {
+      display: flex; align-items: center; gap: 8px; padding: 0 2px 8px;
+      font-size: 13px; font-weight: 800; color: var(--text-dark);
+      border-bottom: 1.5px solid rgba(200,205,225,0.5); margin-bottom: 10px;
+    }
+    .act-bloque-tit.urg { color: #9a3412; border-bottom-color: rgba(234,88,12,0.35); }
+    .act-bloque-tit .act-bloque-n {
+      min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: rgba(234,88,12,0.16); color: #c2410c; font-size: 11px; font-weight: 800;
+    }
+    .act-obra {
+      display: grid; grid-template-columns: 108px 1fr 150px 96px;
+      gap: 10px; align-items: center; padding: 9px 10px; font-size: 12.5px;
+      border-radius: 8px; margin-bottom: 4px;
+      background: rgba(251,146,60,0.08);
+      border: 1px solid rgba(234,88,12,0.18);
+      cursor: pointer; transition: var(--transition);
+    }
+    .act-obra:hover { background: rgba(251,146,60,0.17); }
+    .act-obra-id  { font-weight: 800; color: var(--text-dark); }
+    .act-obra-cli { color: var(--text-mid); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .act-obra-ult { color: #9a3412; font-weight: 600; text-align: right; }
+    .act-obra-ir  { color: var(--accent-blue); font-weight: 700; text-align: right; font-size: 11.5px; }
+    @media (max-width: 720px) {
+      .act-obra { grid-template-columns: 1fr 1fr; gap: 4px 10px; }
+      .act-obra-ult, .act-obra-ir { text-align: left; }
+    }
     .act-dia { margin-bottom: 14px; }
     .act-dia:last-child { margin-bottom: 0; }
     .act-dia-head {
@@ -3087,6 +3202,13 @@
     <!-- Tiles de resumen -->
     <div class="gt-tiles" id="gt-tiles"></div>
 
+    <!-- ── #115 · Aviso de obra sin carga en el día ──
+         Va ENTRE los tiles y el Gantt: los tiles cuentan lo que pasó y el
+         Gantt es donde se resuelve, así que el aviso queda justo en el punto
+         donde se lee el problema y se actúa. Lo puebla renderVistaObra(); si
+         la obra tiene el día cargado queda vacío y no ocupa espacio. -->
+    <div id="gt-aviso-carga"></div>
+
     <!-- Gantt -->
     <div class="card" style="margin-bottom:16px;padding:0;overflow:hidden;">
       <div class="gt-head-bar">
@@ -3388,7 +3510,9 @@
   <div class="modal" style="max-width:860px;">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;gap:14px;">
       <div>
-        <div class="modal-title" style="margin-bottom:4px;">Líneas facturadas</div>
+        <!-- #115 — el título es dinámico: el panel dejó de mostrar solo
+             facturación y ahora puede traer también las obras sin carga. -->
+        <div class="modal-title" id="act-titulo" style="margin-bottom:4px;">Actividad</div>
         <div id="act-sub" style="font-size:12px;color:var(--text-light);">—</div>
       </div>
       <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
@@ -4140,7 +4264,7 @@ function mesActualStr() {
    a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
    Se pinta en el pie del sidebar (#sidebar-version).
    ═══════════════════════════════════════════════════════ */
-const APP_VERSION = 'V 250826 1212';
+const APP_VERSION = 'V 250826 1950';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
@@ -5765,25 +5889,12 @@ let _sgSortDir = 'asc';    // 'asc' | 'desc'
 
 // ── Helpers de cálculo ────────────────────────────────────────────
 
-/* Última fecha con actividad YA EJECUTADA (cambio #75).
-   Antes tomaba el máximo absoluto: con planificación a futuro eso daba
-   "activos" a los sitios agendados para adelante, no a los que se están
-   trabajando. Ahora el techo es hoy. */
-function _sgFechaMaxAsignaciones() {
-  if (!Array.isArray(asignaciones) || !asignaciones.length) return null;
-  const hoy = fechaHoyStr();
-  let max = '';
-  for (const a of asignaciones) {
-    if (_asigEjecutada(a, hoy) && a.fecha > max) max = a.fecha;
-  }
-  return max || null;
-}
-
-function _sgEsActivo(idSitio, fechaMax) {
-  if (!fechaMax || !idSitio) return false;
-  // fechaMax ya viene acotada a <= hoy, pero se filtra igual por si se invoca suelta.
-  return _asigEjecutadasDeSitio(idSitio).some(a => a.fecha === fechaMax);
-}
+/* ⚠ `_sgFechaMaxAsignaciones()` y `_sgEsActivo()` se eliminaron en el cambio
+   #115. Existían para un solo consumidor: el marcador lateral VERDE de
+   "actividad reciente", que se sacó porque no accionaba nada. Verificado que
+   no quedaban otros usos —ninguna métrica, ningún filtro, ningún onclick, y
+   tampoco figuraban en VIEWER_PERMITIDO, que solo lista funciones invocables
+   desde la UI—. La barra lateral ahora marca SIN CARGA HOY. */
 
 function _sgFacturadoSitio(idSitio, totalSitio) {
   const lineasFac = lineas.filter(l => l.sitioId === idSitio && l.estado === 'Facturado');
@@ -6063,6 +6174,94 @@ function obraAsignacionesFuturas(idSitio) {
   return asignaciones.filter(a => a.sitioId === idSitio && a.fecha > hoy);
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   SIN CARGA HOY (cambio #115)
+
+   Alerta operativa: una obra EN CURSO a la que hoy no se le cargó nada. Nació
+   de un caso real (CFO2204, del contratista Ojeda): la obra sigue abierta, la
+   cuadrilla presumiblemente estuvo, y nadie registró el día. Ese hueco no se
+   veía en ninguna parte hasta que alguien abría la obra.
+
+   Por qué importa más allá de lo prolijo: los días-persona son la X del plan de
+   incentivos. Un día que no se carga no se puede reconstruir después con
+   certeza, y lo que falta baja la X de la obra — o sea, mueve plata.
+
+   ── QUÉ CUENTA COMO "CARGADO" ──
+   Una asignación de personal con la fecha de hoy, O una marca de imprevisto de
+   hoy en esa obra. El imprevisto también cierra el día: si llovió y nadie
+   trabajó, el día ESTÁ resuelto y avisar sería un falso positivo — justo el
+   tipo de aviso que enseña a ignorar los avisos.
+
+   ── QUÉ OBRAS ENTRAN ──
+   Solo las EN CURSO con ficha y sin pausar. Quedan fuera, y cada una por su
+   motivo: 'Esperando aprobación' y 'Terminada' ya no admiten carga (no es un
+   olvido, es el estado); 'Pausada' está frenada a propósito; y 'Anterior' —sin
+   alta— no es una obra que se esté trabajando hoy, es histórico sin normalizar.
+
+   ⚠ NO reimplementa el corte de R1. `_asigEjecutada` responde "¿ya pasó?" con
+   `fecha <= hoy`; acá la pregunta es otra, "¿hay algo EN la fecha de hoy?", y
+   es una igualdad exacta. Son criterios distintos sobre el mismo dato.
+
+   ⚠ LIMITACIÓN ASUMIDA: el sistema no conoce los feriados. Un 25 de mayo
+   marcaría todas las obras en curso. Se descartan sábados y domingos, que es
+   el 100% del ruido recurrente; los feriados son ~11 días al año y resolverlos
+   pide una lista fija que habría que mantener a mano cada año. Si molesta, es
+   un agregado de una constante.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Hora local a partir de la cual el aviso escala a la campanita. Se alinea a
+   propósito con ACT_HORA_CHEQUEO: a esa hora ya se sabe si el día se cargó. */
+const OB_ALERTA_HORA = 16;
+
+/* ¿Hoy es día hábil? Lunes a viernes, con la misma base local que fechaHoyStr().
+   Se usa getDay() sobre un Date nuevo y NO se parsea la cadena 'YYYY-MM-DD':
+   construir un Date desde esa cadena la interpreta en UTC y en Argentina
+   devolvería el día anterior — el mismo error que R10. */
+function _obHoyEsHabil() {
+  const d = new Date().getDay();
+  return d >= 1 && d <= 5;
+}
+
+/* Set de sitios que YA tienen el día de hoy resuelto (personal o imprevisto).
+   Se calcula una vez y se pasa a obraSinCargaHoy(): sin esto, evaluar 159
+   obras contra 1.000 asignaciones sería un recorrido completo por obra. */
+function _obSitiosConCargaHoy() {
+  const hoy = fechaHoyStr();
+  const s = new Set();
+  if (Array.isArray(asignaciones)) asignaciones.forEach(a => { if (a.fecha === hoy) s.add(a.sitioId); });
+  if (Array.isArray(incidencias))  incidencias .forEach(i => { if (i.fecha === hoy) s.add(i.sitioId); });
+  return s;
+}
+
+/* ¿A esta obra le falta la carga de hoy? `setCargados` es opcional: sin él se
+   calcula solo, para poder invocarla suelta desde cualquier lado. */
+function obraSinCargaHoy(idSitio, setCargados) {
+  if (!idSitio) return false;
+  if (!_obHoyEsHabil()) return false;
+  if (obraEstado(idSitio) !== OBRA_EN_CURSO) return false;
+  const o = obraDeSitio(idSitio);
+  if (!o || o.pausada) return false;
+  const set = setCargados || _obSitiosConCargaHoy();
+  return !set.has(idSitio);
+}
+
+/* Obras sin carga hoy, ordenadas por ID. Devuelve las filas de OBRAS. */
+function obrasSinCargaHoy() {
+  if (!_obHoyEsHabil() || !Array.isArray(obras)) return [];
+  const set = _obSitiosConCargaHoy();
+  return obras
+    .filter(o => obraSinCargaHoy(o.sitioId, set))
+    .sort((a, b) => String(a.sitioId).localeCompare(String(b.sitioId)));
+}
+
+/* ¿Ya pasó la hora a partir de la cual el aviso escala a la campanita?
+   El chip de la fila y la banda del Gantt NO dependen de esto: se ven todo el
+   día, porque quien está mirando el panel está trabajando sobre eso. La hora
+   solo decide cuándo el aviso pasa a buscar al usuario en vez de esperarlo. */
+function obraAlertaEscalada() {
+  return new Date().getHours() >= OB_ALERTA_HORA;
+}
+
 /* Sitios que todavía NO tienen obra — los únicos elegibles en el alta (E5). */
 function obraSitiosDisponibles() {
   const conObra = new Set(obras.map(o => o.sitioId));
@@ -6122,7 +6321,12 @@ function renderSitiosGlobales() {
    IDs internos (view-sitios-globales, sg-*) se conservan a propósito para no
    tocar navegación, CSS ni el modo viewer — mismo criterio con que "PO sitios"
    quedó con id `nav-sitios`. */
-function renderObras() { renderSitiosGlobales(); }
+/* #115 — se suma el refresco del badge: guardarObra() llama acá y no a
+   _gtRefrescar(), y un alta de obra crea un pendiente de carga nuevo. */
+function renderObras() {
+  renderSitiosGlobales();
+  if (typeof actActualizarBadge === 'function') actActualizarBadge();
+}
 
 /* Muestra/oculta el filtro Contratista según si "Contratista" está seleccionado en Cuadrilla */
 function sgToggleContratistaWrap() {
@@ -6188,7 +6392,10 @@ function aplicarFiltrosSitiosGlobales() {
     g.total += (s.po || 0);
   });
 
-  const fechaMax = _sgFechaMaxAsignaciones();
+  /* #115 — el set de sitios con el día de hoy resuelto se calcula UNA vez y se
+     reparte a todas las filas: hacerlo por obra sería recorrer las +1.000
+     asignaciones 159 veces en cada render del panel. */
+  const cargadosHoy = _obSitiosConCargaHoy();
   mapa.forEach(g => {
     g.fac          = _sgFacturadoSitio(g.id, g.total);
     g.dias         = _diasTrabajadosSitio(g.id);
@@ -6196,7 +6403,6 @@ function aplicarFiltrosSitiosGlobales() {
     g.personas     = _sgPersonasUnicasSitio(g.id);
     g.cuadrilla    = _sgTipoCuadrilla(g.id, g.fac.pct);
     g.contratistas = _sgContratistasDeSitio(g.id);
-    g.activo       = _sgEsActivo(g.id, fechaMax);
     g.primera      = _sgPrimeraActividad(g.id);
     g.ultima       = _sgUltimaActividad(g.id);
     g.pctCat       = _sgPctACategoria(g.fac.pct);
@@ -6211,6 +6417,9 @@ function aplicarFiltrosSitiosGlobales() {
     g.avance       = obraAvance(g.id);
     g.plazoDias    = g.obra ? g.obra.plazoDias : null;
     g.plazoP       = obraPlazoP(g.obra);   // derivado: días × dotación
+    /* #115 — ¿le falta la carga del día? Solo puede dar true en obras En curso
+       sin pausar: el propio helper descarta el resto de los estados. */
+    g.sinCargaHoy  = obraSinCargaHoy(g.id, cargadosHoy);
   });
   const todos = [...mapa.values()];
 
@@ -6375,15 +6584,19 @@ function _sgRenderFila(g) {
   const cli   = getCli(g.clienteId);
   const idEsc = g.id.replace(/'/g, "\\'");
 
-  /* Marcador lateral: verde si tuvo actividad el último día cargado, ámbar si
-     está pausada, gris si terminó. La pausa gana sobre "activo": si está
-     frenada, que se vea frenada aunque tenga días recientes. */
+  /* Marcador lateral: gris si terminó, violeta si espera aprobación, ámbar si
+     está pausada, NARANJA si le falta la carga de hoy (#115).
+     El orden es de estado más definitivo a más transitorio: un estado del ciclo
+     de vida gana siempre sobre la alerta operativa, porque una obra terminada
+     no "tiene pendiente" el día de hoy. En la práctica no compiten —el helper
+     solo devuelve true en las En curso sin pausar— pero el orden lo deja
+     explícito por si alguna vez se amplía el criterio. */
   let rowClass = '';
   if (g.obEstado === OBRA_TERMINADA)      rowClass = ' terminada';
   else if (g.obEstado === OBRA_ESPERANDO) rowClass = ' esperando';
   else if (g.obEstado === OBRA_ANTERIOR)  rowClass = ' anterior';
   else if (g.pausada)                    rowClass = ' pausada';
-  else if (g.activo)                     rowClass = ' activo';
+  else if (g.sinCargaHoy)                rowClass = ' sincarga';
 
   const cuad = g.cuadrilla;
   let cuadIcon = 'fa-hourglass-start';
@@ -6403,6 +6616,22 @@ function _sgRenderFila(g) {
     const desde = g.obra ? obraPausadaDesde(g.obra.id) : '';
     const t = desde ? `Pausada desde el ${_sgFormatoFechaCorta(desde)}` : 'Pausada';
     chipPausa = `<span class="ob-chip-pausa" title="${_escAttr(t)}"><i class="fa-solid fa-pause"></i> Pausada</span>`;
+  }
+
+  /* ── Chip "Sin carga hoy" (#115) ──
+     Se concatena al de estado en vez de reemplazarlo. Hoy los dos no pueden
+     coexistir —una obra pausada nunca se marca sin carga—, pero concatenar en
+     lugar de pisar hace que ampliar el criterio más adelante no borre en
+     silencio el chip de estado. El tooltip dice desde cuándo no se toca, que
+     es el dato que decide si hay que salir a preguntar o no. */
+  let chipSinCarga = '';
+  if (g.sinCargaHoy) {
+    const ult = _sgUltimaActividad(g.id);
+    const t = ult
+      ? `Hoy no se cargó personal ni imprevisto. Última carga: ${_sgFormatoHaceDias(ult)}`
+      : 'Hoy no se cargó personal ni imprevisto. Esta obra todavía no tiene ningún día cargado';
+    chipSinCarga = `<span class="ob-chip-sincarga" title="${_escAttr(t)}">` +
+      `<i class="fa-solid fa-circle-exclamation"></i> Sin carga hoy</span>`;
   }
 
   /* ── Días de ejecución (E13, R9) ──
@@ -6496,7 +6725,7 @@ function _sgRenderFila(g) {
     <div class="sg-row-marker"></div>
     <div class="sg-cli-wrap">
       <div class="sg-cli-row">${cli ? dot(cli.color) : ''}<span>${g.clienteId || '—'}</span></div>
-      <div class="sg-id">${g.id}${chipPausa}</div>
+      <div class="sg-id">${g.id}${chipPausa}${chipSinCarga}</div>
     </div>
     <div class="sg-monto-wrap">
       <div class="sg-monto-big">${g.total > 0 ? fmt(Math.round(g.total)) : '—'}</div>
@@ -7282,6 +7511,12 @@ function _gtRefrescar() {
   if (_gtSitio) renderVistaObra();
   if (typeof renderObras === 'function') renderObras();
   if (typeof renderAsignaciones === 'function') renderAsignaciones();
+  /* #115 — el badge de la campanita cuenta obras sin carga, así que cualquier
+     escritura que resuelva el día tiene que apagarlo al instante. Se engancha
+     acá y no en cada función porque este es el punto de refresco ÚNICO del
+     módulo: lo llaman las 24 escrituras de asignaciones, imprevistos y estados
+     de obra. Es un cálculo local, no dispara ninguna consulta. */
+  if (typeof actActualizarBadge === 'function') actActualizarBadge();
 }
 
 /* Construye la fila de ASIGNACIONES para el backend. */
@@ -8500,6 +8735,7 @@ function renderVistaObra() {
   }
   document.getElementById('gt-acciones').innerHTML = acts.join('');
 
+  _gtAvisoSinCarga(id);        // #115
   _gtRenderTiles(id, obra);
   _gtRenderGrid(id, obra);
   _gtRenderNotas(obra);        // cambio #111
@@ -8517,6 +8753,37 @@ function renderVistaObra() {
     el.disabled = !admite;
     el.title = admite ? '' : motivoBloqueo;
   });
+}
+
+/* ── #115 · Banda de aviso sobre el Gantt ──
+   Mismo criterio que el chip del panel, con la acción al lado. El contenedor
+   se vacía SIEMPRE al entrar y no solo cuando corresponde mostrarlo: la vista
+   de obra es una sola y se reutiliza para todas, así que sin el reset una obra
+   sin carga dejaría la banda encendida sobre la siguiente que se abriera —el
+   mismo problema del ancho del modal en el #111.
+
+   El botón llama a abrirModalAsignarObra(), que NO está en VIEWER_PERMITIDO
+   por ser escritura: el barrido se lo oculta al viewer y el texto del aviso,
+   que es solo informativo, le queda igual. */
+function _gtAvisoSinCarga(id) {
+  const cont = document.getElementById('gt-aviso-carga');
+  if (!cont) return;
+  cont.innerHTML = '';
+  if (!obraSinCargaHoy(id)) return;
+
+  const ult = _sgUltimaActividad(id);
+  const sub = ult
+    ? `Última carga registrada: <b>${_escHtml(_sgFormatoHaceDias(ult))}</b>. Si la cuadrilla estuvo, cargá el día; si se perdió, marcalo como imprevisto.`
+    : `Esta obra todavía no tiene ningún día cargado.`;
+
+  cont.innerHTML = `<div class="gt-aviso-carga">
+    <div class="gt-av-ico"><i class="fa-solid fa-circle-exclamation"></i></div>
+    <div class="gt-av-txt">
+      <div class="gt-av-tit">Hoy no se cargó nada en esta obra</div>
+      <div class="gt-av-sub">${sub}</div>
+    </div>
+    <button class="gt-av-btn" onclick="abrirModalAsignarObra()">Asignar el día</button>
+  </div>`;
 }
 
 function _gtRenderTiles(id, obra) {
@@ -13439,6 +13706,25 @@ function actNoLeidas() {
   return actVisibles().filter(l => !vistas.has(l.id));
 }
 
+/* ── #115 · Obras sin carga que muestra la campanita ──
+   El chip del panel y la banda del Gantt se ven TODO EL DÍA; acá se exige que
+   haya pasado OB_ALERTA_HORA. La diferencia es deliberada y define qué es cada
+   cosa: el chip informa a quien ya está mirando el panel, la campanita SALE A
+   BUSCAR al usuario. A las 9 de la mañana ninguna obra tiene el día cargado
+   todavía y encender el aviso ahí lo volvería ruido diario garantizado; a las
+   16 lo que falta ya es un olvido.
+
+   ⚠ Estas NO se marcan como vistas y el badge las sigue contando después de
+   abrir el panel. Es la diferencia de fondo con las facturas: una factura es
+   una NOVEDAD y se archiva al leerla, una obra sin cargar es una TAREA que
+   sigue pendiente por haberla mirado. Se apaga sola cuando se carga el día,
+   se pausa la obra, se cierra, o cambia el día. */
+function actObrasSinCarga() {
+  if (!actEsDestinatario()) return [];
+  if (!obraAlertaEscalada()) return [];
+  return obrasSinCargaHoy();
+}
+
 function actActualizarBadge() {
   const b   = document.getElementById('act-badge');
   const btn = document.getElementById('act-btn');
@@ -13447,31 +13733,45 @@ function actActualizarBadge() {
 
   if (!actEsDestinatario()) {
     b.classList.remove('on');
-    if (btn) btn.classList.remove('hay');
+    if (btn) { btn.classList.remove('hay'); btn.classList.remove('urgente'); }
     return;
   }
 
-  const n = actNoLeidas().length;
+  const nFact  = actNoLeidas().length;
+  const nObras = actObrasSinCarga().length;
+  const n      = nFact + nObras;
+
   b.textContent = n > 99 ? '99+' : String(n);
   b.classList.toggle('on', n > 0);
 
-  /* El botón entero cambia de estado, no solo el globito: con el fondo azul
-     lleno se ve desde cualquier vista sin tener que buscarlo. */
+  /* El botón entero cambia de estado, no solo el globito: con el fondo lleno
+     se ve desde cualquier vista sin tener que buscarlo.
+     Dos estados posibles y las obras GANAN, porque son lo accionable: una
+     factura ya ocurrió y solo hay que enterarse, una obra sin cargar todavía
+     se puede resolver hoy. */
   if (btn) {
     btn.classList.toggle('hay', n > 0);
-    btn.title = n > 0
-      ? `${n} línea${n!==1?'s':''} facturada${n!==1?'s':''} sin ver`
-      : 'Actividad reciente: líneas facturadas';
+    btn.classList.toggle('urgente', nObras > 0);
+    const partes = [];
+    if (nObras) partes.push(`${nObras} obra${nObras!==1?'s':''} sin carga hoy`);
+    if (nFact)  partes.push(`${nFact} línea${nFact!==1?'s':''} facturada${nFact!==1?'s':''} sin ver`);
+    btn.title = partes.length ? partes.join(' · ') : 'Actividad reciente: facturación y carga de obras';
   }
   /* El rótulo también cambia: "Actividad" no dice de qué, y el punto del aviso
      es que se entienda sin abrirlo. */
-  if (lbl) lbl.textContent = n > 0 ? 'Nuevas facturadas' : 'Actividad';
+  if (lbl) {
+    lbl.textContent = nObras > 0 ? 'Obras sin carga'
+                    : nFact  > 0 ? 'Nuevas facturadas'
+                    : 'Actividad';
+  }
 }
 
 function actAbrirPanel() {
   if (!actEsDestinatario()) return;
   /* Las no leídas se calculan ANTES de marcar, para poder resaltarlas en este
-     render: si se marcara primero, el panel abriría sin ninguna destacada. */
+     render: si se marcara primero, el panel abriría sin ninguna destacada.
+     ⚠ _actMarcarVistas() solo toca las LÍNEAS FACTURADAS. Las obras sin carga
+     (#115) no se marcan nunca: siguen contando hasta que se resuelvan. */
   actRender(new Set(actNoLeidas().map(l => l.id)));
   _actMarcarVistas();
   actActualizarBadge();
@@ -13482,20 +13782,76 @@ function actCerrarPanel() {
   document.getElementById('modal-actividad').classList.remove('open');
 }
 
+/* #115 — saltar del aviso a la obra. Cierra el panel primero: dejarlo abierto
+   sobre la vista de obra taparía justo lo que se viene a resolver.
+   No escribe nada; es navegación pura y por eso entra en VIEWER_PERMITIDO. */
+function actIrAObra(idSitio) {
+  if (!idSitio) return;
+  actCerrarPanel();
+  abrirVistaObra(idSitio);
+}
+
+/* #115 — bloque de obras sin carga. Va ARRIBA de la facturación porque es lo
+   único accionable del panel: la factura ya pasó, la obra todavía se resuelve
+   hoy. Devuelve '' si no hay ninguna o si todavía no es la hora. */
+function _actRenderObras(lista) {
+  if (!lista.length) return '';
+  const filas = lista.map(o => {
+    const sitio = sitios.find(s => s.id === o.sitioId);
+    const ult   = _sgUltimaActividad(o.sitioId);
+    const cli   = sitio ? (sitio.clienteId || '—') : '—';
+    const loc   = sitio && sitio.localidad ? ' · ' + sitio.localidad : '';
+    return `<div class="act-obra" onclick="actIrAObra('${_escJs(o.sitioId)}')"
+                 title="Abrir la obra para cargar el día">
+      <div class="act-obra-id">${_escHtml(o.sitioId)}</div>
+      <div class="act-obra-cli">${_escHtml(cli + loc)}</div>
+      <div class="act-obra-ult">${ult ? 'Última carga: ' + _escHtml(_sgFormatoHaceDias(ult)) : 'Nunca se cargó'}</div>
+      <div class="act-obra-ir">Abrir →</div>
+    </div>`;
+  }).join('');
+
+  return `<div class="act-bloque">
+    <div class="act-bloque-tit urg">
+      <i class="fa-solid fa-circle-exclamation"></i>
+      Obras sin carga hoy
+      <span class="act-bloque-n">${lista.length}</span>
+    </div>
+    ${filas}
+    <div style="font-size:11.5px;color:var(--text-light);margin-top:8px;padding:0 2px;">
+      Si la cuadrilla estuvo, cargá el día; si se perdió por clima o materiales, marcalo como imprevisto.
+    </div>
+  </div>`;
+}
+
 function actRender(nuevasIds) {
   const cont = document.getElementById('act-contenido');
   const sub  = document.getElementById('act-sub');
+  const tit  = document.getElementById('act-titulo');
   if (!cont) return;
   const nuevas = nuevasIds || new Set();
-  const items = actVisibles();
+  const items  = actVisibles();
+  const sinCar = actObrasSinCarga();          // #115
+
+  /* El título nombra lo prioritario, igual que el rótulo del botón. */
+  if (tit) {
+    tit.textContent = sinCar.length ? 'Obras sin carga y facturación'
+                    : 'Líneas facturadas';
+    tit.style.color = sinCar.length ? '#9a3412' : '';
+  }
+
+  const htmlObras = _actRenderObras(sinCar);
 
   if (!items.length) {
-    cont.innerHTML = `<div class="act-vacio">
+    cont.innerHTML = htmlObras + `<div class="act-vacio">
       <i class="fa-solid fa-inbox"></i>
       Sin facturación en los últimos ${ACT_DIAS_VISIBLE + 1} días.
       <div style="font-size:12px;margin-top:8px;">El histórico completo está en Seguimiento.</div>
     </div>`;
-    if (sub) sub.textContent = 'Sin movimientos recientes';
+    if (sub) {
+      sub.textContent = sinCar.length
+        ? `${sinCar.length} obra${sinCar.length!==1?'s':''} sin carga hoy · sin movimientos de facturación`
+        : 'Sin movimientos recientes';
+    }
     return;
   }
 
@@ -13508,11 +13864,14 @@ function actRender(nuevasIds) {
 
   if (sub) {
     const n = nuevas.size;
-    sub.textContent = `${items.length} línea${items.length!==1?'s':''} de los últimos ` +
-      `${ACT_DIAS_VISIBLE + 1} días` + (n ? ` · ${n} sin ver` : '');
+    const partes = [];
+    if (sinCar.length) partes.push(`${sinCar.length} obra${sinCar.length!==1?'s':''} sin carga hoy`);
+    partes.push(`${items.length} línea${items.length!==1?'s':''} de los últimos ${ACT_DIAS_VISIBLE + 1} días` +
+                (n ? ` · ${n} sin ver` : ''));
+    sub.textContent = partes.join(' · ');
   }
 
-  cont.innerHTML = [...porFecha.entries()].map(([fecha, ls]) => {
+  const htmlFact = [...porFecha.entries()].map(([fecha, ls]) => {
     const total = ls.reduce((a, l) => a + (Number(l.monto) || 0), 0);
     const filas = ls.map(l => {
       const es = nuevas.has(l.id);
@@ -13541,6 +13900,16 @@ function actRender(nuevasIds) {
       ${filas}
     </div>`;
   }).join('');
+
+  /* Con obras arriba, la facturación necesita su propio encabezado: sin él los
+     dos bloques quedarían pegados y el segundo parecería continuación del
+     primero. Sin obras el panel se ve exactamente como antes del #115. */
+  cont.innerHTML = htmlObras + (htmlObras
+    ? `<div class="act-bloque">
+         <div class="act-bloque-tit"><i class="fa-solid fa-file-invoice-dollar"></i> Líneas facturadas</div>
+         ${htmlFact}
+       </div>`
+    : htmlFact);
 }
 
 /* ── Traer FACTURACION del servidor sin tocar el resto del estado ──
@@ -13621,6 +13990,32 @@ async function actChequeoDiario() {
   if (nuevas > 0) {
     toast(`${nuevas} línea${nuevas!==1?'s':''} facturada${nuevas!==1?'s':''} sin ver`, 'info');
   }
+  /* #115 — el aviso de obras va en su propio toast y no mezclado con el de
+     facturación: son dos cosas distintas y una frase que las junte se lee mal.
+     Corre UNA sola vez por día, atado al mismo candado que la consulta: sin
+     eso el temporizador lo repetiría cada cinco minutos hasta que se cargue,
+     que es exactamente cómo se enseña a ignorar una alerta. La campanita
+     naranja sigue encendida mientras el pendiente exista. */
+  const nSin = actObrasSinCarga().length;
+  if (nSin > 0) {
+    toast(`${nSin} obra${nSin!==1?'s':''} sin carga hoy — revisá la campanita`, 'info');
+  }
+}
+
+/* ── #115 · Tick del temporizador ──
+   Antes el interval llamaba directo a actChequeoDiario(), que corta y vuelve
+   si todavía no son las 16. Con las obras sin carga eso ya no alcanza: el
+   badge tiene que ENCENDERSE al cruzar la hora aunque la app lleve abierta
+   desde la mañana, y apagarse cuando alguien carga el día desde otra pestaña
+   del propio sistema.
+
+   El refresco del badge es puramente LOCAL: lee `obras`, `asignaciones` e
+   `incidencias` que ya están en memoria y no dispara ninguna consulta. La
+   única que consulta sigue siendo actChequeoDiario(), con su misma condición
+   de una vez por usuario por día. */
+function actTick() {
+  actActualizarBadge();
+  actChequeoDiario();
 }
 
 /* El temporizador solo decide CUÁNDO mirar el reloj; la condición real (pasó
@@ -13629,8 +14024,8 @@ async function actChequeoDiario() {
    consulta al servidor salvo que corresponda. */
 function actProgramarChequeo() {
   actDetenerChequeo();
-  actChequeoDiario();                    // por si ya pasó la hora al entrar
-  _actTimer = setInterval(actChequeoDiario, 5 * 60 * 1000);
+  actTick();                             // por si ya pasó la hora al entrar
+  _actTimer = setInterval(actTick, 5 * 60 * 1000);
 }
 
 function actDetenerChequeo() {
@@ -13709,6 +14104,9 @@ const VIEWER_PERMITIDO = new Set([
      ROLES_ACTIVIDAD; entra igual en la lista para que el barrido no la oculte
      por omisión si alguna vez un rol combinara ambas condiciones. */
   'actAbrirPanel', 'actCerrarPanel', 'actRefrescar',
+  /* #115 — actIrAObra solo cierra el panel y abre la vista de obra, que ya es
+     de consulta y ya está permitida. No escribe nada. */
+  'actIrAObra',
   /* Notas de obra (cambio #111): obraNuevaNota, obraEditarNota y obraBorrarNota
      quedan FUERA a propósito. Son escrituras: el barrido les oculta el botón y
      además llevan su guard bloqueoViewer(). */
