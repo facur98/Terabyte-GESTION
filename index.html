@@ -2611,8 +2611,8 @@
       background: rgba(234,88,12,0.16); color: #c2410c; font-size: 11px; font-weight: 800;
     }
     .act-obra {
-      display: grid; grid-template-columns: 108px 1fr 150px 96px;
-      gap: 10px; align-items: center; padding: 9px 10px; font-size: 12.5px;
+      display: grid; grid-template-columns: 130px 1fr 200px 92px;
+      gap: 12px; align-items: center; padding: 10px 12px; font-size: 12.5px;
       border-radius: 8px; margin-bottom: 4px;
       background: rgba(251,146,60,0.08);
       border: 1px solid rgba(234,88,12,0.18);
@@ -2621,7 +2621,9 @@
     .act-obra:hover { background: rgba(251,146,60,0.17); }
     .act-obra-id  { font-weight: 800; color: var(--text-dark); }
     .act-obra-cli { color: var(--text-mid); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .act-obra-ult { color: #9a3412; font-weight: 600; text-align: right; }
+    /* nowrap: con la columna angosta "Última carga: hace 4 días" se partía en
+       dos renglones y desalineaba la fila entera contra sus vecinas. */
+    .act-obra-ult { color: #9a3412; font-weight: 600; text-align: right; white-space: nowrap; }
     .act-obra-ir  { color: var(--accent-blue); font-weight: 700; text-align: right; font-size: 11.5px; }
     @media (max-width: 720px) {
       .act-obra { grid-template-columns: 1fr 1fr; gap: 4px 10px; }
@@ -3507,7 +3509,14 @@
      estado persistido en el backend. Lo único que se guarda es qué ya vio el
      usuario, y eso vive en localStorage. -->
 <div class="modal-overlay" id="modal-actividad">
-  <div class="modal" style="max-width:860px;">
+  <!-- ⚠ Va `width` y no solo `max-width`. La clase `.modal` define
+       `width: 500px` FIJO, así que un `max-width` mayor solo levanta el techo y
+       el modal se sigue dibujando en 500px — que es por qué este panel se veía
+       angosto pese a declarar 860px. Es el mismo error que el textarea sin
+       ancho del #111: un max-width no ensancha nada por sí solo.
+       Se resuelve acá y no en `.modal` a propósito: tocar la clase base movería
+       los otros 20 modales del sistema. -->
+  <div class="modal" style="width:1040px;max-width:95vw;">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;gap:14px;">
       <div>
         <!-- #115 — el título es dinámico: el panel dejó de mostrar solo
@@ -4264,7 +4273,7 @@ function mesActualStr() {
    a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
    Se pinta en el pie del sidebar (#sidebar-version).
    ═══════════════════════════════════════════════════════ */
-const APP_VERSION = 'V 250826 1950';
+const APP_VERSION = 'V 250826 2004';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
@@ -6631,7 +6640,7 @@ function _sgRenderFila(g) {
       ? `Hoy no se cargó personal ni imprevisto. Última carga: ${_sgFormatoHaceDias(ult)}`
       : 'Hoy no se cargó personal ni imprevisto. Esta obra todavía no tiene ningún día cargado';
     chipSinCarga = `<span class="ob-chip-sincarga" title="${_escAttr(t)}">` +
-      `<i class="fa-solid fa-circle-exclamation"></i> Sin carga hoy</span>`;
+      `<i class="fa-solid fa-circle-exclamation"></i> Sin carga</span>`;
   }
 
   /* ── Días de ejecución (E13, R9) ──
