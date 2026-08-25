@@ -345,7 +345,7 @@
     }
     .sg-head {
       display: grid;
-      grid-template-columns: 4px 1.5fr 1.15fr 1.25fr 0.85fr 0.85fr 1.35fr 110px;
+      grid-template-columns: 4px 1.5fr 1.15fr 1.25fr 0.85fr 0.85fr 1.35fr 140px;
       gap: 12px; padding: 12px 18px;
       font-size: 10.5px; font-weight: 700; color: var(--text-dark);
       text-transform: uppercase; letter-spacing: 0.7px;
@@ -358,14 +358,19 @@
     .sg-head > div { display: flex; align-items: center; justify-content: center; }
     .sg-head > div:nth-child(2),
     .sg-head > div:nth-child(3) { justify-content: flex-start; }
-    .sg-head .col-act { justify-content: flex-end; }
+    /* Acciones CENTRADAS, igual que el resto de las columnas de datos. Antes
+       iban pegadas al borde derecho: con la columna ensanchada para que entren
+       los cuatro botones, el bloque quedaba descolgado del encabezado. */
+    .sg-head .col-act { justify-content: center; }
     .sg-row > div { justify-content: center; text-align: center; }
     .sg-row > .sg-cli-wrap,
     .sg-row > .sg-monto-wrap { align-items: flex-start; text-align: left; }
     .sg-row > div:not(.sg-cli-wrap):not(.sg-monto-wrap):not(.sg-acts):not(.sg-row-marker) {
       display: flex; flex-direction: column; align-items: center;
     }
-    .sg-row .ob-av-wrap { width: 100%; max-width: 190px; }
+    /* margin auto explícito: el bloque de avance tiene ancho tope propio y sin
+       esto quedaría pegado al inicio de su columna en anchos grandes. */
+    .sg-row .ob-av-wrap { width: 100%; max-width: 190px; margin: 0 auto; }
     .sg-row .ob-av-top  { justify-content: center; }
     .sg-head-sort {
       cursor: pointer; transition: color .12s ease;
@@ -385,7 +390,7 @@
 
     .sg-row {
       display: grid;
-      grid-template-columns: 4px 1.5fr 1.15fr 1.25fr 0.85fr 0.85fr 1.35fr 110px;
+      grid-template-columns: 4px 1.5fr 1.15fr 1.25fr 0.85fr 0.85fr 1.35fr 140px;
       gap: 12px; padding: 14px 18px;
       align-items: center;
       border-bottom: 1px solid rgba(200,205,225,0.25);
@@ -448,7 +453,7 @@
     .sg-act-sub { font-size: 10.5px; color: var(--text-light); }
     .sg-act-sub.hoy { color: #0d9488; font-weight: 700; }
 
-    .sg-acts { display: flex; gap: 5px; justify-content: flex-end; }
+    .sg-acts { display: flex; gap: 5px; justify-content: center; }
     .sg-act-btn {
       width: 30px; height: 30px; border-radius: 8px;
       background: rgba(255,255,255,0.65); border: 1px solid rgba(200,205,225,0.5);
@@ -2319,6 +2324,228 @@
     /* El checkbox de "seleccionar todo" de PO sitios queda sobre fondo oscuro */
     #table-sitios thead th input[type="checkbox"] { accent-color: #ffffff; }
 
+    /* ═══════════════════════════════════════════════════════════════
+       SESIÓN 25/08/2026 — cambios #109 a #112
+       Todo lo de acá abajo es ADITIVO: ninguna regla existente se pisa.
+       ═══════════════════════════════════════════════════════════════ */
+
+    /* ── #110 · Separadores de grupo dentro de las listas de personal ──
+       Se usan en el modal "Asignar personal" y en el alta de obra. Se define
+       una clase propia en vez de reutilizar .asig-dia-divider porque aquella
+       vive dentro de una columna con gap y ésta dentro de una lista compacta:
+       comparten estética, no métricas. */
+    .lst-grupo {
+      font-size: 10px; font-weight: 700; color: var(--text-light);
+      text-transform: uppercase; letter-spacing: 0.8px;
+      padding: 9px 10px 4px; display: flex; align-items: center; gap: 7px;
+    }
+    .lst-grupo::after {
+      content: ''; flex: 1; height: 1px;
+      background: rgba(200,205,225,0.55);
+    }
+    .lst-grupo:not(:first-child) { margin-top: 3px; border-top: 1px dashed rgba(200,205,225,0.5); }
+    .lst-grupo-cnt {
+      flex-shrink: 0; padding: 1px 7px; border-radius: 20px; letter-spacing: 0;
+      background: rgba(154,160,184,0.18); color: var(--text-mid); font-size: 9.5px;
+    }
+
+    /* ── #109 · Aviso de obra mixta en el detalle del día ──
+       Misma paleta ámbar que ya usa el resto del sistema para "esto se puede
+       hacer pero tiene consecuencia". */
+    /* El separador ya existía para "Estados especiales", donde siempre tiene
+       bloques por encima. Desde #109 también encabeza el primer grupo de
+       obras, y ahí el borde superior quedaba colgando en el vacío. */
+    .asig-dia-divider:first-child { border-top: none; margin-top: 0; padding-top: 2px; }
+    .asig-dia-divider i { margin-right: 2px; opacity: .75; }
+    .asig-dia-mixta-nota {
+      font-size: 11px; color: #92700c; font-weight: 500;
+      background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.35);
+      border-radius: 8px; padding: 7px 11px; margin: 2px 0 4px;
+      line-height: 1.45; text-transform: none; letter-spacing: 0;
+    }
+
+    /* ── #111 · Notas de obra ── */
+    .ob-nota-row {
+      display: flex; align-items: flex-start; gap: 11px; padding: 11px 2px;
+      border-bottom: 1px solid rgba(200,205,225,0.25);
+    }
+    .ob-nota-row:last-child { border-bottom: none; }
+    .ob-nota-av {
+      flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%;
+      background: rgba(79,128,255,0.13); color: #3a6bf0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; text-transform: uppercase;
+    }
+    .ob-nota-body { flex: 1; min-width: 0; }
+    .ob-nota-meta {
+      font-size: 11px; color: var(--text-light); display: flex;
+      align-items: center; gap: 7px; flex-wrap: wrap; margin-bottom: 3px;
+    }
+    .ob-nota-meta b { color: var(--text-mid); font-weight: 700; }
+    .ob-nota-edit { font-style: italic; }
+    /* pre-wrap: una nota puede traer saltos de línea y hay que respetarlos.
+       overflow-wrap evita que un ID largo sin espacios desborde la tarjeta. */
+    .ob-nota-txt {
+      font-size: 13px; color: var(--text-dark); line-height: 1.55;
+      white-space: pre-wrap; overflow-wrap: anywhere;
+    }
+    .ob-nota-acts { flex-shrink: 0; display: flex; gap: 4px; }
+    .ob-nota-act {
+      width: 26px; height: 26px; border-radius: 7px; cursor: pointer;
+      border: 1px solid rgba(200,205,225,0.55); background: rgba(255,255,255,0.6);
+      color: var(--text-light); font-size: 11px; transition: var(--transition);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .ob-nota-act:hover { color: var(--accent-blue); border-color: rgba(79,128,255,0.45); }
+    .ob-nota-act.borrar:hover { color: var(--accent-rose); border-color: rgba(248,113,113,0.5); }
+    /* Contador de notas sobre el botón de la fila del panel de obras.
+       El botón es de 26px y ya tiene overflow oculto en algunos temas, así que
+       el chip se posiciona ANCLADO al botón, que pasa a position:relative. */
+    .sg-acts .sg-act-btn { position: relative; }
+    .ob-notas-cnt {
+      position: absolute; top: -4px; right: -4px;
+      min-width: 15px; height: 15px; padding: 0 4px; border-radius: 8px;
+      background: var(--accent-blue); color: #fff;
+      font-size: 9.5px; font-weight: 700; line-height: 15px; text-align: center;
+      pointer-events: none;
+    }
+    .ob-nota-vacio {
+      font-size: 12.5px; color: var(--text-light); padding: 14px 2px; text-align: center;
+    }
+    /* No hay .ob-ev-NOTA a propósito: las notas se excluyen del historial y se
+       pintan en su sección propia, así que ese badge nunca se renderizaría.
+       Una regla muerta hace creer que la marca existe en el historial. */
+    /* Textarea del modal de confirmación (tipo de campo 'texto', #111).
+       ⚠ width:100% es imprescindible: .form-input no define ancho, así que un
+       <textarea> sin él cae en el default del navegador —20 columnas— y queda
+       una columna angosta en el medio de un modal de 500px. */
+    .cf-campo textarea.form-input {
+      width: 100%; display: block; box-sizing: border-box;
+      min-height: 132px; resize: vertical; font-family: inherit; line-height: 1.55;
+      font-size: 14px;
+    }
+
+    /* ── Encabezado destacado del modal (#111) ──
+       Cuando lo que importa es SOBRE QUÉ se está actuando —la obra— ponerlo
+       como una fila más de `cf-dato` lo esconde: queda con el mismo peso que
+       "Escrita por" o "Fecha". Acá el identificador es lo primero que hay que
+       poder leer, así que va grande y solo. */
+    .cf-enc {
+      display: flex; align-items: center; gap: 14px;
+      padding: 15px 18px; margin-bottom: 18px;
+      border-radius: 12px;
+      background: rgba(79,128,255,0.08);
+      border: 1px solid rgba(79,128,255,0.22);
+    }
+    .cf-enc-ico {
+      flex-shrink: 0; width: 40px; height: 40px; border-radius: 11px;
+      background: rgba(79,128,255,0.15); color: #3a6bf0;
+      display: flex; align-items: center; justify-content: center; font-size: 17px;
+    }
+    .cf-enc-txt { min-width: 0; }
+    .cf-enc-lbl {
+      font-size: 10px; font-weight: 700; color: var(--text-light);
+      text-transform: uppercase; letter-spacing: .8px;
+    }
+    .cf-enc-val {
+      font-family: 'Syne', sans-serif; font-size: 23px; font-weight: 700;
+      color: var(--text-dark); line-height: 1.15; letter-spacing: -0.4px;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .cf-enc-sub { font-size: 12px; color: var(--text-mid); margin-top: 2px; }
+
+    /* ── #112 · Campanita de actividad ── */
+    .act-btn {
+      position: relative; display: flex; align-items: center; gap: 10px;
+      width: 100%; padding: 9px 11px; margin-bottom: 9px;
+      border-radius: var(--radius-sm); cursor: pointer;
+      border: 1px solid rgba(200,205,225,0.5); background: rgba(255,255,255,0.45);
+      color: var(--text-mid); font-size: 12.5px; font-weight: 600;
+      transition: var(--transition); text-align: left;
+    }
+    .act-btn:hover { background: rgba(79,128,255,0.09); color: var(--accent-blue); }
+    .act-btn i { font-size: 13px; }
+
+    /* ── Estado CON NOVEDADES ──
+       Sin esto el botón se veía igual con o sin nada nuevo: cambiaba solo un
+       globito de 19px, que sobre el sidebar claro pasaba desapercibido. Con
+       novedades el botón entero se invierte —fondo azul lleno, texto blanco y
+       sombra— así que se lee de un vistazo sin tener que buscarlo.
+       El azul es el acento primario del sistema, no el rosa de error: una
+       factura registrada es una novedad, no un problema. */
+    .act-btn.hay {
+      background: linear-gradient(135deg, #4f80ff, #3a6bf0);
+      border-color: rgba(79,128,255,0.55);
+      color: #fff; font-weight: 700;
+      box-shadow: 0 6px 18px rgba(79,128,255,0.34), 0 0 0 1px rgba(79,128,255,0.22);
+      animation: actLatido 2.4s ease-in-out infinite;
+    }
+    .act-btn.hay:hover {
+      background: linear-gradient(135deg, #3a6bf0, #2952cc);
+      color: #fff;
+    }
+    /* La campana se sacude cada tanto, no de forma continua: un movimiento
+       permanente en el borde de la pantalla cansa y termina ignorándose. */
+    .act-btn.hay i { animation: actCampana 3.2s ease-in-out infinite; transform-origin: 50% 12%; }
+
+    @keyframes actLatido {
+      0%, 100% { box-shadow: 0 6px 18px rgba(79,128,255,0.34), 0 0 0 1px rgba(79,128,255,0.22); }
+      50%      { box-shadow: 0 8px 26px rgba(79,128,255,0.52), 0 0 0 4px rgba(79,128,255,0.16); }
+    }
+    @keyframes actCampana {
+      0%, 82%, 100%          { transform: rotate(0deg); }
+      85%, 91%               { transform: rotate(-13deg); }
+      88%, 94%               { transform: rotate(13deg); }
+      97%                    { transform: rotate(0deg); }
+    }
+    /* Accesibilidad: quien pidió menos movimiento conserva el color y la
+       sombra —que es lo que hace visible el botón— y pierde solo la animación. */
+    @media (prefers-reduced-motion: reduce) {
+      .act-btn.hay, .act-btn.hay i { animation: none; }
+    }
+
+    .act-badge {
+      margin-left: auto; min-width: 20px; height: 20px; padding: 0 6px;
+      border-radius: 10px; background: #fff; color: #2952cc;
+      font-size: 11px; font-weight: 800; display: none;
+      align-items: center; justify-content: center;
+      box-shadow: 0 2px 6px rgba(20,30,60,0.22);
+    }
+    .act-badge.on { display: inline-flex; }
+    .act-dia { margin-bottom: 14px; }
+    .act-dia:last-child { margin-bottom: 0; }
+    .act-dia-head {
+      display: flex; align-items: baseline; gap: 9px; padding: 0 2px 7px;
+      border-bottom: 1.5px solid rgba(200,205,225,0.5); margin-bottom: 2px;
+    }
+    .act-dia-fecha { font-size: 13.5px; font-weight: 700; color: var(--text-dark); }
+    .act-dia-sub { font-size: 11.5px; color: var(--text-light); }
+    .act-dia-tot { margin-left: auto; font-size: 13px; font-weight: 700; color: var(--accent-blue); }
+    .act-head, .act-fila {
+      display: grid; grid-template-columns: 92px 1fr 78px 52px 108px 104px;
+      gap: 10px; align-items: center; padding: 8px 4px; font-size: 12.5px;
+    }
+    .act-head {
+      font-size: 10px; text-transform: uppercase; letter-spacing: .6px;
+      color: var(--text-light); font-weight: 700; padding-bottom: 4px;
+    }
+    .act-fila { border-bottom: 1px solid rgba(200,205,225,0.22); }
+    .act-fila:last-child { border-bottom: none; }
+    .act-fila.nueva { background: rgba(79,128,255,0.06); border-radius: 7px; }
+    .act-sitio { font-weight: 700; color: var(--text-dark); display: flex; align-items: center; gap: 6px; }
+    .act-nuevo-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-blue); flex-shrink: 0; }
+    .act-po, .act-cli { color: var(--text-mid); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .act-pct { color: var(--text-mid); text-align: right; }
+    .act-monto { font-weight: 700; color: var(--text-dark); text-align: right; }
+    .act-fc { color: var(--text-mid); text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .act-vacio { padding: 40px 20px; text-align: center; color: var(--text-light); font-size: 13px; }
+    .act-vacio i { font-size: 30px; opacity: .35; display: block; margin-bottom: 12px; }
+    @media (max-width: 720px) {
+      .act-head { display: none; }
+      .act-fila { grid-template-columns: 1fr 1fr; gap: 4px 10px; }
+      .act-monto, .act-fc, .act-pct { text-align: left; }
+    }
+
   </style>
 </head>
 <body>
@@ -2441,6 +2668,19 @@
   </div>
 
   <div class="sidebar-footer">
+
+    <!-- ── #112 · Campanita de actividad ──
+         Vive en el PIE DEL SIDEBAR y no en la topbar a propósito: la topbar es
+         propia de cada vista (hay once) y habría que replicarla once veces; el
+         sidebar es único y está presente en todas.
+         Arranca oculto: actAplicarVisibilidad() lo muestra solo si el rol del
+         usuario logueado está en ROLES_ACTIVIDAD. -->
+    <button class="act-btn" id="act-btn" style="display:none;" onclick="actAbrirPanel()"
+            title="Actividad reciente: líneas facturadas">
+      <i class="fa-solid fa-bell"></i>
+      <span id="act-btn-txt">Actividad</span>
+      <span class="act-badge" id="act-badge">0</span>
+    </button>
 
     <div class="user-card" onclick="cerrarSesion()" title="Cerrar sesión" style="cursor:pointer;">
       <div class="user-avatar" id="sidebar-avatar">?</div>
@@ -2862,6 +3102,23 @@
       <div class="gt-scroll" id="gt-scroll"><div id="gt-grid"></div></div>
     </div>
 
+    <!-- ── #111 · Notas de la obra ──
+         Sección PROPIA, por encima del historial. Van separadas a propósito:
+         el historial son hechos que registró el sistema (pausas, cierres) y
+         las notas son texto que escribe una persona. Mezclarlos obligaría a
+         leer todo para encontrar lo que alguien quiso dejar dicho.
+         Se persisten como eventos TIPO='NOTA' en OBRA_EVENTOS. -->
+    <div class="card" id="gt-notas-card" style="margin-bottom:16px;">
+      <div class="card-header" style="margin-bottom:6px;">
+        <div>
+          <div class="card-title" style="font-size:15px;margin:0;">Notas</div>
+          <div style="font-size:11.5px;color:var(--text-light);margin-top:2px;">Anotaciones de la obra · quedan con el autor y la fecha</div>
+        </div>
+        <button class="btn btn-primary btn-sm" id="gt-btn-nota" onclick="obraNuevaNota()">+ Nota</button>
+      </div>
+      <div class="ob-ev-lista" id="gt-notas"></div>
+    </div>
+
     <!-- Historial de la obra -->
     <div class="card" id="gt-hist-card" style="display:none;">
       <div class="card-title" style="font-size:15px;margin-bottom:6px;">Historial</div>
@@ -3120,6 +3377,28 @@
       </div>
     </div>
     <div id="asig-dia-contenido"></div>
+  </div>
+</div>
+
+<!-- ═══════════ #112 · PANEL DE ACTIVIDAD (líneas facturadas) ═══════════
+     Solo lectura. El contenido se DERIVA de FACTURACION: no hay hoja nueva ni
+     estado persistido en el backend. Lo único que se guarda es qué ya vio el
+     usuario, y eso vive en localStorage. -->
+<div class="modal-overlay" id="modal-actividad">
+  <div class="modal" style="max-width:860px;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;gap:14px;">
+      <div>
+        <div class="modal-title" style="margin-bottom:4px;">Líneas facturadas</div>
+        <div id="act-sub" style="font-size:12px;color:var(--text-light);">—</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+        <button class="btn btn-glass btn-sm" onclick="actRefrescar()" title="Traer la facturación más reciente del servidor">
+          <i class="fa-solid fa-rotate"></i> Actualizar
+        </button>
+        <button onclick="actCerrarPanel()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--text-light);line-height:1;">✕</button>
+      </div>
+    </div>
+    <div id="act-contenido" style="max-height:62vh;overflow-y:auto;"></div>
   </div>
 </div>
 
@@ -3517,6 +3796,7 @@
       <div class="modal-title" id="cf-titulo" style="margin:0;">—</div>
       <button onclick="cfCerrar()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--text-light);line-height:1;">✕</button>
     </div>
+    <div id="cf-encabezado"></div>
     <div id="cf-detalle"></div>
     <div id="cf-campos"></div>
     <div id="cf-nota"></div>
@@ -3860,7 +4140,7 @@ function mesActualStr() {
    a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
    Se pinta en el pie del sidebar (#sidebar-version).
    ═══════════════════════════════════════════════════════ */
-const APP_VERSION = 'V 250826 0021';
+const APP_VERSION = 'V 250826 1212';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
@@ -4218,6 +4498,29 @@ const OEV_RETRABAJO   = 'RETRABAJO';
    queda como control fuera del sistema.
    NO borrar sin resolver antes qué pasa con ese artículo. */
 const OEV_ANULACION  = 'ANULACION';
+/* ── NOTA (cambio #111) ──
+   Anotación libre que deja una persona sobre la obra. Viaja por la misma hoja
+   OBRA_EVENTOS que el resto de las marcas: la columna TIPO se dejó abierta
+   justamente para esto, así que NO requiere tocar Code.gs ni redesplegar.
+
+   Es el único tipo de evento que NO describe un hecho del ciclo de vida de la
+   obra, y por eso se muestra en una sección propia y se excluye del historial:
+   mezclar "PAUSA · 12/08" con un párrafo de texto obliga a leer todo para
+   encontrar cualquiera de los dos.
+
+   ⚠ Los lectores del historial filtran por tipo (obraFinTrabajo, obraPausadaDesde)
+   y obraAnulacion recorre buscando ANULACION/RETRABAJO/REAPERTURA, así que una
+   NOTA los atraviesa sin efecto. Verificado antes de sumar el tipo: ninguna
+   métrica del panel ni del motor de incentivos lee eventos sin filtrar TIPO.
+
+   Convención de columnas para este tipo:
+     MOTIVO   → el texto de la nota
+     CREADO_AT→ alta (no cambia nunca)
+     FECHA    → fecha de la ÚLTIMA edición; al crear, igual a la de alta.
+   Así "editada" se deduce comparando las dos SIN agregar una columna nueva a
+   la hoja (que obligaría a tocar HEADERS y redesplegar). Limitación asumida:
+   una edición el mismo día no deja marca visible. */
+const OEV_NOTA       = 'NOTA';
 
 let _idCounter = 0;
 function nuevoId(prefix) {
@@ -4437,8 +4740,15 @@ async function cargarTodo(mensaje) {
       sessionStorage.removeItem('terabyte_cola_incidencias');
     } catch (e) { /* sessionStorage puede no estar disponible */ }
 
+    /* #112 — tras un ALL el array global `lineas` ya es la versión más nueva,
+       así que la copia que hubiera traído el chequeo diario queda obsoleta y
+       se descarta. Si no se limpiara, el panel de actividad seguiría mostrando
+       una foto vieja después de sincronizar. */
+    _actLineasRemotas = null;
+
     actualizarDashboard();
     actualizarBadge();
+    if (typeof actActualizarBadge === 'function') actActualizarBadge();   // #112
     renderClientes();
     renderSitios();
     renderSeguimiento();
@@ -5705,6 +6015,39 @@ function obraEventosDe(obraId) {
     .sort((a, b) => String(b.creadoAt || b.fecha).localeCompare(String(a.creadoAt || a.fecha)));
 }
 
+/* ── Notas de una obra (cambio #111), de la más reciente a la más vieja ──
+   obraEventosDe() ya ordena por CREADO_AT descendente, así que acá alcanza con
+   filtrar. Se ordena por ALTA y no por última edición a propósito: editar una
+   nota vieja no debería saltarla al tope y desordenar la lectura. */
+function obraNotasDe(obraId) {
+  return obraEventosDe(obraId).filter(e => e.tipo === OEV_NOTA);
+}
+
+/* ── Fecha de ALTA de una nota, en hora LOCAL ('YYYY-MM-DD') ──
+   ⚠ NO se puede usar creadoAt.slice(0,10): CREADO_AT se guarda con
+   toISOString(), que es UTC, mientras que FECHA y todo el resto del sistema
+   usan hora local (fechaHoyStr). En Argentina (UTC-3) una nota escrita a las
+   22:00 tiene un CREADO_AT del DÍA SIGUIENTE, así que recortar el ISO mostraría
+   mañana y rompería la comparación de "editada".
+   Si CREADO_AT falta o no parsea —filas pegadas a mano— cae a FECHA. */
+function _obraNotaFechaAlta(ev) {
+  if (!ev) return '';
+  const d = ev.creadoAt ? new Date(ev.creadoAt) : null;
+  if (d && !isNaN(d.getTime())) {
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+  return ev.fecha || '';
+}
+
+/* ¿La nota fue editada después de crearse? Se deduce comparando la FECHA
+   (última edición) contra la fecha de alta. Ver la nota de OEV_NOTA: se
+   resuelve así para no agregar una columna a OBRA_EVENTOS. */
+function obraNotaEditada(ev) {
+  if (!ev || ev.tipo !== OEV_NOTA) return false;
+  const alta = _obraNotaFechaAlta(ev);
+  return !!(alta && ev.fecha && ev.fecha > alta);
+}
+
 /* Fecha de la pausa vigente, para poder mostrar "pausada desde...".
    Sale del último evento PAUSA; si no hay historial, devuelve ''. */
 function obraPausadaDesde(obraId) {
@@ -6114,6 +6457,19 @@ function _sgRenderFila(g) {
     avHtml = `<div><span class="ob-av-vacio">${g.diasPersona} dp ejecutados</span></div>`;
   }
 
+  /* ── Notas (cambio #111) ──
+     El botón deja una nota sin salir del panel. Si la obra ya tiene, se
+     muestra el contador: sin él no habría forma de saber que hay algo escrito
+     sin entrar obra por obra, que es justo lo que la nota busca evitar.
+     Una obra sin alta no tiene notas todavía, pero el botón funciona igual:
+     _obraAsegurarFila() le crea la ficha al guardar la primera. */
+  const nNotas = g.obra ? obraNotasDe(g.obra.id).length : 0;
+  const chipNotas = nNotas
+    ? `<span class="ob-notas-cnt">${nNotas}</span>` : '';
+  const tituloNota = nNotas
+    ? `${nNotas} nota${nNotas!==1?'s':''} · agregar otra`
+    : 'Dejar una nota en la obra';
+
   /* ── Acciones ──
      El botón principal abre la vista de obra (Gantt). El modal "Días
      trabajados" se conserva y sigue accesible desde ahí. */
@@ -6153,8 +6509,9 @@ function _sgRenderFila(g) {
     ${diasHtml}
     ${avHtml}
     <div class="sg-acts">
-      <button class="sg-act-btn" onclick="abrirVistaObra('${idEsc}')" title="Abrir la obra"><i class="fa-solid fa-diagram-project"></i></button>
+      <button class="sg-act-btn" onclick="abrirVistaObra('${idEsc}')" title="Asignar día"><i class="fa-solid fa-diagram-project"></i></button>
       ${accEstado}
+      <button class="sg-act-btn" onclick="obraNuevaNota('${idEsc}')" title="${_escAttr(tituloNota)}"><i class="fa-solid fa-pencil"></i>${chipNotas}</button>
     </div>
   </div>`;
 }
@@ -6195,6 +6552,168 @@ async function _obraRegistrarEvento(obra, tipo, motivo) {
   });
   obraEventos.push(ev);
   return ev;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   NOTAS DE OBRA (cambio #111)
+
+   Anotaciones libres sobre una obra, con autor y fecha. Se guardan como
+   eventos TIPO='NOTA' en OBRA_EVENTOS — la hoja y las acciones INSERT/UPDATE/
+   DELETE del backend ya existen y son genéricas por ID, así que este cambio
+   NO toca Code.gs ni obliga a redesplegar.
+
+   ⚠ Toda función de acá arranca con bloqueoViewer() (R3) y todo setLoading(true)
+   cierra en un finally (R4), igual que el resto de las escrituras del panel.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Resuelve la obra sobre la que se va a escribir la nota.
+   Si el sitio no tiene fila en OBRAS (una obra "Anterior", heredada de antes
+   de que existiera la hoja) se le da el alta en el momento, porque sin OBRA_ID
+   no hay dónde colgar el evento. Es exactamente lo que ya hace obraEditarPlazo()
+   cuando se le carga el plazo a una heredada: la fecha de inicio sale de su
+   primera actividad registrada para no inventar una (E9).
+   Devuelve la obra, o null si el usuario canceló el alta. */
+async function _obraAsegurarFila(idSitio) {
+  let obra = obraDeSitio(idSitio);
+  if (obra) return obra;
+
+  const r = await cfAbrir({
+    titulo: 'Dar de alta la obra',
+    confirmar: 'Dar de alta y continuar',
+    encabezado: { etiqueta: 'Obra', valor: idSitio, icon: 'fa-diagram-project',
+                  sub: _obraSubEncabezado(idSitio) },
+    detalle: cfDatos([['Ejecutado hasta hoy', `${obraDiasPersona(idSitio)} día(s)-persona`]]),
+    nota: 'Esta obra tiene días cargados pero nunca se dio de alta, así que todavía ' +
+          'no tiene dónde guardar la nota. Se le crea la ficha ahora, con la fecha de ' +
+          'su primera actividad registrada. El plazo se puede cargar después.'
+  });
+  if (!r) return null;
+
+  /* El alta es una escritura al backend: lleva su propio indicador, cerrado en
+     finally (R4). Va acá y no en el llamador porque el modal ya se cerró. */
+  setLoading(true, 'Dando de alta la obra');
+  try {
+    obra = await _obraCrear(idSitio, null, [], _sgPrimeraActividad(idSitio) || fechaHoyStr());
+  } catch (e) {
+    toast(`No se pudo dar de alta la obra: ${e.message}`, 'err');
+    return null;
+  } finally { setLoading(false); }
+  return obra;
+}
+
+/* Línea de contexto bajo el ID de la obra en el encabezado del modal: cliente
+   y localidad. El ID solo no dice de qué obra se trata salvo que uno se los
+   sepa de memoria, y son 159 sitios. Devuelve '' si no hay nada que agregar. */
+function _obraSubEncabezado(idSitio) {
+  const s = sitios.find(x => x.id === idSitio);
+  if (!s) return '';
+  return [s.clienteId, s.localidad].filter(Boolean).join(' · ');
+}
+
+/* Alta de una nota. `idSitio` opcional: sin argumento toma la obra abierta en
+   la vista de obra (el botón "+ Nota" de esa vista no pasa parámetro). */
+async function obraNuevaNota(idSitio) {
+  if (bloqueoViewer()) return;
+  const id = idSitio || _gtSitio;
+  if (!id) return;
+
+  const r = await cfAbrir({
+    titulo: 'Nueva nota',
+    confirmar: 'Guardar nota',
+    ancho: 640,
+    encabezado: { etiqueta: 'Obra', valor: id, icon: 'fa-diagram-project',
+                  sub: _obraSubEncabezado(id) },
+    campos: [{ id: 'texto', label: 'Nota', tipo: 'texto', req: true,
+               placeholder: 'Ej: falta la llave del pilar, la pidió el encargado del sitio' }],
+    nota: 'Queda registrada con tu usuario y la fecha. La pueden ver y editar los demás.'
+  });
+  if (!r) return;
+
+  const texto = String(r.texto || '').trim();
+  if (!texto) { toast('La nota no puede estar vacía.', 'err'); return; }
+
+  /* ⚠ El alta implícita se resuelve ANTES de setLoading(true): abre su propio
+     modal de confirmación, y el overlay de carga bloquea la interfaz. Con el
+     orden inverso el usuario vería la pantalla trabada esperando una respuesta
+     a un diálogo que no puede tocar. */
+  const obra = await _obraAsegurarFila(id);
+  if (!obra) return;                     // el usuario canceló el alta
+
+  setLoading(true, 'Guardando la nota');
+  try {
+    await _obraRegistrarEvento(obra, OEV_NOTA, texto);
+    _gtRefrescar();
+    toast('Nota guardada ✓');
+  } catch (e) {
+    toast(`Error al guardar la nota: ${e.message}`, 'err');
+  } finally { setLoading(false); }
+}
+
+/* Edición de una nota existente. Reescribe MOTIVO y pisa FECHA con el día de
+   hoy, que es lo que después lee obraNotaEditada(). CREADO_AT no se toca:
+   sigue diciendo cuándo se creó y quién la creó. */
+async function obraEditarNota(evId) {
+  if (bloqueoViewer()) return;
+  const ev = obraEventos.find(x => x.id === evId && x.tipo === OEV_NOTA);
+  if (!ev) { toast('No se encontró la nota.', 'err'); return; }
+
+  const r = await cfAbrir({
+    titulo: 'Editar nota',
+    confirmar: 'Guardar cambios',
+    ancho: 640,
+    encabezado: { etiqueta: 'Obra', valor: ev.sitioId, icon: 'fa-diagram-project',
+                  sub: `Escrita por ${ev.usuarioCarga || '—'} · ${_sgFormatoFechaCorta(_obraNotaFechaAlta(ev))}` },
+    campos: [{ id: 'texto', label: 'Nota', tipo: 'texto', req: true, valor: ev.motivo }],
+    nota: 'Se conserva el autor y la fecha original. La nota va a quedar marcada como editada.'
+  });
+  if (!r) return;
+
+  const texto = String(r.texto || '').trim();
+  if (!texto) { toast('La nota no puede estar vacía.', 'err'); return; }
+  if (texto === ev.motivo) return;         // sin cambios: no se escribe nada
+
+  const hoy = fechaHoyStr();
+  setLoading(true, 'Guardando la nota');
+  try {
+    await apiPost('UPDATE', 'OBRA_EVENTOS', { MOTIVO: texto, FECHA: hoy }, ev.id);
+    /* El estado local se actualiza DESPUÉS de que el backend confirma: si el
+       POST falla, la pantalla sigue mostrando lo que realmente está guardado. */
+    ev.motivo = texto;
+    ev.fecha  = hoy;
+    _gtRefrescar();
+    toast('Nota actualizada ✓');
+  } catch (e) {
+    toast(`Error al actualizar la nota: ${e.message}`, 'err');
+  } finally { setLoading(false); }
+}
+
+/* Borrado de una nota, con confirmación propia (nunca confirm() nativo). */
+async function obraBorrarNota(evId) {
+  if (bloqueoViewer()) return;
+  const ev = obraEventos.find(x => x.id === evId && x.tipo === OEV_NOTA);
+  if (!ev) { toast('No se encontró la nota.', 'err'); return; }
+
+  const recorte = ev.motivo.length > 220 ? ev.motivo.slice(0, 220) + '…' : ev.motivo;
+  const r = await cfAbrir({
+    titulo: 'Borrar la nota', confirmar: 'Borrar', peligroso: true, tono: 'peligro',
+    ancho: 580,
+    encabezado: { etiqueta: 'Obra', valor: ev.sitioId, icon: 'fa-diagram-project',
+                  sub: `Escrita por ${ev.usuarioCarga || '—'} · ${_sgFormatoFechaCorta(_obraNotaFechaAlta(ev))}` },
+    detalle: `<div style="white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.55;">${_escHtml(recorte)}</div>`,
+    nota: 'La nota se elimina de forma definitiva y no se puede recuperar.'
+  });
+  if (!r) return;
+
+  setLoading(true, 'Borrando la nota');
+  try {
+    await apiPost('DELETE', 'OBRA_EVENTOS', {}, ev.id);
+    const i = obraEventos.findIndex(x => x.id === ev.id);
+    if (i !== -1) obraEventos.splice(i, 1);
+    _gtRefrescar();
+    toast('Nota borrada ✓');
+  } catch (e) {
+    toast(`Error al borrar la nota: ${e.message}`, 'err');
+  } finally { setLoading(false); }
 }
 
 /* Igual que _obraRegistrarEvento pero con una fecha explícita: el fin de
@@ -6824,6 +7343,31 @@ function cfAbrir(cfg) {
   document.getElementById('cf-titulo').textContent = _cfConfig.titulo || 'Confirmar';
   document.getElementById('cf-titulo').style.color = _cfConfig.peligroso ? 'var(--accent-rose)' : '';
 
+  /* ── Ancho del modal (#111) ──
+     Por defecto 500px, como siempre. `ancho` lo ensancha para los modales que
+     tienen un campo de texto largo: en 500px un textarea deja renglones de
+     pocas palabras y obliga a scrollear para releer lo que uno escribió.
+     Se reasigna en CADA apertura —no solo cuando viene `ancho`— porque el
+     modal es UNO SOLO y se reutiliza: sin esto, el primero que lo ensanchara
+     dejaría anchos todos los siguientes. */
+  const cfModal = document.querySelector('#modal-confirmar .modal');
+  if (cfModal) {
+    cfModal.style.width    = (Number(_cfConfig.ancho) || 500) + 'px';
+    cfModal.style.maxWidth = '95vw';   // pisa el max-width:500px del markup
+  }
+
+  /* Encabezado destacado: qué es lo que se está por tocar, en grande. */
+  const enc = _cfConfig.encabezado;
+  document.getElementById('cf-encabezado').innerHTML = enc
+    ? `<div class="cf-enc">
+         <div class="cf-enc-ico"><i class="fa-solid ${_escAttr(enc.icon || 'fa-diagram-project')}"></i></div>
+         <div class="cf-enc-txt">
+           <div class="cf-enc-lbl">${_escHtml(enc.etiqueta || '')}</div>
+           <div class="cf-enc-val">${_escHtml(enc.valor || '')}</div>
+           ${enc.sub ? `<div class="cf-enc-sub">${_escHtml(enc.sub)}</div>` : ''}
+         </div>
+       </div>` : '';
+
   document.getElementById('cf-detalle').innerHTML = _cfConfig.detalle
     ? `<div class="cf-caja ${_cfConfig.tono || ''}">${_cfConfig.detalle}</div>` : '';
 
@@ -6838,6 +7382,17 @@ function cfAbrir(cfg) {
               data-v="${_escAttr(v)}" onclick="cfElegir('${_escJs(c.id)}','${_escJs(v)}')">${_escHtml(l)}</button>`;
           }).join('')}</div>
         <input type="hidden" id="cf-c-${_escAttr(c.id)}" value="${_escAttr(c.valor || '')}" /></div>`;
+    }
+    /* tipo 'texto' = multilínea (cambio #111, para las notas de obra).
+       Va como <textarea> y no como <input>: una nota de obra puede tener
+       varios renglones y con un input de una línea se pierden al pegar.
+       El valor se escapa como CONTENIDO, no como atributo, porque textarea
+       no tiene value=""; usar _escAttr acá dejaría entidades sin resolver. */
+    if (c.tipo === 'texto') {
+      return `<div class="cf-campo"><label>${_escHtml(c.label)}</label>
+        <textarea class="form-input" id="cf-c-${_escAttr(c.id)}" rows="4"
+          placeholder="${_escAttr(c.placeholder || '')}"
+          oninput="cfValidar()" onchange="cfValidar()">${_escHtml(c.valor || '')}</textarea></div>`;
     }
     const tipoHtml = c.tipo === 'numero' ? 'number' : (c.tipo === 'fecha' ? 'date' : 'text');
     const extra = c.tipo === 'numero' ? 'min="1" step="1"' : '';
@@ -7304,9 +7859,22 @@ function incLiquidacion(mes) {
   const entran = todas.filter(o => !o.excluida);
   const corte = _incFechaCorte(mes);
 
-  /* Solo personal propio (art. 2): los contratistas cobran por obra ejecutada
-     y su incentivo a producir ya existe. */
-  const propios = empleados.filter(e => String(e.relacion || '').toUpperCase() !== 'C');
+  /* Solo personal propio ACTIVO.
+     · Propio (art. 2): los contratistas cobran por obra ejecutada y su
+       incentivo a producir ya existe.
+     · Activo: se excluye a quien tenga `Activo = NO` en la hoja EMPLEADOS.
+       ⚠ Este filtro FALTABA: la liquidación era el único punto del sistema que
+       recorría `empleados` sin mirar la baja, así que un empleado dado de baja
+       seguía apareciendo con su bono. `e.activo` es el mismo criterio que usa
+       empleadosActivos() y que reconoce NO / N / FALSE / FALSO / 0 / BAJA /
+       INACTIVO (ver EMPLEADO_BAJA).
+     ⚠ CONSECUENCIA ASUMIDA: si alguien se da de baja después de haber trabajado
+       en obras que cierran este mes, deja de figurar y no se le liquida ese
+       bono. Es lo pedido: la baja saca a la persona de la liquidación sin
+       importar cuándo se cargó. Para pagarle un mes pendiente hay que volver a
+       poner la columna en blanco mientras se liquida. */
+  const propios = empleados.filter(e => e.activo &&
+                                        String(e.relacion || '').toUpperCase() !== 'C');
 
   const filas = propios.map(emp => {
     const tramos = [];
@@ -7365,7 +7933,7 @@ let _liqMes = null;              // 'YYYY-MM'
 let _liqAbierto = null;          // empleadoId cuyo detalle está desplegado
 
 function liqNavMes(delta) {
-  if (!_liqMes || delta === 0) { _liqMes = _liqMesPrevio(); }
+  if (!_liqMes || delta === 0) { _liqMes = mesActualStr(); }
   else {
     const [a, m] = _liqMes.split('-').map(Number);
     const d = new Date(a, m - 1 + delta, 1);
@@ -7375,14 +7943,12 @@ function liqNavMes(delta) {
   renderLiquidacion();
 }
 
-/* Arranca en el mes ANTERIOR, no en el actual: la liquidación se hace en la
-   segunda quincena del mes siguiente, así que el mes que interesa mirar casi
-   siempre es el que cerró. */
-function _liqMesPrevio() {
-  const d = new Date();
-  d.setDate(1); d.setMonth(d.getMonth() - 1);
-  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
-}
+/* La vista abre en el MES EN CURSO (corrección de agosto 2026).
+   Antes abría en el mes anterior, con el argumento de que la liquidación se
+   hace en la segunda quincena del mes siguiente. En la práctica desorientaba:
+   se entraba a mirar cómo viene el mes y aparecía el pasado, con obras ya
+   cerradas y números que no eran los de hoy. El mes anterior sigue a un click
+   de la flecha ◀, así que no se perdió nada. */
 
 function liqToggleDetalle(empId) {
   _liqAbierto = (_liqAbierto === empId) ? null : empId;
@@ -7390,7 +7956,7 @@ function liqToggleDetalle(empId) {
 }
 
 function renderLiquidacion() {
-  if (!_liqMes) _liqMes = _liqMesPrevio();
+  if (!_liqMes) _liqMes = mesActualStr();
   const L = incLiquidacion(_liqMes);
   const [anio, mes] = _liqMes.split('-').map(Number);
 
@@ -7936,6 +8502,7 @@ function renderVistaObra() {
 
   _gtRenderTiles(id, obra);
   _gtRenderGrid(id, obra);
+  _gtRenderNotas(obra);        // cambio #111
   _gtRenderHistorial(obra);
 
   /* Botones que dependen de si la obra admite carga (E16). */
@@ -8139,10 +8706,71 @@ function _gtRenderGrid(id, obra) {
   cont.innerHTML = h;
 }
 
+/* ── #111 · Notas de la obra ──
+   La tarjeta se muestra SIEMPRE (a diferencia del historial, que se oculta si
+   está vacío): es un lugar donde escribir, no solo un registro, y esconderlo
+   cuando no hay nada dejaría el botón "+ Nota" fuera de alcance justo cuando
+   se quiere estrenar.
+
+   Una obra sin alta tampoco tiene notas todavía, pero el botón sigue activo:
+   _obraAsegurarFila() le crea la ficha en el momento. */
+function _gtRenderNotas(obra) {
+  const cont = document.getElementById('gt-notas');
+  const btn  = document.getElementById('gt-btn-nota');
+  if (!cont) return;
+
+  /* El botón se deshabilita en modo viewer además de ocultarse por el barrido
+     de lista blanca: el guard de escritura ya está en obraNuevaNota(), esto es
+     solo para que no quede un botón muerto si el barrido no llegó a correr. */
+  if (btn) btn.disabled = esViewer();
+
+  const notas = obra ? obraNotasDe(obra.id) : [];
+  if (!notas.length) {
+    cont.innerHTML = `<div class="ob-nota-vacio">Todavía no hay notas en esta obra.</div>`;
+    return;
+  }
+
+  cont.innerHTML = notas.map(n => {
+    const autor = n.usuarioCarga || '—';
+    const ini   = autor.trim().charAt(0) || '?';
+    const alta  = _obraNotaFechaAlta(n);
+    const hora  = _obraNotaHora(n.creadoAt);
+    const edit  = obraNotaEditada(n)
+      ? `<span class="ob-nota-edit">· editada el ${_sgFormatoFechaCorta(n.fecha)}</span>` : '';
+    return `<div class="ob-nota-row">
+      <div class="ob-nota-av">${_escHtml(ini)}</div>
+      <div class="ob-nota-body">
+        <div class="ob-nota-meta">
+          <b>${_escHtml(autor)}</b>
+          <span>${_sgFormatoFechaCorta(alta)}${hora ? ' · ' + hora : ''}</span>
+          ${edit}
+        </div>
+        <div class="ob-nota-txt">${_escHtml(n.motivo)}</div>
+      </div>
+      <div class="ob-nota-acts">
+        <button class="ob-nota-act" title="Editar la nota" onclick="obraEditarNota('${_escJs(n.id)}')"><i class="fa-solid fa-pen"></i></button>
+        <button class="ob-nota-act borrar" title="Borrar la nota" onclick="obraBorrarNota('${_escJs(n.id)}')"><i class="fa-solid fa-trash"></i></button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* Hora local de un CREADO_AT en ISO, en formato HH:MM. Devuelve '' si el valor
+   no es una fecha válida: las filas viejas o pegadas a mano pueden no serlo, y
+   un "Invalid Date" en pantalla sería peor que no mostrar la hora. */
+function _obraNotaHora(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return '';
+  return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+}
+
 function _gtRenderHistorial(obra) {
   const card = document.getElementById('gt-hist-card');
   if (!obra) { card.style.display = 'none'; return; }
-  const evs = obraEventosDe(obra.id);
+  /* Las NOTAS se excluyen: tienen sección propia arriba (cambio #111). El
+     historial queda solo con los hechos del ciclo de vida de la obra. */
+  const evs = obraEventosDe(obra.id).filter(e => e.tipo !== OEV_NOTA);
   if (!evs.length) { card.style.display = 'none'; return; }
   card.style.display = '';
   document.getElementById('gt-hist').innerHTML = evs.map(e => `
@@ -8556,7 +9184,17 @@ function _aoRenderLista() {
     (b.prevista - a.prevista) || (b.libres - a.libres) ||
     nombreEmpleado(a.e.id).localeCompare(nombreEmpleado(b.e.id)));
 
-  cont.innerHTML = info.map(x => {
+  /* ── #110 · Agrupación de la lista ──
+     Tres bloques: la CUADRILLA PREVISTA arriba de todo (sin dividir por
+     relación: es la respuesta a "quién iba a estar acá" y partirla en dos la
+     vuelve inútil), y debajo el resto separado en propios y contratistas.
+
+     El orden DENTRO de cada grupo es el que ya existía —más días libres
+     primero, ocupados al final— porque es funcional, no alfabético: arriba
+     queda lo que se puede tildar y abajo lo que solo se puede mover.
+
+     Un grupo vacío no imprime título. */
+  const itemHtml = (x) => {
     const nom = nombreEmpleado(x.e.id);
     const jsId = _escJs(x.e.id);
 
@@ -8583,7 +9221,35 @@ function _aoRenderLista() {
       <input type="checkbox" value="${_escAttr(x.e.id)}" ${x.prevista ? 'checked' : ''} onchange="_aoResumen()" />
       ${badgeRelacion(x.e.id)}<span class="ao-nombre">${_escHtml(nom)}</span>
       ${x.prevista ? '<span class="ao-tag-prev">prevista</span>' : ''}${parcial}</label>`;
-  }).join('') || '<div class="ob-hint" style="padding:10px;">No hay empleados disponibles.</div>';
+  };
+
+  const esContratista = (id) => String(relacionEmpleado(id) || '').toUpperCase() === 'C';
+
+  const gr = {
+    prevista:    info.filter(x => x.prevista),
+    propios:     info.filter(x => !x.prevista && !esContratista(x.e.id)),
+    contratista: info.filter(x => !x.prevista &&  esContratista(x.e.id))
+  };
+
+  const tituloGrupo = (label, icon, n) =>
+    `<div class="lst-grupo"><i class="fa-solid ${icon}"></i> ${label}<span class="lst-grupo-cnt">${n}</span></div>`;
+
+  const partes = [];
+  if (gr.prevista.length) {
+    partes.push(tituloGrupo('Cuadrilla prevista', 'fa-star', gr.prevista.length));
+    partes.push(gr.prevista.map(itemHtml).join(''));
+  }
+  if (gr.propios.length) {
+    partes.push(tituloGrupo('Personal propio', 'fa-helmet-safety', gr.propios.length));
+    partes.push(gr.propios.map(itemHtml).join(''));
+  }
+  if (gr.contratista.length) {
+    partes.push(tituloGrupo('Contratistas', 'fa-people-group', gr.contratista.length));
+    partes.push(gr.contratista.map(itemHtml).join(''));
+  }
+
+  cont.innerHTML = partes.join('') ||
+    '<div class="ob-hint" style="padding:10px;">No hay empleados disponibles.</div>';
 
   _aoResumen();
 }
@@ -8710,11 +9376,36 @@ function abrirFormObra() {
   /* Solo empleados activos: un dado de baja no puede integrar una cuadrilla
      prevista, igual que no aparece en las listas de carga (cambio #88). */
   const act = empleadosActivos();
-  document.getElementById('ob-cuad-lista').innerHTML = act.map(e => `
+
+  /* ── #110 · Propios y contratistas separados ──
+     Mismo criterio que el modal de asignación. Acá tiene además un efecto
+     preventivo: al quedar en bloques distintos se ve de un vistazo que se está
+     armando una cuadrilla MIXTA, que es la que no se puede medir y queda fuera
+     del plan de incentivos (cambio #105). El aviso explícito lo sigue dando
+     _gtAvisoMixta() al asignar; esto solo lo hace evidente antes. */
+  const itemCuad = (e) => `
     <label class="ob-cuad-item">
       <input type="checkbox" value="${_escAttr(e.id)}" onchange="obfActualizarResumen()" />
       ${badgeRelacion(e.id)}<span>${_escHtml(e.nombre || e.id)}</span>
-    </label>`).join('') || '<div class="ob-hint" style="padding:10px;">No hay empleados activos cargados.</div>';
+    </label>`;
+  const tituloCuad = (label, icon, n) =>
+    `<div class="lst-grupo"><i class="fa-solid ${icon}"></i> ${label}<span class="lst-grupo-cnt">${n}</span></div>`;
+
+  const cuadPropios = act.filter(e => String(e.relacion || '').toUpperCase() !== 'C');
+  const cuadContra  = act.filter(e => String(e.relacion || '').toUpperCase() === 'C');
+
+  const partesCuad = [];
+  if (cuadPropios.length) {
+    partesCuad.push(tituloCuad('Personal propio', 'fa-helmet-safety', cuadPropios.length));
+    partesCuad.push(cuadPropios.map(itemCuad).join(''));
+  }
+  if (cuadContra.length) {
+    partesCuad.push(tituloCuad('Contratistas', 'fa-people-group', cuadContra.length));
+    partesCuad.push(cuadContra.map(itemCuad).join(''));
+  }
+
+  document.getElementById('ob-cuad-lista').innerHTML = partesCuad.join('') ||
+    '<div class="ob-hint" style="padding:10px;">No hay empleados activos cargados.</div>';
 
   document.getElementById('ob-plazo').value = '';
   document.getElementById('ob-sitio-hint').textContent = disp.length
@@ -10340,12 +11031,12 @@ function renderModalAsigDia() {
     </span>`;
   }).join(' ');
 
-  // Bloques de obras reales (acordeón)
-  sitiosReales.forEach(sitioId => {
+  // Helper para renderizar el bloque acordeón de UNA obra
+  const bloqueObra = (sitioId) => {
     const asigs = porSitio.get(sitioId);
     const abierta = (_asigDiaObraAbierta === sitioId);
     const sidEsc = sitioId.replace(/'/g, "\\'");
-    bloques.push(`
+    return `
       <div style="background:rgba(255,255,255,0.45);border:1px solid rgba(200,205,225,0.5);border-radius:12px;overflow:hidden;">
         <div onclick="toggleObraDia('${sidEsc}')" style="cursor:pointer;font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px;padding:13px 15px;">
           <span style="font-size:11px;color:var(--text-light);transition:transform .15s;transform:rotate(${abierta?'90':'0'}deg);">▶</span>
@@ -10358,7 +11049,64 @@ function renderModalAsigDia() {
         </div>
         ${abierta ? `<div style="display:flex;flex-wrap:wrap;gap:6px;padding:0 15px 14px;">${empChips(asigs)}</div>` : ''}
       </div>
-    `);
+    `;
+  };
+
+  /* ── #109 · Agrupación por tipo de cuadrilla ──
+     Se clasifica por lo que pasó ESE DÍA, no por la composición histórica de
+     la obra: el modal es el detalle de una fecha, y una obra que hoy tiene
+     solo propios debe leerse como propia aunque la semana pasada haya entrado
+     un contratista. Para la composición histórica ya está incComposicion(),
+     que es la que usa la liquidación.
+
+     Un empleado sin relación cargada (columna vacía) NO cuenta como
+     contratista: relacionEmpleado() devuelve '' y solo 'C' clasifica como
+     tal. Es el mismo criterio de incComposicion(), así que las dos funciones
+     no pueden discrepar sobre qué obra es mixta. */
+  const tipoCuadDia = (sitioId) => {
+    let propios = 0, contra = 0;
+    porSitio.get(sitioId).forEach(a => {
+      if (String(relacionEmpleado(a.empleadoId) || '').toUpperCase() === 'C') contra++;
+      else propios++;
+    });
+    if (propios > 0 && contra > 0) return 'mixta';
+    if (contra > 0)                return 'contratista';
+    return 'propia';
+  };
+
+  const grupos = { propia: [], contratista: [], mixta: [] };
+  sitiosReales.forEach(sid => grupos[tipoCuadDia(sid)].push(sid));
+
+  /* Los títulos solo aparecen si hace falta distinguir: con un único grupo
+     poblado, el encabezado no informa nada y solo agrega ruido. Mismo criterio
+     con que el tab "Anteriores" se oculta cuando está vacío (cambio #103). */
+  const gruposConDatos = ['propia', 'contratista', 'mixta'].filter(k => grupos[k].length);
+  const conTitulos = gruposConDatos.length > 1;
+
+  const META_GRUPO = {
+    propia:      { label: 'Cuadrilla propia', icon: 'fa-helmet-safety' },
+    contratista: { label: 'Contratista',      icon: 'fa-people-group' },
+    mixta:       { label: 'Mixtas',           icon: 'fa-triangle-exclamation' }
+  };
+
+  gruposConDatos.forEach(k => {
+    if (conTitulos) {
+      const n = grupos[k].length;
+      bloques.push(`<div class="asig-dia-divider">
+        <i class="fa-solid ${META_GRUPO[k].icon}"></i> ${META_GRUPO[k].label} · ${n} obra${n!==1?'s':''}
+      </div>`);
+    }
+    /* El aviso de las mixtas se muestra SIEMPRE que haya alguna, tenga o no
+       título el grupo: la consecuencia (quedar fuera del plan de incentivos)
+       no depende de si hay otros grupos en pantalla. */
+    if (k === 'mixta') {
+      bloques.push(`<div class="asig-dia-mixta-nota">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        Con personal propio y contratista el mismo día. Estas obras <b>no se pueden medir</b>
+        y quedan <b>fuera del plan de incentivos</b>.
+      </div>`);
+    }
+    grupos[k].forEach(sid => bloques.push(bloqueObra(sid)));
   });
 
   // Bloques de estados especiales (siempre abiertos, al pie)
@@ -12518,6 +13266,378 @@ const ROL_VIEWER = 'viewer';
 /* 'liquidacion' se bloquea por el mismo motivo que 'seguimiento': expone
    información sensible —el bono de todo el personal, y los sueldos si la hoja
    EMPLEADOS los tiene cargados. */
+/* ═══════════════════════════════════════════════════════════════
+   ACTIVIDAD — líneas facturadas (cambio #112)
+
+   Aviso al Gerente cada vez que Administración marca una línea como facturada.
+
+   ⚠ POR QUÉ NO HAY HOJA NUEVA NI BACKEND: todo lo que hay que mostrar —sitio,
+   PO, cliente, %, monto, N° de factura y fecha— YA está en FACTURACION. El
+   feed se DERIVA de ahí. Lo único que necesita persistirse es qué vio cada
+   usuario, y eso no es un dato de la empresa: vive en el navegador.
+
+   ⚠ POR QUÉ localStorage Y NO sessionStorage: sessionStorage se vacía al
+   cerrar la pestaña, así que cada login volvería a marcar todo como nuevo y el
+   badge sería siempre el total histórico. El resto del sistema usa
+   sessionStorage porque guarda la SESIÓN, que sí debe morir con la pestaña.
+
+   ⚠ LÍMITE CONOCIDO: la fecha que agrupa es la FECHA DE FACTURA que se tipea,
+   no el momento en que se marcó. Una factura cargada hoy con fecha de la
+   semana pasada aparece en la semana pasada. Registrar el momento real del
+   marcado exigiría una columna nueva en FACTURACION y redesplegar el backend.
+   Se aceptó explícitamente. Ojo: el conteo de NO LEÍDAS no sufre este
+   problema, porque se lleva por ID de línea y no por fecha.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Roles que reciben el aviso.
+   ⚠ Se comparan por PREFIJO y no por igualdad exacta, porque la columna ROL de
+   ADMIN es texto libre y en la base real dice "Administrador", no "Admin".
+   Con igualdad exacta el botón quedaba oculto sin ningún error visible, que es
+   la peor forma de fallar: no hay nada que mirar para darse cuenta.
+   Cubre: Admin, Administrador, Administradora, Gerente, Gerencia, Gerente General. */
+const ROLES_ACTIVIDAD = ['admin', 'gerent', 'gerenc'];
+
+/* Normaliza igual que el resto del sistema y además saca los acentos, para que
+   "Administración" o "Gerencía" mal tipeado tampoco queden afuera. */
+function _actNormRol(v) {
+  return String(v || '').trim().toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+/* Hora (local) a partir de la cual corre el chequeo diario. */
+const ACT_HORA_CHEQUEO = 16;
+
+/* Días que una línea permanece en el panel, contados DESDE SU FECHA DE FACTURA.
+   El día en que se factura cuenta como día 0 y ya se ve. Con el valor en 2, una
+   factura del 25 se ve el 25, el 26 y el 27, y desaparece el 28.
+
+   ⚠ La caducidad se mide contra la FECHA DE FACTURA y no contra el momento en
+   que alguien abrió el panel. Es más simple y más predecible: la línea vive lo
+   mismo para todos los usuarios, la haya visto uno, los dos o ninguno. La
+   contrapartida es que una factura cargada con fecha vieja puede entrar ya
+   caducada — el mismo límite conocido que ya tenía el agrupamiento por fecha. */
+const ACT_DIAS_VISIBLE = 2;
+
+/* Tope de líneas recordadas como vistas. Como el registro se poda solo cuando
+   la línea sale del panel —y una vez fuera no vuelve a mostrarse ni a contarse—
+   en la práctica nunca se acerca: guarda solo los últimos días. El tope está
+   por si el reloj de la máquina hiciera algo raro. */
+const ACT_MAX_VISTAS = 5000;
+
+/* Copia fresca de FACTURACION traída por el chequeo diario o por el botón
+   Actualizar del panel. Se mantiene APARTE del array global `lineas` a
+   propósito: pisar `lineas` en segundo plano mientras alguien está editando
+   una línea o tiene una cola de facturación armada le cambiaría los datos bajo
+   los pies. Acá solo alimenta el feed. cargarTodo() la limpia, porque después
+   de un ALL el array global ya es la versión más nueva. */
+let _actLineasRemotas = null;
+let _actTimer = null;
+
+function actEsDestinatario() {
+  if (!_usuarioActual) return false;
+  const rol = _actNormRol(_usuarioActual.rol);
+  if (!rol) return false;
+  /* Un viewer nunca recibe el aviso, aunque su rol empezara con alguna de las
+     raíces: el modo solo lectura manda sobre cualquier otra consideración. */
+  if (esViewer()) return false;
+  return ROLES_ACTIVIDAD.some(r => rol.startsWith(r));
+}
+
+/* Muestra u oculta la campanita según el rol. Se llama en los mismos tres
+   puntos que aplicarModoViewer(): login, restauración de sesión y logout. */
+function actAplicarVisibilidad() {
+  const btn = document.getElementById('act-btn');
+  if (!btn) return;
+  const on = actEsDestinatario();
+  btn.style.display = on ? 'flex' : 'none';
+  if (on) { actActualizarBadge(); actProgramarChequeo(); }
+  else    { actDetenerChequeo(); }
+}
+
+/* Fuente de datos del feed: la copia remota si la hay, si no el estado global. */
+function _actFuente() {
+  return Array.isArray(_actLineasRemotas) ? _actLineasRemotas : lineas;
+}
+
+/* Clave de localStorage, por usuario: dos personas en la misma máquina no
+   comparten lo que cada una vio. */
+function _actClave(sufijo) {
+  const u = String((_usuarioActual && _usuarioActual.usuario) || '').toLowerCase();
+  return `terabyte_act_${sufijo}_${u}`;
+}
+
+/* IDs de las líneas ya vistas. Vuelve a ser un Set simple: la permanencia en
+   el panel se decide por la fecha de factura, así que no hace falta recordar
+   el momento en que se abrió. Tolera el formato de objeto por si quedara algo
+   guardado de una versión intermedia. */
+function _actVistas() {
+  try {
+    const raw = localStorage.getItem(_actClave('vistas'));
+    if (!raw) return new Set();
+    const dato = JSON.parse(raw);
+    if (Array.isArray(dato)) return new Set(dato);
+    if (dato && typeof dato === 'object') return new Set(Object.keys(dato));
+    return new Set();
+  } catch (e) { return new Set(); }   // localStorage bloqueado o JSON corrupto
+}
+
+/* Guarda las vistas quedándose SOLO con las que todavía están en el panel.
+   Es seguro olvidar el resto: una línea que salió del panel ya no se muestra
+   ni se cuenta, así que no puede reaparecer como nueva. Con esto el registro
+   no crece: guarda unos pocos días, no el histórico completo. */
+function _actGuardarVistas(set) {
+  try {
+    const vigentes = new Set(actVisibles().map(l => l.id));
+    let arr = [...set].filter(id => vigentes.has(id));
+    if (arr.length > ACT_MAX_VISTAS) arr = arr.slice(-ACT_MAX_VISTAS);
+    localStorage.setItem(_actClave('vistas'), JSON.stringify(arr));
+  } catch (e) { /* sin localStorage el badge deja de recordar, nada más */ }
+}
+
+/* Marca como vistas todas las líneas visibles del panel. */
+function _actMarcarVistas() {
+  const set = _actVistas();
+  actVisibles().forEach(l => set.add(l.id));
+  _actGuardarVistas(set);
+}
+
+/* Líneas facturadas, de la más reciente a la más vieja.
+   Se exige N° de factura además del estado: una línea marcada como facturada
+   sin número está a medio cargar y avisar por ella sería un falso positivo. */
+function actFacturadas() {
+  return _actFuente()
+    .filter(l => String(l.estado || '').trim().toLowerCase() === 'facturado' &&
+                 String(l.nroFactura || '').trim() !== '' &&
+                 String(l.fechaFactura || '').trim() !== '')
+    .sort((a, b) => String(b.fechaFactura).localeCompare(String(a.fechaFactura)) ||
+                    String(a.sitioId).localeCompare(String(b.sitioId)));
+}
+
+/* ── Lo que se muestra en el panel ──
+   Las líneas facturadas dentro de la ventana de ACT_DIAS_VISIBLE días contados
+   desde su fecha de factura. El panel es un aviso de novedades, no el archivo
+   histórico de la facturación: eso ya vive en Seguimiento, y sin caducidad
+   esto sería una lista interminable donde lo nuevo se pierde.
+
+   Se comparan strings 'YYYY-MM-DD', que ordenan igual que las fechas y evitan
+   el problema del huso: construir un Date desde 'YYYY-MM-DD' lo interpreta en
+   UTC y en Argentina daría el día anterior. */
+function actVisibles() {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() - ACT_DIAS_VISIBLE);
+  const desde = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  return actFacturadas().filter(l => l.fechaFactura >= desde);
+}
+
+/* Sin ver = visible en el panel y todavía no abierta.
+   Se cuenta sobre las VISIBLES y no sobre todas las facturadas: si una línea
+   ya no se muestra, encender el badge por ella mandaría a buscar algo que no
+   está en ninguna parte. */
+function actNoLeidas() {
+  const vistas = _actVistas();
+  return actVisibles().filter(l => !vistas.has(l.id));
+}
+
+function actActualizarBadge() {
+  const b   = document.getElementById('act-badge');
+  const btn = document.getElementById('act-btn');
+  const lbl = document.getElementById('act-btn-txt');
+  if (!b) return;
+
+  if (!actEsDestinatario()) {
+    b.classList.remove('on');
+    if (btn) btn.classList.remove('hay');
+    return;
+  }
+
+  const n = actNoLeidas().length;
+  b.textContent = n > 99 ? '99+' : String(n);
+  b.classList.toggle('on', n > 0);
+
+  /* El botón entero cambia de estado, no solo el globito: con el fondo azul
+     lleno se ve desde cualquier vista sin tener que buscarlo. */
+  if (btn) {
+    btn.classList.toggle('hay', n > 0);
+    btn.title = n > 0
+      ? `${n} línea${n!==1?'s':''} facturada${n!==1?'s':''} sin ver`
+      : 'Actividad reciente: líneas facturadas';
+  }
+  /* El rótulo también cambia: "Actividad" no dice de qué, y el punto del aviso
+     es que se entienda sin abrirlo. */
+  if (lbl) lbl.textContent = n > 0 ? 'Nuevas facturadas' : 'Actividad';
+}
+
+function actAbrirPanel() {
+  if (!actEsDestinatario()) return;
+  /* Las no leídas se calculan ANTES de marcar, para poder resaltarlas en este
+     render: si se marcara primero, el panel abriría sin ninguna destacada. */
+  actRender(new Set(actNoLeidas().map(l => l.id)));
+  _actMarcarVistas();
+  actActualizarBadge();
+  document.getElementById('modal-actividad').classList.add('open');
+}
+
+function actCerrarPanel() {
+  document.getElementById('modal-actividad').classList.remove('open');
+}
+
+function actRender(nuevasIds) {
+  const cont = document.getElementById('act-contenido');
+  const sub  = document.getElementById('act-sub');
+  if (!cont) return;
+  const nuevas = nuevasIds || new Set();
+  const items = actVisibles();
+
+  if (!items.length) {
+    cont.innerHTML = `<div class="act-vacio">
+      <i class="fa-solid fa-inbox"></i>
+      Sin facturación en los últimos ${ACT_DIAS_VISIBLE + 1} días.
+      <div style="font-size:12px;margin-top:8px;">El histórico completo está en Seguimiento.</div>
+    </div>`;
+    if (sub) sub.textContent = 'Sin movimientos recientes';
+    return;
+  }
+
+  /* Agrupadas por fecha de factura, de la más reciente a la más vieja. */
+  const porFecha = new Map();
+  items.forEach(l => {
+    if (!porFecha.has(l.fechaFactura)) porFecha.set(l.fechaFactura, []);
+    porFecha.get(l.fechaFactura).push(l);
+  });
+
+  if (sub) {
+    const n = nuevas.size;
+    sub.textContent = `${items.length} línea${items.length!==1?'s':''} de los últimos ` +
+      `${ACT_DIAS_VISIBLE + 1} días` + (n ? ` · ${n} sin ver` : '');
+  }
+
+  cont.innerHTML = [...porFecha.entries()].map(([fecha, ls]) => {
+    const total = ls.reduce((a, l) => a + (Number(l.monto) || 0), 0);
+    const filas = ls.map(l => {
+      const es = nuevas.has(l.id);
+      return `<div class="act-fila${es ? ' nueva' : ''}">
+        <div class="act-sitio">${es ? '<span class="act-nuevo-dot"></span>' : ''}${_escHtml(l.sitioId || '—')}</div>
+        <div class="act-po">${_escHtml(l.poNroLinea || '—')}</div>
+        <div class="act-cli">${_escHtml(l.clienteId || '—')}</div>
+        <div class="act-pct">${Number(l.pct) || 0}%</div>
+        <div class="act-monto">${fmt(Math.round(Number(l.monto) || 0))}</div>
+        <div class="act-fc" title="${_escAttr(l.nroFactura)}">${_escHtml(l.nroFactura)}</div>
+      </div>`;
+    }).join('');
+
+    return `<div class="act-dia">
+      <div class="act-dia-head">
+        <span class="act-dia-fecha">${_sgFormatoFechaCorta(fecha)}</span>
+        <span class="act-dia-sub">${ls.length} línea${ls.length!==1?'s':''}</span>
+        <span class="act-dia-tot">${fmt(Math.round(total))}</span>
+      </div>
+      <div class="act-head">
+        <div>Sitio</div><div>PO</div><div>Cliente</div>
+        <div style="text-align:right;">%</div>
+        <div style="text-align:right;">Monto</div>
+        <div style="text-align:right;">N° factura</div>
+      </div>
+      ${filas}
+    </div>`;
+  }).join('');
+}
+
+/* ── Traer FACTURACION del servidor sin tocar el resto del estado ──
+   Devuelve true si se pudo. No usa apiGet('ALL') a propósito: el ALL trae más
+   de mil asignaciones y toda la base, y esto corre en segundo plano. */
+async function _actTraerFacturacion() {
+  try {
+    const data = await _apiGetJson(`${API_URL}?sheet=FACTURACION`);
+    if (!data.ok || !Array.isArray(data.data)) return false;
+    const get = (row, key) => {
+      const k = Object.keys(row).find(k => k.trim().toUpperCase() === key.toUpperCase());
+      return k !== undefined ? String(row[k] ?? '') : '';
+    };
+    const norm = v => String(v || '').trim().split('T')[0].slice(0, 10);
+    /* Mismo mapeo que cargarTodo() para estas columnas: el feed tiene que leer
+       los datos igual que el resto del sistema o mostraría otros números. */
+    _actLineasRemotas = data.data.map(r => {
+      const raw = get(r, 'SITIO_ID');
+      return {
+        id:           get(r, 'ID'),
+        sitioId:      raw.includes('||') ? raw.split('||')[0] : raw,
+        poNroLinea:   raw.includes('||') ? raw.split('||')[1] : '',
+        clienteId:    get(r, 'CLIENTE_ID'),
+        pct:          parseInt(get(r, 'PCT')) || 0,
+        monto:        Math.round(parseFloat(String(get(r, 'MONTO')).replace(/\$/g,'').replace(/\./g,'').replace(',','.').trim()) || 0),
+        fechaFactura: norm(get(r, 'FECHA_FACTURA')),
+        nroFactura:   get(r, 'NRO_FACTURA'),
+        estado:       get(r, 'ESTADO') || 'Proyectado'
+      };
+    }).filter(l => l.id.trim() !== '');
+    return true;
+  } catch (e) { return false; }
+}
+
+/* Botón "Actualizar" del panel. Es la única entrada MANUAL del módulo. */
+async function actRefrescar() {
+  if (!actEsDestinatario()) return;
+  const ok = await _actTraerFacturacion();
+  if (!ok) { toast('No se pudo actualizar la actividad.', 'err'); return; }
+  actRender(new Set(actNoLeidas().map(l => l.id)));
+  _actMarcarVistas();
+  actActualizarBadge();
+  toast('Actividad actualizada ✓');
+}
+
+/* ── Chequeo diario ──
+   Una sola consulta por usuario por día, a partir de las 16:00 locales.
+   Se guarda la fecha del último chequeo, así que si la app estuvo cerrada a
+   esa hora el chequeo corre igual la próxima vez que se entre — con la app
+   abierta lo dispara el temporizador, sin ella lo dispara el arranque.
+
+   Se usa la hora LOCAL de la máquina, que es la misma base que fechaHoyStr()
+   y que todo el resto del sistema. Forzar una zona fija sería el único punto
+   del archivo que no usa hora local, y con toda la operación en Argentina no
+   cambiaría ningún resultado. */
+async function actChequeoDiario() {
+  if (!actEsDestinatario()) return;
+  const ahora = new Date();
+  if (ahora.getHours() < ACT_HORA_CHEQUEO) return;
+
+  const hoy = fechaHoyStr();
+  let ultimo = '';
+  try { ultimo = localStorage.getItem(_actClave('chequeo')) || ''; } catch (e) {}
+  if (ultimo === hoy) return;
+
+  /* No pisar una operación en curso: si el overlay está abierto hay una
+     escritura o una carga andando, y este chequeo puede esperar al próximo
+     tick. NO se marca el día como hecho, así se reintenta. */
+  const ov = document.getElementById('load-overlay');
+  if (ov && ov.classList.contains('open')) return;
+
+  const ok = await _actTraerFacturacion();
+  if (!ok) return;                       // sin marcar: se reintenta al rato
+  try { localStorage.setItem(_actClave('chequeo'), hoy); } catch (e) {}
+
+  const nuevas = actNoLeidas().length;
+  actActualizarBadge();
+  if (nuevas > 0) {
+    toast(`${nuevas} línea${nuevas!==1?'s':''} facturada${nuevas!==1?'s':''} sin ver`, 'info');
+  }
+}
+
+/* El temporizador solo decide CUÁNDO mirar el reloj; la condición real (pasó
+   la hora y no corrió hoy) la evalúa actChequeoDiario(). Cinco minutos alcanza
+   para que el chequeo caiga cerca de las 16:00 sin costar nada: el tick no
+   consulta al servidor salvo que corresponda. */
+function actProgramarChequeo() {
+  actDetenerChequeo();
+  actChequeoDiario();                    // por si ya pasó la hora al entrar
+  _actTimer = setInterval(actChequeoDiario, 5 * 60 * 1000);
+}
+
+function actDetenerChequeo() {
+  if (_actTimer) { clearInterval(_actTimer); _actTimer = null; }
+}
+
+
 const VIEWER_VISTAS_BLOQUEADAS = ['seguimiento', 'liquidacion'];
 
 /* ¿La vista está vedada para el usuario actual? */
@@ -12583,6 +13703,15 @@ const VIEWER_PERMITIDO = new Set([
   /* obraTerminarTrabajo, obraAprobarCierre y obraRetrabajo quedan FUERA: son
      escrituras. Igual llevan su guard bloqueoViewer(). */
   'cerrarModalAsignarObra', 'aoCambioFecha',
+  /* Actividad (cambio #112) — SOLO LECTURA: deriva de FACTURACION y no escribe
+     nada en el backend. En la práctica el viewer nunca ve el botón, porque la
+     campanita se muestra por ROL (Gerente/Admin) y 'viewer' no está en
+     ROLES_ACTIVIDAD; entra igual en la lista para que el barrido no la oculte
+     por omisión si alguna vez un rol combinara ambas condiciones. */
+  'actAbrirPanel', 'actCerrarPanel', 'actRefrescar',
+  /* Notas de obra (cambio #111): obraNuevaNota, obraEditarNota y obraBorrarNota
+     quedan FUERA a propósito. Son escrituras: el barrido les oculta el botón y
+     además llevan su guard bloqueoViewer(). */
   // Navegación cruzada entre vistas
   'sgVerEnPOSitios',   // irASeguimientoDesde* salen de la whitelist (cambio #71)
   // Expandir / colapsar
@@ -12716,6 +13845,7 @@ function mostrarBienvenida(user) {
   document.getElementById('sidebar-nombre').textContent = nombre;
   document.getElementById('sidebar-rol').textContent    = user.rol || 'Usuario';
   aplicarModoViewer();   // cambio #68 — activa/desactiva el modo solo lectura
+  actAplicarVisibilidad();   // cambio #112 — campanita según el rol
   cargarTodo().then(() => {
     setTimeout(() => {
       bienvenida.style.opacity = '1';
@@ -12732,6 +13862,13 @@ function cerrarSesion() {
   if (!confirm('¿Cerrar sesión?')) return;
   _usuarioActual = null; _usuariosAdmin = [];
   desactivarModoViewer();   // cambio #68 — limpiar el modo solo lectura
+  /* #112 — la campanita y su temporizador se apagan ANTES de soltar la sesión
+     no alcanzaría: actEsDestinatario() ya devuelve false con _usuarioActual en
+     null, así que actAplicarVisibilidad() oculta el botón y detiene el timer.
+     Sin esto, el intervalo seguiría vivo consultando con el usuario cerrado. */
+  actAplicarVisibilidad();
+  actCerrarPanel();
+  _actLineasRemotas = null;
   try { sessionStorage.removeItem('terabyte_user'); } catch(e) {}
   document.getElementById('login-user').value = '';
   document.getElementById('login-error').style.display = 'none';
@@ -12806,6 +13943,7 @@ function cerrarSesion() {
     document.getElementById('sidebar-nombre').textContent = nombre;
     document.getElementById('sidebar-rol').textContent    = match.rol || 'Usuario';
     aplicarModoViewer();   // cambio #68 — reaplicar el modo tras F5
+    actAplicarVisibilidad();   // cambio #112 — reaplicar la campanita tras F5
     document.getElementById('screen-login').style.display = 'none';
     await cargarTodo();
   } catch(e) { /* sessionStorage bloqueado u otro error: queda en login */ }
