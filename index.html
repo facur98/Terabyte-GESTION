@@ -171,6 +171,50 @@
     body.modo-facturacion #sec-comercial,
     body.modo-facturacion #nav-sitios-globales { display: none !important; }
 
+    /* ── MODO COLAB. PROYECTO (cambio #118) — veedor de obras ──
+       Es un VIEWER RECORTADO, no un perfil aparte: convive con body.modo-viewer,
+       que es quien le quita la escritura vía .vw-hide y los guards. Este bloque
+       solo achica el alcance a la sección Obras.
+
+       Del sidebar sobrevive únicamente "Obras". Se ocultan secciones enteras y
+       separadores —mismo criterio que el #117— más los dos hermanos de Obras
+       dentro del grupo Sitios, que es el único ítem que se recorta suelto. */
+    body.modo-colab #sec-dashboard,
+    body.modo-colab #sep-dashboard,
+    body.modo-colab #nav-sitios,
+    body.modo-colab #nav-seguimiento,
+    body.modo-colab #sep-sitios,
+    body.modo-colab #sec-operativa,
+    body.modo-colab #sep-operativa,
+    body.modo-colab #sec-comercial { display: none !important; }
+
+    /* Dentro de la obra: solo tiles y Gantt. Notas e Historial quedan afuera. */
+    body.modo-colab #gt-notas-card,
+    body.modo-colab #gt-hist-card { display: none !important; }
+
+    /* ⚠ Excepción al barrido, y la parte menos obvia del cambio.
+       Los puntos del Gantt son <button> con onclick, así que el barrido del
+       viewer los marca .vw-hide y los hace desaparecer: la grilla queda vacía y
+       no se distingue un día trabajado de uno libre. Para el viewer es un
+       efecto lateral tolerable —tiene otras nueve vistas—, pero para este
+       perfil el Gantt ES el contenido, y ocultarlo vaciaría el único motivo por
+       el que existe.
+
+       Se los devuelve a la vista y se los deja INERTES con pointer-events, que
+       mata click, hover y foco de una sola vez. `inline-block` es el display
+       nativo de un <button>: ninguno de los dos lo redefine, así que
+       restaurarlo no inventa un layout que no tenían.
+       Gana por especificidad (3 clases contra 2) sobre la regla del viewer.
+       La escritura sigue cerrada por partida doble igual: aunque algo llegara a
+       disparar el onclick, gtToggleCelda() y gtToggleImprevisto() arrancan con
+       bloqueoViewer(). */
+    body.modo-colab .gt-dot.vw-hide,
+    body.modo-colab .gt-imp-btn.vw-hide {
+      display: inline-block !important;
+      pointer-events: none;
+      cursor: default;
+    }
+
     /* MAIN */
     .main { margin-left: var(--sidebar-w); flex: 1; padding: 32px 32px 40px; position: relative; z-index: 1; }
     .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; }
@@ -4294,7 +4338,7 @@ function mesActualStr() {
    a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
    Se pinta en el pie del sidebar (#sidebar-version).
    ═══════════════════════════════════════════════════════ */
-const APP_VERSION = 'V 260826 1702';
+const APP_VERSION = 'V 260826 1817';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
@@ -9021,10 +9065,12 @@ function _gtRenderNotas(obra) {
   const btn  = document.getElementById('gt-btn-nota');
   if (!cont) return;
 
-  /* El botón se deshabilita en modo viewer además de ocultarse por el barrido
-     de lista blanca: el guard de escritura ya está en obraNuevaNota(), esto es
-     solo para que no quede un botón muerto si el barrido no llegó a correr. */
-  if (btn) btn.disabled = esViewer();
+  /* El botón se deshabilita en modo solo lectura además de ocultarse por el
+     barrido de lista blanca: el guard de escritura ya está en obraNuevaNota(),
+     esto es solo para que no quede un botón muerto si el barrido no llegó a
+     correr. #118 — esSoloLectura(), para que valga también para Colab. proyecto
+     (que además tiene la sección Notas oculta por CSS). */
+  if (btn) btn.disabled = esSoloLectura();
 
   const notas = obra ? obraNotasDe(obra.id) : [];
   if (!notas.length) {
@@ -11220,7 +11266,8 @@ function renderAsigCalendario() {
     if (delDia.length) { totObra += enObra.length; totEsp += esp.length; totSin += Math.max(0, sin); diasConDatos++; }
   }
 
-  const soloLectura = (typeof esViewer === 'function') ? esViewer() : false;
+  /* #118 — esSoloLectura() cubre viewer y Colab. proyecto. */
+  const soloLectura = (typeof esSoloLectura === 'function') ? esSoloLectura() : false;
 
   cont.innerHTML = filas.map(x => {
     const finde = x.fecha.getDay() === 0 || x.fecha.getDay() === 6;
@@ -13639,9 +13686,10 @@ function actEsDestinatario() {
   if (!_usuarioActual) return false;
   const rol = _actNormRol(_usuarioActual.rol);
   if (!rol) return false;
-  /* Un viewer nunca recibe el aviso, aunque su rol empezara con alguna de las
-     raíces: el modo solo lectura manda sobre cualquier otra consideración. */
-  if (esViewer()) return false;
+  /* Ningún perfil de solo lectura recibe el aviso, aunque su rol empezara con
+     alguna de las raíces: el modo solo lectura manda sobre cualquier otra
+     consideración. #118 — vale para el viewer y para Colab. proyecto. */
+  if (esSoloLectura()) return false;
   /* #117 — el perfil Facturación tampoco. Hoy queda afuera solo porque "factur"
      no empieza con ninguna de las raíces, que es un accidente de prefijos y no
      una decisión: el panel mezcla obras sin carga con líneas facturadas, y las
@@ -14114,7 +14162,7 @@ const ROL_FACTURACION = 'factur';
    viewer, que es el más restrictivo de los dos en materia de escritura. */
 function esFacturacion() {
   if (!_usuarioActual) return false;
-  if (esViewer()) return false;
+  if (esSoloLectura()) return false;   // #118 — cualquier perfil de solo lectura manda
   return _actNormRol(_usuarioActual.rol).startsWith(ROL_FACTURACION);
 }
 
@@ -14126,7 +14174,9 @@ function facturacionVistaBloqueada(name) {
 /* Embudo único de permisos de vista. showView() consulta SOLO esta función:
    así sumar un perfil nuevo no obliga a tocar showView otra vez. */
 function vistaBloqueada(name) {
-  return viewerVistaBloqueada(name) || facturacionVistaBloqueada(name);
+  return viewerVistaBloqueada(name) ||
+         facturacionVistaBloqueada(name) ||
+         colabVistaBloqueada(name);          // #118
 }
 
 /* ¿El usuario logueado es viewer? Null-safe: sin sesión devuelve false. */
@@ -14135,9 +14185,59 @@ function esViewer() {
          String(_usuarioActual.rol || '').trim().toLowerCase() === ROL_VIEWER;
 }
 
-/* Guard de escritura. Devuelve true (y avisa) si hay que abortar la acción. */
+/* ── PERFIL COLAB. PROYECTO (cambio #118) ──────────────────────────
+   Veedor de obras. A diferencia del perfil Facturación, este NO es un
+   mecanismo nuevo: es el viewer con el alcance recortado a la sección Obras.
+   Hereda tal cual el barrido por lista blanca, el .vw-hide y los guards
+   bloqueoViewer(), y lo único propio es qué vistas alcanza y qué se le recorta
+   dentro de la obra.
+
+   Rol por PREFIJO normalizado, mismo criterio que #112 y #117: la columna ROL
+   de ADMIN es texto libre. Cubre "Colab. proyecto", "Colaborador de proyecto" y
+   "colab proyectos" sin depender de cómo se tipeó. */
+const ROL_COLAB = 'colab';
+
+/* Vistas alcanzables. Lista BLANCA, igual que la del #117 y por el mismo
+   motivo: una vista futura queda vedada por omisión.
+   'obra' está incluida a propósito —es la vista del Gantt, o sea la
+   distribución de la cuadrilla, que es todo el propósito del perfil—. */
+const COLAB_VISTAS_PERMITIDAS = ['sitios-globales', 'obra'];
+
+/* Vista con la que abre la sesión: el listado de Obras. */
+const COLAB_VISTA_INICIAL = 'sitios-globales';
+
+function esColab() {
+  if (!_usuarioActual) return false;
+  if (esViewer()) return false;
+  return _actNormRol(_usuarioActual.rol).startsWith(ROL_COLAB);
+}
+
+/* ── ¿El usuario no escribe nada? ──────────────────────────────────
+   Un solo predicado para los DOS perfiles de solo lectura. Existe porque la
+   pregunta "¿puede escribir?" y la pregunta "¿es el perfil viewer?" dejaron de
+   ser la misma en el #118, y confundirlas es el error caro: un guard que
+   pregunte por el perfil en vez de por el permiso deja pasar la escritura del
+   perfil nuevo sin que nada falle a la vista.
+
+   Regla: lo consultan el guard de escritura, el barrido y el activador del modo.
+   viewerVistaBloqueada() NO, porque ahí sí importa el perfil concreto: sus dos
+   vistas vedadas son del viewer y el colab tiene su propia lista. */
+function esSoloLectura() {
+  return esViewer() || esColab();
+}
+
+/* ¿La vista está fuera del alcance del perfil Colab. proyecto? */
+function colabVistaBloqueada(name) {
+  return esColab() && !COLAB_VISTAS_PERMITIDAS.includes(name);
+}
+
+/* Guard de escritura. Devuelve true (y avisa) si hay que abortar la acción.
+   #118 — pregunta por esSoloLectura(), no por esViewer(): desde que hay dos
+   perfiles que no escriben, preguntar por el perfil en vez de por el permiso
+   dejaría pasar toda la escritura del perfil nuevo. El nombre se conserva
+   porque lo invocan ~40 funciones y renombrarlas no agrega nada. */
 function bloqueoViewer() {
-  if (!esViewer()) return false;
+  if (!esSoloLectura()) return false;
   toast('Modo solo lectura: no tenés permisos para modificar datos', 'err');
   return true;
 }
@@ -14231,7 +14331,7 @@ function _viewerAgendarBarrido() {
   _viewerBarridoPend = true;
   requestAnimationFrame(() => {
     _viewerBarridoPend = false;
-    if (esViewer()) _viewerBarrer();
+    if (esSoloLectura()) _viewerBarrer();   // #118
   });
 }
 
@@ -14252,10 +14352,14 @@ function desactivarModoViewer() {
   document.querySelectorAll('.vw-hide').forEach(el => el.classList.remove('vw-hide'));
 }
 
-/* Punto de entrada único: se llama tras establecer _usuarioActual. */
+/* Punto de entrada único: se llama tras establecer _usuarioActual.
+   #118 — el perfil Colab. proyecto entra por acá: activa el mismo modo viewer
+   (barrido + .vw-hide + observer) y después activarModoColab() le recorta el
+   alcance. Reusar el mecanismo en vez de duplicarlo es lo que garantiza que no
+   se le escape una escritura que el viewer sí tiene cerrada. */
 function aplicarModoViewer() {
-  if (esViewer()) activarModoViewer();
-  else            desactivarModoViewer();
+  if (esSoloLectura()) activarModoViewer();
+  else                 desactivarModoViewer();
 }
 
 /* ── Modo Facturación (cambio #117) ────────────────────────────────
@@ -14277,6 +14381,24 @@ function desactivarModoFacturacion() {
   document.body.classList.remove('modo-facturacion');
 }
 
+/* ── Modo Colab. proyecto (cambio #118) ────────────────────────────
+   Solo la clase y la redirección: la escritura ya la cerró aplicarModoViewer(),
+   que corre antes en aplicarPerfil(). Ese orden importa y no es casual —
+   activarModoViewer() hace el primer barrido, y showView() de acá genera el DOM
+   del listado de obras, que el MutationObserver vuelve a barrer.
+
+   Redirige por el mismo motivo que el #117: el markup deja Dashboard activo y
+   sin esto la sesión abriría en una vista vedada. */
+function activarModoColab() {
+  document.body.classList.add('modo-colab');
+  showView(COLAB_VISTA_INICIAL,
+           document.getElementById('nav-' + COLAB_VISTA_INICIAL));
+}
+
+function desactivarModoColab() {
+  document.body.classList.remove('modo-colab');
+}
+
 /* Punto de entrada único de PERFILES. Reemplaza a las llamadas sueltas a
    aplicarModoViewer() en login y restauración de sesión: con dos perfiles
    conviviendo, llamar a uno y olvidarse del otro es el error obvio.
@@ -14286,6 +14408,11 @@ function aplicarPerfil() {
   aplicarModoViewer();
   if (esFacturacion()) activarModoFacturacion();
   else                 desactivarModoFacturacion();
+  /* #118 — va DESPUÉS de aplicarModoViewer(): activarModoColab() redirige con
+     showView() y necesita el barrido ya montado para que el DOM que genera
+     nazca con los controles de escritura ocultos. */
+  if (esColab()) activarModoColab();
+  else           desactivarModoColab();
 }
 
 let _usuariosAdmin = [];
@@ -14361,7 +14488,7 @@ function mostrarBienvenida(user) {
   document.getElementById('sidebar-avatar').textContent = primerNombre.charAt(0).toUpperCase();
   document.getElementById('sidebar-nombre').textContent = nombre;
   document.getElementById('sidebar-rol').textContent    = user.rol || 'Usuario';
-  aplicarPerfil();   // #68 modo solo lectura · #117 perfil Facturación
+  aplicarPerfil();   // #68 solo lectura · #117 Facturación · #118 Colab. proyecto
   actAplicarVisibilidad();   // cambio #112 — campanita según el rol
   cargarTodo().then(() => {
     setTimeout(() => {
@@ -14380,6 +14507,7 @@ function cerrarSesion() {
   _usuarioActual = null; _usuariosAdmin = [];
   desactivarModoViewer();       // cambio #68 — limpiar el modo solo lectura
   desactivarModoFacturacion();  // cambio #117 — ídem, perfil Facturación
+  desactivarModoColab();        // cambio #118 — ídem, perfil Colab. proyecto
   /* #112 — la campanita y su temporizador se apagan ANTES de soltar la sesión
      no alcanzaría: actEsDestinatario() ya devuelve false con _usuarioActual en
      null, así que actAplicarVisibilidad() oculta el botón y detiene el timer.
@@ -14460,7 +14588,7 @@ function cerrarSesion() {
     document.getElementById('sidebar-avatar').textContent = primerNombre.charAt(0).toUpperCase();
     document.getElementById('sidebar-nombre').textContent = nombre;
     document.getElementById('sidebar-rol').textContent    = match.rol || 'Usuario';
-    aplicarPerfil();   // #68 / #117 — reaplicar el perfil tras F5
+    aplicarPerfil();   // #68 / #117 / #118 — reaplicar el perfil tras F5
     actAplicarVisibilidad();   // cambio #112 — reaplicar la campanita tras F5
     document.getElementById('screen-login').style.display = 'none';
     await cargarTodo();
