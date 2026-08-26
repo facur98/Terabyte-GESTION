@@ -150,6 +150,27 @@
     body.modo-viewer #nav-seguimiento,
     body.modo-viewer #nav-liquidacion { display: none !important; }
 
+    /* ── MODO FACTURACIÓN (cambio #117) — perfil acotado a dos vistas ──
+       Al revés del viewer: el viewer VE todo y no escribe; este ESCRIBE
+       libremente pero solo en "PO sitios" y "Seguimiento".
+       Por eso NO usa .vw-hide ni barrido: dentro de sus dos vistas no hay nada
+       que ocultar. Lo único que cambia es qué vistas alcanza.
+
+       Se ocultan SECCIONES ENTERAS y sus separadores, no ítem por ítem: dejar
+       el contenedor visible con los hijos ocultos deja el padding y la línea
+       divisoria colgando, y el sidebar queda con huecos y separadores dobles.
+       Los ids sec-* / sep-* existen solo para esto.
+
+       El bloqueo real está en showView() vía FACTURACION_VISTAS_PERMITIDAS;
+       esto solo saca los accesos del sidebar. */
+    body.modo-facturacion #sec-dashboard,
+    body.modo-facturacion #sep-dashboard,
+    body.modo-facturacion #sep-sitios,
+    body.modo-facturacion #sec-operativa,
+    body.modo-facturacion #sep-operativa,
+    body.modo-facturacion #sec-comercial,
+    body.modo-facturacion #nav-sitios-globales { display: none !important; }
+
     /* MAIN */
     .main { margin-left: var(--sidebar-w); flex: 1; padding: 32px 32px 40px; position: relative; z-index: 1; }
     .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; }
@@ -2715,7 +2736,7 @@
   </div>
 
   <!-- Grupo: Facturación (colapsable) -->
-  <div class="sidebar-section" style="padding-top:14px;">
+  <div class="sidebar-section" id="sec-dashboard" style="padding-top:14px;">
     <!-- Dashboard: ítem principal suelto, sin sección agrupadora -->
     <a class="nav-item active" id="nav-dashboard" onclick="showView('dashboard',this)">
       <span style="margin-left:6px;">Dashboard</span>
@@ -2723,9 +2744,9 @@
     <!-- Análisis y datos: ítem principal suelto -->
     </div>
 
-  <div class="sidebar-sep"></div>
+  <div class="sidebar-sep" id="sep-dashboard"></div>
 
-  <div class="sidebar-section" style="padding-top:6px;">
+  <div class="sidebar-section" id="sec-sitios" style="padding-top:6px;">
     <div class="nav-group-header open" id="grp-sitios" onclick="toggleNavGroup('sitios')">
       <span>Sitios</span>
       <span class="nav-group-arrow">▶</span>
@@ -2739,9 +2760,9 @@
     </div>
   </div>
 
-  <div class="sidebar-sep"></div>
+  <div class="sidebar-sep" id="sep-sitios"></div>
 
-  <div class="sidebar-section" style="padding-top:6px;">
+  <div class="sidebar-section" id="sec-operativa" style="padding-top:6px;">
     <div class="nav-group-header open" id="grp-operativa" onclick="toggleNavGroup('operativa')">
       <span>Operativa</span>
       <span class="nav-group-arrow">▶</span>
@@ -2752,10 +2773,10 @@
     </div>
   </div>
 
-  <div class="sidebar-sep"></div>
+  <div class="sidebar-sep" id="sep-operativa"></div>
 
   <!-- Grupo: Comercial (emisión de OC) — fase 2 -->
-  <div class="sidebar-section" style="padding-top:6px;">
+  <div class="sidebar-section" id="sec-comercial" style="padding-top:6px;">
     <div class="nav-group-header open" id="grp-comercial" onclick="toggleNavGroup('comercial')">
       <span>Comercial</span>
       <span class="nav-group-arrow">▶</span>
@@ -4273,7 +4294,7 @@ function mesActualStr() {
    a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
    Se pinta en el pie del sidebar (#sidebar-version).
    ═══════════════════════════════════════════════════════ */
-const APP_VERSION = 'V 250826 2004';
+const APP_VERSION = 'V 260826 1702';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
@@ -4932,8 +4953,13 @@ function toggleNavGroup(group) {
 }
 
 function showView(name, el) {
-  // cambio #71 — el viewer no accede a estas vistas por ninguna vía. Silencioso a propósito.
-  if (viewerVistaBloqueada(name)) return;
+  /* cambio #71 — el viewer no accede a estas vistas por ninguna vía. Silencioso
+     a propósito.
+     cambio #117 — vistaBloqueada() suma el perfil Facturación al mismo embudo.
+     showView es el único punto de entrada a una vista (verificado en el #69 y
+     revalidado acá sobre las 6 llamadas internas), así que alcanza con este
+     chequeo para cerrar todas las vías: sidebar, navegación cruzada y código. */
+  if (vistaBloqueada(name)) return;
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.getElementById('view-' + name).classList.add('active');
   document.querySelectorAll('.nav-item, .nav-subitem').forEach(n => n.classList.remove('active'));
@@ -13616,6 +13642,12 @@ function actEsDestinatario() {
   /* Un viewer nunca recibe el aviso, aunque su rol empezara con alguna de las
      raíces: el modo solo lectura manda sobre cualquier otra consideración. */
   if (esViewer()) return false;
+  /* #117 — el perfil Facturación tampoco. Hoy queda afuera solo porque "factur"
+     no empieza con ninguna de las raíces, que es un accidente de prefijos y no
+     una decisión: el panel mezcla obras sin carga con líneas facturadas, y las
+     obras no son de su alcance. Explicitarlo evita que un rol tipo
+     "Administración de Facturación" entre por la puerta de atrás. */
+  if (esFacturacion()) return false;
   return ROLES_ACTIVIDAD.some(r => rol.startsWith(r));
 }
 
@@ -14049,6 +14081,54 @@ function viewerVistaBloqueada(name) {
   return esViewer() && VIEWER_VISTAS_BLOQUEADAS.includes(name);
 }
 
+/* ── PERFIL FACTURACIÓN (cambio #117) ──────────────────────────────
+   Es el complemento del viewer, no una variante: el viewer VE todo el sistema
+   y no escribe nada; este ESCRIBE con todas las funcionalidades de sus vistas,
+   pero solo alcanza dos. Por eso no reutiliza .vw-hide ni el barrido por lista
+   blanca: dentro de "PO sitios" y "Seguimiento" no hay ningún control que
+   ocultarle.
+
+   ⚠ La lista es BLANCA, al revés de VIEWER_VISTAS_BLOQUEADAS, que es negra.
+   Es deliberado: una vista nueva le queda vedada por omisión. Con lista negra
+   habría que acordarse de sumarla, y olvidarse abre acceso en silencio — que es
+   exactamente lo que pasó con este perfil antes de existir.
+
+   ⚠ 'obra' y 'oc-form' NO figuran, así que también quedan bloqueadas: son
+   vistas que se abren por código (abrirVistaObra, abrirFormOC) y no desde el
+   sidebar. Ninguna es alcanzable desde sus dos vistas, pero el embudo de
+   showView() las cubre igual. */
+const FACTURACION_VISTAS_PERMITIDAS = ['sitios', 'seguimiento'];
+
+/* Vista con la que abre la sesión. Sin esto quedaría en el Dashboard, que es
+   la vista marcada como activa en el markup y le está vedada. */
+const FACTURACION_VISTA_INICIAL = 'seguimiento';
+
+/* Raíz del rol, comparada por PREFIJO sobre el valor normalizado.
+   Mismo criterio que ROLES_ACTIVIDAD (#112) y por el mismo motivo: la columna
+   ROL de ADMIN es texto libre. Cubre "Facturacion", "Facturación",
+   "Facturista" y "Facturación y cobranzas" sin depender de cómo se tipeó. */
+const ROL_FACTURACION = 'factur';
+
+/* ¿El usuario logueado es del perfil Facturación? Null-safe.
+   El viewer manda por encima: un rol que dijera "Viewer facturación" entra como
+   viewer, que es el más restrictivo de los dos en materia de escritura. */
+function esFacturacion() {
+  if (!_usuarioActual) return false;
+  if (esViewer()) return false;
+  return _actNormRol(_usuarioActual.rol).startsWith(ROL_FACTURACION);
+}
+
+/* ¿La vista está fuera del alcance del perfil Facturación? */
+function facturacionVistaBloqueada(name) {
+  return esFacturacion() && !FACTURACION_VISTAS_PERMITIDAS.includes(name);
+}
+
+/* Embudo único de permisos de vista. showView() consulta SOLO esta función:
+   así sumar un perfil nuevo no obliga a tocar showView otra vez. */
+function vistaBloqueada(name) {
+  return viewerVistaBloqueada(name) || facturacionVistaBloqueada(name);
+}
+
 /* ¿El usuario logueado es viewer? Null-safe: sin sesión devuelve false. */
 function esViewer() {
   return !!_usuarioActual &&
@@ -14178,6 +14258,36 @@ function aplicarModoViewer() {
   else            desactivarModoViewer();
 }
 
+/* ── Modo Facturación (cambio #117) ────────────────────────────────
+   No hay barrido ni MutationObserver: el perfil escribe con normalidad dentro
+   de sus vistas, así que lo único que hace falta es la clase en el body (que
+   recorta el sidebar por CSS) y llevarlo a una vista que sí pueda ver.
+
+   La redirección va acá y no en el arranque porque este es el punto donde ya
+   se sabe qué rol tiene: el markup deja el Dashboard activo por default y sin
+   esto la sesión abriría en una vista vedada, con el sidebar sin ningún ítem
+   marcado. */
+function activarModoFacturacion() {
+  document.body.classList.add('modo-facturacion');
+  showView(FACTURACION_VISTA_INICIAL,
+           document.getElementById('nav-' + FACTURACION_VISTA_INICIAL));
+}
+
+function desactivarModoFacturacion() {
+  document.body.classList.remove('modo-facturacion');
+}
+
+/* Punto de entrada único de PERFILES. Reemplaza a las llamadas sueltas a
+   aplicarModoViewer() en login y restauración de sesión: con dos perfiles
+   conviviendo, llamar a uno y olvidarse del otro es el error obvio.
+   Los dos se aplican SIEMPRE —uno activa y el otro desactiva— para que cambiar
+   de usuario en la misma pestaña no deje residuos del anterior. */
+function aplicarPerfil() {
+  aplicarModoViewer();
+  if (esFacturacion()) activarModoFacturacion();
+  else                 desactivarModoFacturacion();
+}
+
 let _usuariosAdmin = [];
 let _usuarioActual = null;
 
@@ -14251,7 +14361,7 @@ function mostrarBienvenida(user) {
   document.getElementById('sidebar-avatar').textContent = primerNombre.charAt(0).toUpperCase();
   document.getElementById('sidebar-nombre').textContent = nombre;
   document.getElementById('sidebar-rol').textContent    = user.rol || 'Usuario';
-  aplicarModoViewer();   // cambio #68 — activa/desactiva el modo solo lectura
+  aplicarPerfil();   // #68 modo solo lectura · #117 perfil Facturación
   actAplicarVisibilidad();   // cambio #112 — campanita según el rol
   cargarTodo().then(() => {
     setTimeout(() => {
@@ -14268,7 +14378,8 @@ function mostrarBienvenida(user) {
 function cerrarSesion() {
   if (!confirm('¿Cerrar sesión?')) return;
   _usuarioActual = null; _usuariosAdmin = [];
-  desactivarModoViewer();   // cambio #68 — limpiar el modo solo lectura
+  desactivarModoViewer();       // cambio #68 — limpiar el modo solo lectura
+  desactivarModoFacturacion();  // cambio #117 — ídem, perfil Facturación
   /* #112 — la campanita y su temporizador se apagan ANTES de soltar la sesión
      no alcanzaría: actEsDestinatario() ya devuelve false con _usuarioActual en
      null, así que actAplicarVisibilidad() oculta el botón y detiene el timer.
@@ -14349,7 +14460,7 @@ function cerrarSesion() {
     document.getElementById('sidebar-avatar').textContent = primerNombre.charAt(0).toUpperCase();
     document.getElementById('sidebar-nombre').textContent = nombre;
     document.getElementById('sidebar-rol').textContent    = match.rol || 'Usuario';
-    aplicarModoViewer();   // cambio #68 — reaplicar el modo tras F5
+    aplicarPerfil();   // #68 / #117 — reaplicar el perfil tras F5
     actAplicarVisibilidad();   // cambio #112 — reaplicar la campanita tras F5
     document.getElementById('screen-login').style.display = 'none';
     await cargarTodo();
