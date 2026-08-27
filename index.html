@@ -2033,6 +2033,14 @@
     }
     .gt-dot.on.futuro:hover { background: rgba(248,113,113,0.20); border-color: #dc2626; }
     .gt-dot.on.imprev { background: linear-gradient(135deg,#f472b6,#db2777); box-shadow: 0 2px 5px rgba(244,114,182,0.38); }
+    /* Doble obra (#119): anillo verde azulado alrededor del punto. Va por
+       box-shadow y no por border para no alterar el tamaño de la celda, que es
+       de 36px y ya está calculado en el ancho de la banda de meses.
+       ⚠ Se declara DESPUÉS de .on.imprev y .on.futuro y con más especificidad
+       para que el anillo sobreviva a las dos combinaciones: un día puede ser
+       doble y además tener imprevisto, o ser doble y estar planificado. */
+    .gt-dot.on.doble { box-shadow: 0 0 0 2px #fff, 0 0 0 3.5px rgba(13,125,114,0.85); }
+    .gt-dot.on.futuro.doble { box-shadow: 0 0 0 1.5px #fff, 0 0 0 3px rgba(13,125,114,0.85); }
     /* Vacío disponible: apenas un punto. No compite con lo cargado. */
     .gt-dot.libre { width: 7px; height: 7px; border: none; background: rgba(154,160,184,0.34); }
     .gt-dot.libre:hover { width: 22px; height: 22px; background: rgba(79,128,255,0.16); border: 1.5px solid var(--accent-blue); }
@@ -2095,6 +2103,15 @@
       color: var(--accent-blue); font-size: 11px; font-weight: 600; transition: var(--transition);
     }
     .ao-mover:hover { background: rgba(79,128,255,0.18); }
+    /* "Sumar acá" (#119): deja a la persona en las DOS obras. Verde azulado —el
+       mismo tono de la cuadrilla prevista— para que no se confunda con "Mover
+       acá", que es azul y hace lo contrario. Conviven en la misma fila. */
+    .ao-sumar {
+      flex-shrink: 0; padding: 3px 10px; border-radius: 7px; cursor: pointer;
+      border: 1px solid rgba(45,212,191,0.45); background: rgba(45,212,191,0.10);
+      color: #0d7d72; font-size: 11px; font-weight: 600; transition: var(--transition);
+    }
+    .ao-sumar:hover { background: rgba(45,212,191,0.22); }
     .ao-tag-prev { flex-shrink: 0; padding: 1px 7px; border-radius: 20px; background: rgba(45,212,191,0.2); color: #0d7d72; font-size: 9.5px; font-weight: 700; letter-spacing: .3px; text-transform: uppercase; }
     .ao-rango-info { font-size: 12px; color: var(--text-mid); padding-bottom: 9px; }
     .ao-rango-info b { color: var(--text-dark); }
@@ -2219,6 +2236,9 @@
     .nm-num.alerta { color: #d97706; }
     .nm-num.ok { color: #0d9488; }
     .nm-sub { font-size: 10.5px; color: var(--text-light); margin-top: 1px; }
+    /* #119 — mismo verde azulado que "Sumar acá" y que el anillo del Gantt:
+       la doble asignación se lee igual en los tres lugares donde aparece. */
+    .nm-doble { color: #0d7d72; font-weight: 700; }
     .nm-acts { display: flex; gap: 6px; justify-content: flex-end; }
     .nm-act {
       width: 30px; height: 30px; border-radius: 8px; cursor: pointer; padding: 0;
@@ -4338,7 +4358,7 @@ function mesActualStr() {
    a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
    Se pinta en el pie del sidebar (#sidebar-version).
    ═══════════════════════════════════════════════════════ */
-const APP_VERSION = 'V 260826 1817';
+const APP_VERSION = 'V 260826 2311';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
@@ -7504,6 +7524,104 @@ function gtDondeEsta(empId, fecha, exceptoSitio) {
   return { asig: a, sitioId: a.sitioId, label: esp ? esp.label : a.sitioId, especial: !!esp };
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   DOBLE ASIGNACIÓN — excepción a la exclusividad empleado × día (#119)
+
+   La regla R2 —un empleado no puede estar en dos sitios el mismo día— sigue
+   siendo el DEFAULT y casi todo el sistema la respeta igual que antes: el
+   modal masivo de "Asignar personal", "Traer último día" y `_gtAsignarLote()`
+   siguen salteando al ocupado y avisando dónde está. Lo que se agrega es una
+   salida EXPLÍCITA, de a UNA persona por vez y con confirmación propia, para
+   el caso real de una cuadrilla que pasa por dos obras en la misma jornada.
+
+   Dos vías, las dos individuales:
+     · click en la celda del Gantt de alguien que está en otra obra
+     · botón "Sumar acá" en el modal de asignación, al lado de "Mover acá"
+
+   ⚠ SOLO OBRA + OBRA. Un estado especial (depósito, vacaciones, licencia,
+   ausente) sigue bloqueando como siempre: son mutuamente excluyentes por
+   definición —no se puede estar de vacaciones y en obra el mismo día— y
+   admitirlo rompería el desdoble En obra / Especiales / Sin asignar del
+   tablero mensual (E29), donde las tres columnas tienen que sumar el total.
+
+   ⚠ CONSECUENCIA ACEPTADA EN EL BONO. El día cuenta UNA vez en cada obra:
+   suma a la X de las dos y suma 2 a la D del empleado. Las porciones d/D
+   siguen sumando 1 —la fórmula normaliza por D—, así que el techo del 12% NO
+   se rompe; lo que cambia es que ese día se pondera contra los factores de
+   ambas obras. Es lo pedido y está decidido.
+
+   ⚠ Y EN LA X DE LA OBRA. Los días-persona de las dos obras crecen como si la
+   cuadrilla hubiera estado la jornada entera en cada una. Si el reparto fue
+   media jornada, el índice de las dos queda peor de lo real. El plan mide en
+   días-persona enteros (art. 3) y no hay media unidad, así que la excepción
+   se usa cuando el día se trabajó completo en las dos, no para partirlo.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Igual que gtDondeEsta() pero devuelve TODAS las asignaciones del empleado
+   ese día fuera de `exceptoSitio`, no solo la primera. Desde el #119 puede
+   haber más de una y quedarse con la primera mostraría medio dato. */
+function gtDondeEstaTodas(empId, fecha, exceptoSitio) {
+  if (!empId || !fecha || !Array.isArray(asignaciones)) return [];
+  return asignaciones
+    .filter(x => x.empleadoId === empId && x.fecha === fecha && x.sitioId !== exceptoSitio)
+    .map(a => {
+      const esp = ESTADOS_ESPECIALES[a.sitioId];
+      return { asig: a, sitioId: a.sitioId, label: esp ? esp.label : a.sitioId, especial: !!esp };
+    });
+}
+
+/* Situación de un empleado frente a una obra en una fecha. Es el punto ÚNICO
+   de la regla: si mañana cambia el criterio de qué admite doble, cambia acá y
+   no en los tres llamadores. Mismo motivo por el que el corte `fecha <= hoy`
+   vive solo en `_asigEjecutada` (R1). */
+function gtSituacion(empId, fecha, idSitio) {
+  const otras = gtDondeEstaTodas(empId, fecha, idSitio);
+  const especial = otras.find(o => o.especial) || null;
+  return {
+    otras,
+    especial,                                   // si hay uno, bloquea siempre
+    ocupado:    otras.length > 0,
+    puedeDoble: otras.length > 0 && !especial,  // solo obra + obra
+    /* "Mover acá" solo tiene sentido con UN origen: con dos, de cuál se lo
+       quita sería una adivinanza. Con dos o más queda solo "Sumar acá". */
+    movible: (otras.length === 1 && !especial) ? otras[0] : null
+  };
+}
+
+/* ¿Este empleado tiene esa fecha en dos o más obras REALES? Devuelve la lista
+   de sitios, o null. Se usa para marcar la celda en el Gantt: la excepción
+   tiene que quedar a la vista, no escondida en un tooltip. */
+function gtEsDoble(empId, fecha) {
+  if (!empId || !fecha || !Array.isArray(asignaciones)) return null;
+  const reales = asignaciones.filter(x => x.empleadoId === empId && x.fecha === fecha &&
+                                          !esEstadoEspecial(x.sitioId));
+  return reales.length > 1 ? reales.map(x => x.sitioId) : null;
+}
+
+/* Confirmación de la excepción, compartida por las dos vías de carga.
+   Es un modal PROPIO y no una nota agregada al modal normal de asignación: el
+   aviso tiene que ser lo primero que se lee, no una línea al pie de un diálogo
+   que ya se aprendió a aceptar sin mirar. */
+async function _gtConfirmarDoble(empId, fecha, idSitio, otras) {
+  const nom   = nombreEmpleado(empId);
+  const donde = (otras || []).map(o => o.sitioId);
+  return await cfAbrir({
+    titulo: 'Vas a ponerle dos obras el mismo día',
+    confirmar: 'Asignar también acá', tono: 'aviso',
+    detalle: cfDatos([
+      ['Empleado',    nom],
+      ['Fecha',       _gtFechaLarga(fecha)],
+      ['Ya está en',  donde.join(', ')],
+      ['Se suma a',   idSitio],
+      ['Quedaría en', `${donde.length + 1} obras ese día`]
+    ]),
+    nota: '<b>No se quita de la obra anterior:</b> el día queda cargado en las dos. ' +
+          'Cuenta como una jornada en cada una, así que suma a la ejecución de ambas ' +
+          'y al total de días del empleado en la liquidación. ' +
+          'Vas a poder deshacerlo unos segundos.'
+  });
+}
+
 
 /* ═══════════════════════════════════════════════════════════════
    DESHACER (E26)
@@ -9009,6 +9127,12 @@ function _gtRenderGrid(id, obra) {
   });
   h += '</div>';
 
+  /* #119 — se enciende si alguna celda de esta obra pertenece a alguien que
+     ese día está también en otra. Solo sirve para decidir si la leyenda
+     explica la marca: explicarla en una obra sin dobles sería ruido, mismo
+     criterio que el resto de las entradas de la leyenda. */
+  let hayDoble = false;
+
   // Filas de empleados
   filas.forEach(f => {
     const nom = nombreEmpleado(f.id);
@@ -9018,18 +9142,33 @@ function _gtRenderGrid(id, obra) {
     cols.forEach(c => {
       if (c.tipo === 'gap') { h += '<div class="gt-gap"></div>'; return; }
       const on = idx.has(f.id + '|' + c.fecha);
-      /* Una celda apagada solo se puede clickear si la persona está libre ese
-         día: la exclusividad es regla estricta. Si está ocupada, el tooltip
-         dice dónde en vez de dejar el click mudo (E24). */
-      const otro = on ? null : gtDondeEsta(f.id, c.fecha, id);
+      /* Una celda apagada se puede clickear salvo que la persona esté en un
+         ESTADO ESPECIAL ese día. Si está en otra OBRA el click sigue vivo y
+         abre la doble asignación (#119); el tooltip dice dónde está en vez de
+         dejar el click mudo (E24). */
+      const sit = on ? null : gtSituacion(f.id, c.fecha, id);
+      /* Celda encendida cuya persona está además en otra obra ese día: se
+         marca para que la excepción no quede escondida en un tooltip. */
+      const dobleAqui = on ? gtEsDoble(f.id, c.fecha) : null;
+      if (dobleAqui) hayDoble = true;
       const futuro = c.fecha > hoy;
       const cls = ['gt-dot'];
-      if (on) { cls.push('on'); if (futuro) cls.push('futuro'); if (impFechas.has(c.fecha)) cls.push('imprev'); }
-      else cls.push('libre');
-      const dis = (!admite || (!on && otro)) ? 'disabled' : '';
-      const tit = on ? `${nom} · ${_gtFechaLarga(c.fecha)}${futuro ? ' (planificado)' : ''} · click para quitar`
-                     : (otro ? `Ocupado en ${otro.label} ese día`
-                             : (admite ? `Asignar a ${nom} el ${_gtFechaLarga(c.fecha)}` : 'La obra no admite asignaciones'));
+      if (on) {
+        cls.push('on');
+        if (futuro) cls.push('futuro');
+        if (impFechas.has(c.fecha)) cls.push('imprev');
+        if (dobleAqui) cls.push('doble');
+      } else cls.push('libre');
+      const dis = (!admite || (!on && sit.especial)) ? 'disabled' : '';
+      const otrasTxt = on ? '' : sit.otras.map(o => o.label).join(' y ');
+      const tit = on
+        ? `${nom} · ${_gtFechaLarga(c.fecha)}${futuro ? ' (planificado)' : ''}` +
+          (dobleAqui ? ` · también en ${dobleAqui.filter(s => s !== id).join(', ')}` : '') +
+          ' · click para quitar'
+        : (sit.especial ? `${sit.especial.label} ese día`
+           : !admite    ? 'La obra no admite asignaciones'
+           : sit.ocupado ? `Está en ${otrasTxt} ese día · click para asignarlo TAMBIÉN acá`
+                         : `Asignar a ${nom} el ${_gtFechaLarga(c.fecha)}`);
       h += `<div class="gt-cell ${clases(c)}">
         <button class="${cls.join(' ')}" ${dis} title="${_escAttr(tit)}"
           onclick="gtToggleCelda('${_escJs(f.id)}','${_escJs(c.fecha)}')"></button></div>`;
@@ -9045,6 +9184,7 @@ function _gtRenderGrid(id, obra) {
   const lg = [`<span><i class="gt-lg-dot" style="width:13px;height:13px;border-radius:50%;background:linear-gradient(135deg,#4f80ff,#3a6bf0);"></i> Trabajado</span>`];
   if (hayFut) lg.push(`<span><i style="display:inline-block;width:13px;height:13px;border-radius:50%;background:rgba(167,139,250,0.2);border:2px solid #8b5cf6;box-sizing:border-box;"></i> Planificado</span>`);
   if (nImp)   lg.push(`<span><i class="gt-lg-dot" style="width:13px;height:13px;border-radius:50%;background:linear-gradient(135deg,#f472b6,#db2777);"></i> Día con imprevisto</span>`);
+  if (hayDoble) lg.push(`<span><i style="display:inline-block;width:13px;height:13px;border-radius:50%;background:linear-gradient(135deg,#4f80ff,#3a6bf0);box-shadow:0 0 0 2px #fff,0 0 0 3.5px #0d7d72;"></i> Ese día está también en otra obra</span>`);
   if (limiteFecha) lg.push(`<span><i style="display:inline-block;width:3px;height:14px;background:rgba(220,38,38,0.85);"></i> Límite del plazo</span>`);
   if (cols.some(c => c.tipo === 'gap')) lg.push(`<span><i style="display:inline-block;width:14px;height:13px;border-left:2px dashed rgba(154,160,184,0.7);border-right:2px dashed rgba(154,160,184,0.7);"></i> Días sin actividad</span>`);
   h += `<div class="gt-leyenda">${lg.join('')}</div>`;
@@ -9250,41 +9390,60 @@ async function gtToggleCelda(empId, fecha) {
   /* ── ASIGNAR ──
      Revalidación contra el estado actual, no contra lo que mostraba la
      pantalla: entre el render y el click pudo entrar una sincronización. */
-  const otro = gtDondeEsta(empId, fecha, id);
-  if (otro) {
-    toast(`${nom} ya está en ${otro.label} ese día.`, 'err');
+  /* #119 — la situación se resuelve en gtSituacion(), que es el punto único de
+     la regla. Un estado especial sigue rechazando el click igual que siempre;
+     estar en OTRA OBRA ya no rechaza: abre la doble asignación, que se
+     confirma con su propio modal. */
+  const sit = gtSituacion(empId, fecha, id);
+  if (sit.especial) {
+    toast(`${nom} está en ${sit.especial.label} ese día.`, 'err');
     _gtRefrescar();
     return;
   }
+  const doble = sit.puedeDoble;
 
   if (!await _gtAvisoMixta(id, [empId])) return;
 
   const hoy = fechaHoyStr();
-  const r = await cfAbrir({
-    titulo: 'Asignar personal', confirmar: 'Asignar',
-    tono: fecha > hoy ? 'aviso' : '',
-    detalle: cfDatos([['Empleado', nom], ['Obra', id], ['Fecha', fL],
-                      ['', fecha > hoy ? 'Es una fecha futura: queda planificada' : null]]),
-    nota: 'Vas a poder deshacerlo unos segundos.'
-  });
+  const r = doble
+    ? await _gtConfirmarDoble(empId, fecha, id, sit.otras)
+    : await cfAbrir({
+        titulo: 'Asignar personal', confirmar: 'Asignar',
+        tono: fecha > hoy ? 'aviso' : '',
+        detalle: cfDatos([['Empleado', nom], ['Obra', id], ['Fecha', fL],
+                          ['', fecha > hoy ? 'Es una fecha futura: queda planificada' : null]]),
+        nota: 'Vas a poder deshacerlo unos segundos.'
+      });
   if (!r) return;
 
-  /* Se revalida DESPUÉS del modal: mientras estaba abierto pudo cambiar todo. */
+  /* Se revalida DESPUÉS del modal: mientras estaba abierto pudo cambiar todo.
+     #119 — la revalidación conserva exactamente el criterio con el que se
+     confirmó: si NO se pidió doble y apareció una ocupación, se aborta como
+     siempre; si SÍ se pidió, la ocupación es justamente lo que se aceptó y no
+     puede abortar. Lo que aborta en los dos casos es un estado especial nuevo,
+     porque eso nunca se confirmó. */
   if (asignaciones.some(a => a.sitioId === id && a.empleadoId === empId && a.fecha === fecha)) {
     _gtRefrescar(); return;
   }
-  if (gtDondeEsta(empId, fecha, id)) {
+  const sit2 = gtSituacion(empId, fecha, id);
+  if (sit2.especial) {
+    toast(`${nom} pasó a ${sit2.especial.label} mientras confirmabas.`, 'err');
+    _gtRefrescar(); return;
+  }
+  if (!doble && sit2.ocupado) {
     toast(`${nom} quedó ocupado ese día mientras confirmabas.`, 'err');
     _gtRefrescar(); return;
   }
 
   const nueva = _gtNuevaAsig(id, empId, fecha);
-  setLoading(true, 'Asignando');
+  setLoading(true, doble ? 'Sumando a la segunda obra' : 'Asignando');
   try {
     await apiPost('INSERT', 'ASIGNACIONES', _gtFilaAsig(nueva));
     asignaciones.push(nueva);
     _gtRefrescar();
-    _undoRegistrar(`${nom} asignado al ${_sgFormatoFechaCorta(fecha)}`, [nueva], []);
+    _undoRegistrar(doble
+      ? `${nom} sumado a ${id} el ${_sgFormatoFechaCorta(fecha)} (queda en 2 obras)`
+      : `${nom} asignado al ${_sgFormatoFechaCorta(fecha)}`, [nueva], []);
   } catch (e) {
     toast(`No se pudo asignar: ${e.message}`, 'err');
   } finally { setLoading(false); }
@@ -9553,9 +9712,16 @@ function _aoRenderLista() {
       if (x.yaTiene.length && !x.ocupadas.length) {
         der = `<span class="ao-donde">ya está en esta obra</span>`;
       } else if (fechas.length === 1) {
-        const d = gtDondeEsta(x.e.id, fechas[0], id);
-        der = `<span class="ao-donde">en <b>${_escHtml(d ? d.label : '—')}</b></span>` +
-              (d && !d.especial ? `<button class="ao-mover" onclick="aoMover('${jsId}','${_escJs(fechas[0])}')">Mover acá</button>` : '');
+        /* #119 — gtSituacion() en vez de gtDondeEsta(): con doble asignación
+           puede haber más de un origen, y mostrar solo el primero mentiría.
+           "Mover acá" queda únicamente cuando hay UN origen (con dos, de cuál
+           se lo quita sería una adivinanza); "Sumar acá" aparece siempre que
+           lo que bloquea sea una obra y no un estado especial. */
+        const s = gtSituacion(x.e.id, fechas[0], id);
+        const donde = s.otras.length ? s.otras.map(o => o.label).join(' y ') : '—';
+        der = `<span class="ao-donde">en <b>${_escHtml(donde)}</b></span>` +
+              (s.movible ? `<button class="ao-mover" onclick="aoMover('${jsId}','${_escJs(fechas[0])}')">Mover acá</button>` : '') +
+              (s.puedeDoble ? `<button class="ao-sumar" title="Dejarlo en las dos obras ese día" onclick="aoSumar('${jsId}','${_escJs(fechas[0])}')">Sumar acá</button>` : '');
       } else {
         der = `<span class="ao-donde">no disponible</span>`;
       }
@@ -9707,6 +9873,73 @@ async function aoMover(empId, fecha) {
     }
   } catch (e) {
     toast(`No se pudo quitar de ${d2.label}: ${e.message}. No se movió nada.`, 'err');
+  } finally { setLoading(false); }
+}
+
+/* ── Sumar un empleado que ya está en otra obra (#119) ────────────
+   El hermano de aoMover(), y su opuesto exacto: aquel hace DELETE + INSERT
+   para que la persona quede en UNA obra; este hace solo el INSERT y la deja en
+   las dos. Por eso no hereda ninguna de las precauciones de R4: no hay un
+   primer paso que pueda dejarla sin asignar si el segundo falla. Si el INSERT
+   falla, no cambió nada y la asignación original sigue intacta.
+
+   Solo se llega acá desde el botón "Sumar acá", que _aoRenderLista() pinta
+   únicamente cuando gtSituacion() dice que lo que bloquea es una obra y no un
+   estado especial. Igual se revalida, porque entre el render y el click pudo
+   entrar una sincronización. */
+async function aoSumar(empId, fecha) {
+  if (bloqueoViewer()) return;
+  const id = _gtSitio;
+  if (!id) return;
+  if (!obraAdmiteCarga(id)) { await _gtAvisoBloqueo(id); return; }
+
+  const sit = gtSituacion(empId, fecha, id);
+  if (!sit.puedeDoble) {
+    toast(sit.especial
+      ? `${nombreEmpleado(empId)} está en ${sit.especial.label} ese día.`
+      : `${nombreEmpleado(empId)} ya no está en otra obra ese día.`, 'err');
+    _aoRenderLista();
+    return;
+  }
+  if (asignaciones.some(a => a.sitioId === id && a.empleadoId === empId && a.fecha === fecha)) {
+    toast(`${nombreEmpleado(empId)} ya está en esta obra ese día.`, 'err');
+    _aoRenderLista();
+    return;
+  }
+
+  const selPrevia = _aoSeleccion();   // para restaurar si cancela
+  const nom = nombreEmpleado(empId);
+
+  if (!await _gtAvisoMixta(id, [empId])) return;
+  /* El modal de asignación se cierra ANTES de confirmar, igual que en
+     aoMover(): si no, quedan dos modales apilados y el de atrás sigue
+     capturando la vista. Si cancela, se vuelve a abrir con lo tildado. */
+  cerrarModalAsignarObra();
+  const r = await _gtConfirmarDoble(empId, fecha, id, sit.otras);
+  if (!r) { abrirModalAsignarObra(fecha, selPrevia); return; }
+
+  /* Revalidación post-modal, con el mismo criterio que gtToggleCelda: lo que
+     aborta es que haya aparecido un estado especial o que la asignación acá ya
+     exista. Que siga en otra obra es exactamente lo que se confirmó. */
+  const sit2 = gtSituacion(empId, fecha, id);
+  if (sit2.especial) {
+    toast(`${nom} pasó a ${sit2.especial.label} mientras confirmabas.`, 'err');
+    _gtRefrescar(); return;
+  }
+  if (asignaciones.some(a => a.sitioId === id && a.empleadoId === empId && a.fecha === fecha)) {
+    _gtRefrescar(); return;
+  }
+
+  const nueva = _gtNuevaAsig(id, empId, fecha);
+  setLoading(true, 'Sumando a la segunda obra');
+  try {
+    await apiPost('INSERT', 'ASIGNACIONES', _gtFilaAsig(nueva));
+    asignaciones.push(nueva);
+    _gtRefrescar();
+    _undoRegistrar(`${nom} sumado a ${id} el ${_sgFormatoFechaCorta(fecha)} (queda en ${sit2.otras.length + 1} obras)`,
+                   [nueva], []);
+  } catch (e) {
+    toast(`No se pudo sumar a ${id}: ${e.message}. No se modificó la asignación original.`, 'err');
   } finally { setLoading(false); }
 }
 
@@ -11246,24 +11479,45 @@ function renderAsigCalendario() {
 
   const dias = new Date(anio, mes + 1, 0).getDate();
   const filas = [];
-  let totObra = 0, totEsp = 0, totSin = 0, diasConDatos = 0;
+  let totObra = 0, totEsp = 0, totSin = 0, diasConDatos = 0, totDobles = 0;
 
   for (let d = 1; d <= dias; d++) {
     const f = `${anio}-${String(mes+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const delDia = asignaciones.filter(a => a.fecha === f && setPropios.has(a.empleadoId));
     const enObra = delDia.filter(a => !esEstadoEspecial(a.sitioId));
     const esp    = delDia.filter(a =>  esEstadoEspecial(a.sitioId));
-    /* Un empleado no puede estar dos veces el mismo día, así que basta restar. */
-    const sin = propios.length - enObra.length - esp.length;
+
+    /* ⚠ #119 — se cuentan PERSONAS DISTINTAS, no filas. Desde que existe la
+       doble asignación un mismo empleado puede tener dos filas de obra el
+       mismo día, y contarlas por separado rompía la aritmética de la vista:
+       "Sin asignar" se calcula RESTANDO, así que un doble descontaba a alguien
+       de más y el hueco real quedaba tapado (el clamp a 0 lo escondía sin
+       avisar). El desdoble de E29 exige que las tres columnas sumen el total
+       de nómina, y eso solo se cumple contando cabezas.
+
+       Los especiales no pueden duplicarse —el modal rechaza cargar sobre
+       cualquier asignación existente— pero se cuentan igual con Set: si algún
+       día se aflojara esa regla, esta vista no volvería a mentir. */
+    const idsObra = new Set(enObra.map(a => a.empleadoId));
+    const idsEsp  = new Set(esp.map(a => a.empleadoId));
+    const sin = propios.length - idsObra.size - idsEsp.size;
+
+    /* Cuántas personas están ese día en más de una obra. Es el número que
+       explica por qué "En obra" puede ser menor que la suma de los planteles
+       de cada obra. */
+    const dobles = idsObra.size ? (enObra.length - idsObra.size) : 0;
 
     /* Desglose de especiales, para el tooltip. */
     const porEstado = {};
     esp.forEach(a => { porEstado[a.sitioId] = (porEstado[a.sitioId] || 0) + 1; });
 
-    filas.push({ f, d, fecha: _gtParse(f), enObra: enObra.length, esp: esp.length,
-                 sin: Math.max(0, sin), porEstado,
+    filas.push({ f, d, fecha: _gtParse(f), enObra: idsObra.size, esp: idsEsp.size,
+                 sin: Math.max(0, sin), porEstado, dobles,
                  obras: new Set(enObra.map(a => a.sitioId)).size });
-    if (delDia.length) { totObra += enObra.length; totEsp += esp.length; totSin += Math.max(0, sin); diasConDatos++; }
+    if (delDia.length) {
+      totObra += idsObra.size; totEsp += idsEsp.size; totSin += Math.max(0, sin);
+      totDobles += dobles; diasConDatos++;
+    }
   }
 
   /* #118 — esSoloLectura() cubre viewer y Colab. proyecto. */
@@ -11292,8 +11546,9 @@ function renderAsigCalendario() {
     return `<div class="nm-row ${cls.join(' ')}">
       <div class="nm-dia">${GT_DIAS_LARGOS[x.fecha.getDay()]}</div>
       <div class="nm-fecha">${String(x.d).padStart(2,'0')}/${String(mes+1).padStart(2,'0')}</div>
-      <div><span class="nm-num ${x.enObra ? '' : 'cero'}">${x.enObra}</span>
-        ${x.obras ? `<div class="nm-sub">${x.obras} obra${x.obras!==1?'s':''}</div>` : ''}</div>
+      <div${x.dobles ? ` title="${_escAttr(x.dobles + ' persona' + (x.dobles!==1?'s':'') + ' con dos obras ese día: se cuenta una sola vez acá, pero suma en cada obra')}"` : ''}>
+        <span class="nm-num ${x.enObra ? '' : 'cero'}">${x.enObra}</span>
+        ${x.obras ? `<div class="nm-sub">${x.obras} obra${x.obras!==1?'s':''}${x.dobles ? ` · <span class="nm-doble">${x.dobles} doble</span>` : ''}</div>` : ''}</div>
       <div${tipEsp ? ` title="${_escAttr(tipEsp)}"` : ''}><span class="nm-num ${x.esp ? '' : 'cero'}">${x.esp}</span></div>
       <div><span class="nm-num ${sinCls}">${vacio ? '—' : x.sin}</span></div>
       <div class="nm-acts">
@@ -11312,7 +11567,10 @@ function renderAsigCalendario() {
        dato que da sentido a "sin asignar" (3 de 13 no es 3 de 5), pero alcanza
        con leerlo una vez y no 31 veces. */
     res.innerHTML = diasConDatos
-      ? `<b>${propios.length}</b> propios activos · ${diasConDatos} día${diasConDatos!==1?'s':''} con carga · <b>${totObra}</b> día-persona en obra · ${totEsp} especiales · ${totSin} sin asignar`
+      ? `<b>${propios.length}</b> propios activos · ${diasConDatos} día${diasConDatos!==1?'s':''} con carga · <b>${totObra}</b> día-persona en obra · ${totEsp} especiales · ${totSin} sin asignar` +
+        /* #119 — solo aparece si hubo alguno. El número explica la diferencia
+           entre este acumulado (cabezas) y los días-persona de las obras. */
+        (totDobles ? ` · <span class="nm-doble" title="${_escAttr('Días-persona con dos obras el mismo día. El acumulado de arriba los cuenta UNA vez, porque mide nómina ocupada; la X de cada obra los cuenta en las dos, porque mide ejecución. Son dos preguntas distintas sobre el mismo dato.')}">${totDobles} con doble obra</span>` : '')
       : `<b>${propios.length}</b> propios activos · sin actividad registrada este mes`;
   }
 }
