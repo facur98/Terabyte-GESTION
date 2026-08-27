@@ -2103,15 +2103,26 @@
       color: var(--accent-blue); font-size: 11px; font-weight: 600; transition: var(--transition);
     }
     .ao-mover:hover { background: rgba(79,128,255,0.18); }
-    /* "Sumar acá" (#119): deja a la persona en las DOS obras. Verde azulado —el
-       mismo tono de la cuadrilla prevista— para que no se confunda con "Mover
-       acá", que es azul y hace lo contrario. Conviven en la misma fila. */
+    /* "Sumar acá" (#119): deja a la persona en las DOS obras. Rosa por pedido
+       explícito del usuario (#120): el verde azulado se confundía con el tag
+       "prevista", que aparece en la misma fila.
+       ⚠ Rompe la convención del LEEME —rosa venía siendo "error o borrado"—.
+       Se aceptó porque acá el rosa cumple la misma función de fondo: marca la
+       acción excepcional, la que hay que mirar antes de tocar. La tabla de
+       colores del LEEME se actualizó para que no queden dos versiones. */
     .ao-sumar {
       flex-shrink: 0; padding: 3px 10px; border-radius: 7px; cursor: pointer;
-      border: 1px solid rgba(45,212,191,0.45); background: rgba(45,212,191,0.10);
-      color: #0d7d72; font-size: 11px; font-weight: 600; transition: var(--transition);
+      border: 1px solid rgba(248,113,113,0.45); background: rgba(248,113,113,0.10);
+      color: #dc2626; font-size: 11px; font-weight: 600; transition: var(--transition);
     }
-    .ao-sumar:hover { background: rgba(45,212,191,0.22); }
+    .ao-sumar:hover { background: rgba(248,113,113,0.22); }
+    /* #120 — filas duplicadas exactas en ASIGNACIONES. Ámbar y no rosa: es un
+       dato a corregir, no una acción (código de colores del LEEME). */
+    .ao-dup {
+      flex-shrink: 0; padding: 2px 8px; border-radius: 20px; cursor: help;
+      background: rgba(251,191,36,0.18); color: #92700c;
+      font-size: 10px; font-weight: 700; letter-spacing: .2px;
+    }
     .ao-tag-prev { flex-shrink: 0; padding: 1px 7px; border-radius: 20px; background: rgba(45,212,191,0.2); color: #0d7d72; font-size: 9.5px; font-weight: 700; letter-spacing: .3px; text-transform: uppercase; }
     .ao-rango-info { font-size: 12px; color: var(--text-mid); padding-bottom: 9px; }
     .ao-rango-info b { color: var(--text-dark); }
@@ -4023,7 +4034,12 @@
 </div>
 
 <div class="modal-overlay" id="modal-asignar-obra">
-  <div class="modal" style="max-width:680px;padding:26px 30px;">
+  <!-- ⚠ Va `width` y no solo `max-width`: la clase `.modal` define width:500px
+       fijo, así que un max-width mayor no agranda nada (era el bug del #111,
+       repetido acá). 860px es lo que hace falta para que el nombre completo, el
+       tag "prevista", la lista de obras y los dos botones entren en una línea
+       sin que `.ao-nombre` recorte con ellipsis. -->
+  <div class="modal" style="width:860px;max-width:95vw;padding:26px 30px;">
     <div style="display:flex;justify-content:space-between;align-items:start;gap:14px;margin-bottom:18px;">
       <div>
         <div class="modal-title" style="margin:0;line-height:1.2;" id="ao-titulo">Asignar personal</div>
@@ -4358,7 +4374,7 @@ function mesActualStr() {
    a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
    Se pinta en el pie del sidebar (#sidebar-version).
    ═══════════════════════════════════════════════════════ */
-const APP_VERSION = 'V 260826 2311';
+const APP_VERSION = 'V 260826 2320';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
@@ -7577,25 +7593,52 @@ function gtDondeEstaTodas(empId, fecha, exceptoSitio) {
 function gtSituacion(empId, fecha, idSitio) {
   const otras = gtDondeEstaTodas(empId, fecha, idSitio);
   const especial = otras.find(o => o.especial) || null;
+
+  /* ── ⚠ #120 · Deduplicación por SITIO ──
+     `otras` son FILAS, y en la base real hay filas duplicadas exactas (mismo
+     empleado, misma fecha, mismo sitio): las 16 del 03/07/2026 documentadas en
+     el LEEME, y otras que aparecieron después. Sin deduplicar, la lista decía
+     "en CFO1140 y CFO1140" y —peor— una fila repetida se contaba como una
+     segunda obra, inventando una doble asignación que no existe.
+
+     La regla queda en términos de SITIOS distintos, que es lo que la doble
+     asignación significa. Las filas repetidas se informan aparte para poder
+     corregirlas, no se esconden: son un error de datos que infla la X de la
+     obra y mueve plata. */
+  const vistos = new Set();
+  const sitios = [];
+  otras.forEach(o => {
+    if (vistos.has(o.sitioId)) return;
+    vistos.add(o.sitioId);
+    sitios.push(o);
+  });
+
   return {
-    otras,
-    especial,                                   // si hay uno, bloquea siempre
-    ocupado:    otras.length > 0,
-    puedeDoble: otras.length > 0 && !especial,  // solo obra + obra
-    /* "Mover acá" solo tiene sentido con UN origen: con dos, de cuál se lo
-       quita sería una adivinanza. Con dos o más queda solo "Sumar acá". */
+    otras,                                       // filas crudas
+    sitios,                                      // una entrada por sitio distinto
+    duplicadas: otras.length - sitios.length,    // filas repetidas detectadas
+    especial,                                    // si hay uno, bloquea siempre
+    ocupado:    sitios.length > 0,
+    puedeDoble: sitios.length > 0 && !especial,  // solo obra + obra
+    /* "Mover acá" pide UNA sola FILA de origen, no un solo sitio: con filas
+       repetidas, mover borraría una y dejaría la otra colgada en la obra de
+       origen. Con duplicados queda solo "Sumar acá" hasta que se limpien. */
     movible: (otras.length === 1 && !especial) ? otras[0] : null
   };
 }
 
-/* ¿Este empleado tiene esa fecha en dos o más obras REALES? Devuelve la lista
-   de sitios, o null. Se usa para marcar la celda en el Gantt: la excepción
-   tiene que quedar a la vista, no escondida en un tooltip. */
+/* ¿Este empleado tiene esa fecha en dos o más obras REALES DISTINTAS? Devuelve
+   la lista de sitios únicos, o null. Se usa para marcar la celda en el Gantt.
+   ⚠ #120 — cuenta SITIOS y no filas: dos filas duplicadas del mismo sitio no
+   son una doble asignación, son un error de carga. */
 function gtEsDoble(empId, fecha) {
   if (!empId || !fecha || !Array.isArray(asignaciones)) return null;
-  const reales = asignaciones.filter(x => x.empleadoId === empId && x.fecha === fecha &&
-                                          !esEstadoEspecial(x.sitioId));
-  return reales.length > 1 ? reales.map(x => x.sitioId) : null;
+  const reales = [...new Set(
+    asignaciones.filter(x => x.empleadoId === empId && x.fecha === fecha &&
+                             !esEstadoEspecial(x.sitioId))
+                .map(x => x.sitioId)
+  )];
+  return reales.length > 1 ? reales : null;
 }
 
 /* Confirmación de la excepción, compartida por las dos vías de carga.
@@ -9160,7 +9203,7 @@ function _gtRenderGrid(id, obra) {
         if (dobleAqui) cls.push('doble');
       } else cls.push('libre');
       const dis = (!admite || (!on && sit.especial)) ? 'disabled' : '';
-      const otrasTxt = on ? '' : sit.otras.map(o => o.label).join(' y ');
+      const otrasTxt = on ? '' : sit.sitios.map(o => o.label).join(' y ');
       const tit = on
         ? `${nom} · ${_gtFechaLarga(c.fecha)}${futuro ? ' (planificado)' : ''}` +
           (dobleAqui ? ` · también en ${dobleAqui.filter(s => s !== id).join(', ')}` : '') +
@@ -9406,7 +9449,7 @@ async function gtToggleCelda(empId, fecha) {
 
   const hoy = fechaHoyStr();
   const r = doble
-    ? await _gtConfirmarDoble(empId, fecha, id, sit.otras)
+    ? await _gtConfirmarDoble(empId, fecha, id, sit.sitios)
     : await cfAbrir({
         titulo: 'Asignar personal', confirmar: 'Asignar',
         tono: fecha > hoy ? 'aviso' : '',
@@ -9718,8 +9761,12 @@ function _aoRenderLista() {
            se lo quita sería una adivinanza); "Sumar acá" aparece siempre que
            lo que bloquea sea una obra y no un estado especial. */
         const s = gtSituacion(x.e.id, fechas[0], id);
-        const donde = s.otras.length ? s.otras.map(o => o.label).join(' y ') : '—';
+        const donde = s.sitios.length ? s.sitios.map(o => o.label).join(' y ') : '—';
         der = `<span class="ao-donde">en <b>${_escHtml(donde)}</b></span>` +
+              /* #120 — filas repetidas del MISMO sitio. Se muestran en vez de
+                 silenciarse: inflan la X de la obra y hay que limpiarlas a
+                 mano en la hoja. Ver el LEEME, sección 8. */
+              (s.duplicadas ? `<span class="ao-dup" title="${_escAttr('Hay ' + (s.duplicadas + 1) + ' filas iguales en ASIGNACIONES para esta persona, esta fecha y ese mismo sitio. Es un error de carga: infla los días-persona de esa obra. Hay que borrar las repetidas desde la hoja.')}">⚠ ${s.duplicadas + 1} filas iguales</span>` : '') +
               (s.movible ? `<button class="ao-mover" onclick="aoMover('${jsId}','${_escJs(fechas[0])}')">Mover acá</button>` : '') +
               (s.puedeDoble ? `<button class="ao-sumar" title="Dejarlo en las dos obras ese día" onclick="aoSumar('${jsId}','${_escJs(fechas[0])}')">Sumar acá</button>` : '');
       } else {
@@ -9915,7 +9962,7 @@ async function aoSumar(empId, fecha) {
      aoMover(): si no, quedan dos modales apilados y el de atrás sigue
      capturando la vista. Si cancela, se vuelve a abrir con lo tildado. */
   cerrarModalAsignarObra();
-  const r = await _gtConfirmarDoble(empId, fecha, id, sit.otras);
+  const r = await _gtConfirmarDoble(empId, fecha, id, sit.sitios);
   if (!r) { abrirModalAsignarObra(fecha, selPrevia); return; }
 
   /* Revalidación post-modal, con el mismo criterio que gtToggleCelda: lo que
@@ -9936,7 +9983,7 @@ async function aoSumar(empId, fecha) {
     await apiPost('INSERT', 'ASIGNACIONES', _gtFilaAsig(nueva));
     asignaciones.push(nueva);
     _gtRefrescar();
-    _undoRegistrar(`${nom} sumado a ${id} el ${_sgFormatoFechaCorta(fecha)} (queda en ${sit2.otras.length + 1} obras)`,
+    _undoRegistrar(`${nom} sumado a ${id} el ${_sgFormatoFechaCorta(fecha)} (queda en ${sit2.sitios.length + 1} obras)`,
                    [nueva], []);
   } catch (e) {
     toast(`No se pudo sumar a ${id}: ${e.message}. No se modificó la asignación original.`, 'err');
@@ -11504,8 +11551,12 @@ function renderAsigCalendario() {
 
     /* Cuántas personas están ese día en más de una obra. Es el número que
        explica por qué "En obra" puede ser menor que la suma de los planteles
-       de cada obra. */
-    const dobles = idsObra.size ? (enObra.length - idsObra.size) : 0;
+       de cada obra.
+       ⚠ #120 — se cuentan pares EMPLEADO|SITIO únicos, no filas: dos filas
+       duplicadas del mismo sitio (las hay en la base real) no son una doble
+       asignación y contarlas como tal inventaba dobles en todo el histórico. */
+    const paresObra = new Set(enObra.map(a => a.empleadoId + '|' + a.sitioId));
+    const dobles = Math.max(0, paresObra.size - idsObra.size);
 
     /* Desglose de especiales, para el tooltip. */
     const porEstado = {};
