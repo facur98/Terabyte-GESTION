@@ -1772,6 +1772,34 @@
        hacen lo mismo —incorporar la obra al sistema— desde estados distintos. */
     .sg-acts .ob-act-crear:hover { color: #0d9488; border-color: rgba(13,148,136,0.4); }
 
+    /* ── #122 · Selección múltiple del tab "Sin iniciar" ── */
+    #sg-bulk-bar {
+      display: none;
+      align-items: center; gap: 14px;
+      padding: 10px 16px;
+      background: rgba(79,128,255,0.10);
+      border: 1px solid rgba(79,128,255,0.25);
+      border-radius: 10px;
+      margin-bottom: 14px;
+      font-size: 13px;
+    }
+    #sg-bulk-bar.visible { display: flex; }
+    #sg-bulk-bar .sg-bulk-count { font-weight: 600; color: var(--accent-blue); }
+    #sg-bulk-bar .sg-bulk-spacer { flex: 1; }
+    /* El checkbox va DENTRO de la celda del marcador lateral, que en este tab
+       es gris neutro y no comunica nada. Así no se agrega una columna a la
+       grilla: `grid-template-columns` está fijo y una columna extra
+       desalinearía la fila respecto de la cabecera. */
+    .sg-row .sg-sel-check {
+      width: 15px; height: 15px; cursor: pointer;
+      accent-color: var(--accent-blue); margin: 0;
+    }
+    .sg-row.sg-row-sel { background: rgba(79,128,255,0.10); }
+    .sg-row.sg-row-sel:hover { background: rgba(79,128,255,0.15); }
+    .sg-row.sg-row-sel .sg-cli-wrap, .sg-row.sg-row-sel .sg-monto-wrap { opacity: 1; }
+    /* Solo lectura: la barra entera se oculta, igual que la de PO sitios. */
+    body.modo-viewer #sg-bulk-bar, body.modo-colab #sg-bulk-bar { display: none !important; }
+
     /* Chip de pausa, al lado del ID */
     /* Chip de "esperando aprobación": violeta, distinto del ámbar de pausa,
        porque son situaciones opuestas (una va a retomar, la otra ya terminó). */
@@ -3084,10 +3112,19 @@
       <button class="sg-btn-limpiar" id="sg-btn-limpiar" onclick="sgLimpiarTodosFiltros()" style="display:none;">Limpiar filtros</button>
     </div>
 
+    <!-- #122 · Barra de acciones masivas del tab "Sin iniciar".
+         Solo se muestra con algo tildado, y solo en ese tab. -->
+    <div id="sg-bulk-bar">
+      <span class="sg-bulk-count"><span id="sg-bulk-count-n">0</span> sitio<span id="sg-bulk-count-s">s</span> seleccionado<span id="sg-bulk-count-s2">s</span></span>
+      <span class="sg-bulk-spacer"></span>
+      <button class="btn btn-primary btn-sm" onclick="sgAbrirCerrarSinEjecucion()">Pasar a Terminadas</button>
+      <button class="btn btn-glass btn-sm" onclick="sgLimpiarSeleccion()">Limpiar selección</button>
+    </div>
+
     <!-- Lista de filas -->
     <div class="sg-lista">
       <div class="sg-head">
-        <div></div>
+        <div id="sg-head-selall"></div>
         <div class="sg-head-sort" data-key="id"    onclick="sgSetSort('id')"><span>Cliente / Sitio</span><span class="sort-arrow"></span></div>
         <div class="sg-head-sort" data-key="monto" onclick="sgSetSort('monto')"><span>PO · Total</span><span class="sort-arrow"></span></div>
         <div class="sg-head-sort" data-key="cuad"  onclick="sgSetSort('cuad')"><span>Cuadrilla</span><span class="sort-arrow"></span></div>
@@ -4379,7 +4416,7 @@ function mesActualStr() {
    a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
    Se pinta en el pie del sidebar (#sidebar-version).
    ═══════════════════════════════════════════════════════ */
-const APP_VERSION = 'V 310826 1620';
+const APP_VERSION = 'V 310826 1845';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
@@ -6010,6 +6047,12 @@ function confirmarTanda() {
 */
 
 let _sgTab = 'curso';            // 'curso' | 'esperando' | 'anteriores' | 'terminada' | 'siniciar'
+/* #122 — Sitios tildados en el tab "Sin iniciar" para cerrar en bloque.
+   Es selección LOCAL, no una cola: no se persiste en sessionStorage y no
+   sobrevive a un refresco. Las colas virtuales se eliminaron en la fase 4
+   (E26/E34) justamente porque dejaban trabajo a medias esperando confirmación;
+   acá, si la página se recarga antes de confirmar, no quedó nada escrito. */
+let _sgSelSinIniciar = new Set();
 let _sgSortKey = 'id';     // 'id' | 'monto' | 'fac' | 'cuad' | 'dias' | 'ult'
 let _sgSortDir = 'asc';    // 'asc' | 'desc'
 // (cambio #67) Flags _sgDefaultMontoAplicado / _sgDefaultPctAplicado eliminadas:
@@ -6480,6 +6523,10 @@ function sgToggleContratistaWrap() {
 }
 
 function sgSetTab(tab) {
+  /* #122 — Salir del tab descarta la selección. Conservarla dejaría sitios
+     tildados que no se ven, y al volver el botón escribiría sobre algo que el
+     usuario ya no tiene presente. */
+  if (tab !== _sgTab) _sgSelSinIniciar.clear();
   _sgTab = tab;
   document.querySelectorAll('.sg-tab').forEach(b => {
     b.classList.toggle('active', b.dataset.tab === tab);
@@ -6679,6 +6726,7 @@ function aplicarFiltrosSitiosGlobales() {
       msg = 'No hay obras en curso. Empezá una con "+ Nueva obra".';
     }
     cont.innerHTML = `<div class="sg-empty"><div class="sg-empty-icon">🏗️</div><p>${msg}</p></div>`;
+    sgActualizarBulkBar();
     if ($('sg-footer-info')) {
       const ocultos = universoTab;
       $('sg-footer-info').textContent = hayFiltros && ocultos > 0
@@ -6689,6 +6737,7 @@ function aplicarFiltrosSitiosGlobales() {
   }
 
   cont.innerHTML = lista.map(g => _sgRenderFila(g)).join('');
+  sgActualizarBulkBar();
   if ($('sg-footer-info')) {
     const ocultos = universoTab - lista.length;
     if (hayFiltros && ocultos > 0) {
@@ -6696,6 +6745,189 @@ function aplicarFiltrosSitiosGlobales() {
     } else {
       $('sg-footer-info').textContent = `Mostrando ${lista.length} ${labelTab}`;
     }
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   #122 · CIERRE EN BLOQUE DE SITIOS SIN INICIAR
+
+   Muchos sitios cargados en SITIOS nunca se van a trabajar: vienen de POs
+   viejas, de importaciones o de altas que quedaron. No hay ninguna señal en
+   los datos que los distinga —el usuario los reconoce de memoria— así que la
+   única salida es tildarlos y cerrarlos.
+
+   "Cerrar" es crear la ficha en OBRAS con ESTADO='Terminada'. NO es un estado
+   nuevo: el sitio cae solo en el tab que ya existe y deja de aparecer en
+   "Sin iniciar", sin tocar obraEstado(), obraAdmiteCarga() ni los contadores.
+
+   ⚠ NO SE ESCRIBE NINGÚN EVENTO 'FIN_TRABAJO', Y ES EL PUNTO CLAVE.
+   incObrasDelMes() e incPendientesAnteriores() son los DOS únicos lectores de
+   `obras` del motor de incentivos, y los dos arrancan con
+   `obraFinTrabajo(o.id)`: sin ese evento la obra no entra al cálculo ni
+   siquiera como "excluida con motivo". Verificado sobre las 13 apariciones de
+   OBRA_TERMINADA antes de implementar. Escribir el evento metería decenas de
+   obras fantasma en la liquidación del mes.
+
+   ⚠ NO ES UNA COLA. La selección vive en memoria y se escribe de una sola vez
+   con BULK_INSERT. Las colas virtuales murieron en la fase 4 (E26/E34) porque
+   dejaban trabajo pendiente que sobrevivía al refresco.
+   ═══════════════════════════════════════════════════════════════ */
+
+function sgToggleSeleccion(idSitio, marcado) {
+  if (bloqueoViewer()) return;
+  if (marcado) _sgSelSinIniciar.add(idSitio);
+  else         _sgSelSinIniciar.delete(idSitio);
+  /* Se repinta solo la fila tocada: con 60+ filas, re-renderizar la lista
+     entera en cada click perdería la posición del scroll.
+     La fila se busca comparando el atributo en JS y no con un selector
+     `[data-sitio="..."]`: un ID con comillas rompería el selector, y CSS.escape
+     no está garantizado en todos los entornos. */
+  let fila = null;
+  document.querySelectorAll('#sg-lista-body .sg-sel-check').forEach(chk => {
+    if (!fila && chk.getAttribute('data-sitio') === idSitio) fila = chk.closest('.sg-row');
+  });
+  if (fila) fila.classList.toggle('sg-row-sel', marcado);
+  sgActualizarBulkBar();
+}
+
+/* Tilda o destilda TODO LO VISIBLE, que es lo filtrado en pantalla y no el
+   universo del tab: es lo que permite limpiar 60 sitios en tandas —filtrar por
+   cliente, seleccionar todo, cerrar— en vez de 60 clicks. */
+function sgToggleSeleccionTodos(marcado) {
+  if (bloqueoViewer()) return;
+  document.querySelectorAll('#sg-lista-body .sg-sel-check').forEach(chk => {
+    const id = chk.getAttribute('data-sitio') || '';
+    if (!id) return;
+    chk.checked = marcado;
+    if (marcado) _sgSelSinIniciar.add(id);
+    else         _sgSelSinIniciar.delete(id);
+    const fila = chk.closest('.sg-row');
+    if (fila) fila.classList.toggle('sg-row-sel', marcado);
+  });
+  sgActualizarBulkBar();
+}
+
+function sgLimpiarSeleccion() {
+  _sgSelSinIniciar.clear();
+  document.querySelectorAll('#sg-lista-body .sg-sel-check').forEach(c => { c.checked = false; });
+  document.querySelectorAll('#sg-lista-body .sg-row-sel').forEach(r => r.classList.remove('sg-row-sel'));
+  sgActualizarBulkBar();
+}
+
+/* La barra solo existe en el tab "Sin iniciar" y solo con algo tildado.
+   ⚠ El contador cuenta el Set, no los checkboxes visibles: si el usuario
+   filtra después de tildar, lo seleccionado sigue seleccionado aunque no se
+   vea, y el número tiene que decir la verdad sobre lo que se va a escribir. */
+function sgActualizarBulkBar() {
+  const bar = document.getElementById('sg-bulk-bar');
+  if (!bar) return;
+  const n = (_sgTab === 'siniciar' && !esSoloLectura()) ? _sgSelSinIniciar.size : 0;
+  bar.classList.toggle('visible', n > 0);
+  if (n > 0) {
+    const $ = id => document.getElementById(id);
+    if ($('sg-bulk-count-n'))  $('sg-bulk-count-n').textContent  = n;
+    if ($('sg-bulk-count-s'))  $('sg-bulk-count-s').textContent  = n === 1 ? '' : 's';
+    if ($('sg-bulk-count-s2')) $('sg-bulk-count-s2').textContent = n === 1 ? '' : 's';
+  }
+}
+
+/* Descarta del Set los sitios que ya dejaron de estar "sin iniciar" —porque
+   otro usuario les creó la obra y llegó un sincronizado en el medio—. Sin
+   esto, el BULK_INSERT crearía una SEGUNDA ficha para ese sitio y rompería
+   E5 (una obra por sitio), que nada más abajo revalida. */
+function _sgPodarSeleccion() {
+  [..._sgSelSinIniciar].forEach(id => {
+    if (obraEstado(id) !== OBRA_SIN_INICIAR) _sgSelSinIniciar.delete(id);
+  });
+}
+
+async function sgAbrirCerrarSinEjecucion() {
+  if (bloqueoViewer()) return;
+  _sgPodarSeleccion();
+  /* Siempre, no solo cuando la selección quedó vacía: si la poda sacó alguno,
+     el contador de la barra estaría mostrando un número mayor que el que se
+     va a escribir, y el modal diría otra cosa. */
+  sgActualizarBulkBar();
+  const ids = [..._sgSelSinIniciar].sort();
+  if (!ids.length) return toast('No hay sitios seleccionados.', 'err');
+
+  const muestra = ids.slice(0, 12).join(' · ') + (ids.length > 12 ? ` … y ${ids.length - 12} más` : '');
+  const r = await cfAbrir({
+    titulo: 'Pasar a Terminadas',
+    encabezado: {
+      icon: 'fa-flag-checkered',
+      etiqueta: 'Sitios seleccionados',
+      valor: `${ids.length} sitio${ids.length!==1?'s':''}`,
+      sub: 'Se cierran sin ejecución'
+    },
+    detalle: `<div style="font-size:12.5px;line-height:1.6;">${_escHtml(muestra)}</div>`,
+    nota: 'No entran al cálculo del bono: no tienen días trabajados ni fecha de ' +
+          'fin de trabajo. Si te equivocás, se corrige con <b>Reabrir</b> desde ' +
+          'el tab Terminadas.',
+    confirmar: `Cerrar ${ids.length} sitio${ids.length!==1?'s':''}`
+  });
+  if (!r) return;
+
+  await _sgCerrarSinEjecucion(ids);
+}
+
+async function _sgCerrarSinEjecucion(ids) {
+  if (bloqueoViewer()) return;
+
+  const usuario = _obraUsuario();
+  const ahora   = new Date().toISOString();
+  const hoy     = fechaHoyStr();
+  /* Rastro de por qué existe una obra terminada sin un solo día cargado. Sin
+     esto, dentro de unos meses no habría forma de distinguirlas de un error
+     de carga. */
+  const obs = `Cerrada sin ejecución el ${hoy}`;
+
+  /* Los objetos locales se arman ANTES de escribir para poder mandarlos en un
+     solo BULK_INSERT y, recién con el ok del servidor, volcarlos al array
+     `obras`. Al revés el panel mostraría obras que quizá no se guardaron. */
+  const nuevas = ids.map(idSitio => ({
+    id:          nuevoId('OBR'),
+    sitioId:     idSitio,
+    plazoDias:   null,
+    dotacion:    null,
+    cuadrilla:   [],
+    fechaInicio: hoy,
+    fechaAprob:  '',
+    estado:      OBRA_TERMINADA,
+    pausada:     false,
+    obs:         obs,
+    usuarioCarga: usuario,
+    creadoAt:     ahora,
+    modificadoAt: ''
+  }));
+
+  setLoading(true, `Cerrando ${ids.length} sitio${ids.length!==1?'s':''}`);
+  try {
+    /* UN solo request. Con 60 sitios, 60 INSERT secuenciales tardarían minutos
+       y podrían chocar con el límite de ejecución de Apps Script.
+       ⚠ Sin reintento (R5/#90): un POST repetido duplicaría las filas. Como es
+       una sola operación atómica del lado del servidor —un setValues y un
+       flush— o se escriben todas o ninguna: no hay estado intermedio. */
+    await apiPostRaw({
+      action: 'BULK_INSERT',
+      sheet:  'OBRAS',
+      rows:   nuevas.map(o => ({
+        ID: o.id, SITIO_ID: o.sitioId,
+        PLAZO_DIAS: '', DOTACION_PREVISTA: '', CUADRILLA_PREVISTA: '',
+        FECHA_INICIO: o.fechaInicio, FECHA_APROBACION: '',
+        ESTADO: o.estado, PAUSADA: '', OBSERVACION: o.obs,
+        USUARIO_CARGA: o.usuarioCarga, CREADO_AT: o.creadoAt, MODIFICADO_AT: ''
+      }))
+    });
+    nuevas.forEach(o => obras.push(o));
+    _sgSelSinIniciar.clear();
+    renderObras();
+    toast(`${ids.length} sitio${ids.length!==1?'s':''} cerrado${ids.length!==1?'s':''} ✓`);
+    setTimeout(autoSync, 1000);
+  } catch (e) {
+    toast('Error: ' + e.message, 'err');
+  } finally {
+    setLoading(false);
   }
 }
 
@@ -6714,6 +6946,18 @@ function aplicarFiltrosSitiosGlobales() {
    útiles acá: encontrar los sitios de un cliente recién importado. */
 function sgAjustarFiltrosDelTab() {
   const esSinIniciar = (_sgTab === 'siniciar');
+
+  /* #122 — El "seleccionar todos" solo existe en este tab, y no para quien no
+     escribe: el resto de los tabs no tiene selección múltiple y una casilla
+     inerte en la cabecera solo confunde. Se pinta por innerHTML en vez de
+     dejarla oculta en el markup para que no quede un `<input>` fantasma que el
+     barrido del viewer tenga que atender. */
+  const selAll = document.getElementById('sg-head-selall');
+  if (selAll) {
+    selAll.innerHTML = (esSinIniciar && !esSoloLectura())
+      ? `<input type="checkbox" class="sg-sel-check" id="sg-check-all" onclick="sgToggleSeleccionTodos(this.checked)" title="Seleccionar todos los visibles" />`
+      : '';
+  }
 
   const chkWrap = document.getElementById('sg-filtro-sinplazo')?.closest('.sg-filtro-check');
   if (chkWrap) chkWrap.style.display = esSinIniciar ? 'none' : '';
@@ -6956,8 +7200,18 @@ function _sgRenderFila(g) {
     ? 'Doble click para crear la obra'
     : 'Doble click para abrir la obra';
 
-  return `<div class="sg-row${rowClass} row-obra-clickable" ondblclick="${dbl}" title="${tituloFila}">
-    <div class="sg-row-marker"></div>
+  /* #122 — El checkbox reemplaza el marcador lateral, que en este tab es un
+     gris neutro sin información. Va dentro de la MISMA celda para no alterar
+     el `grid-template-columns` de .sg-row. */
+  const selecc = sinIniciar && _sgSelSinIniciar.has(g.id);
+  const markerHtml = sinIniciar
+    ? `<div class="sg-row-marker" style="display:flex;align-items:center;justify-content:center;background:none;">` +
+      `<input type="checkbox" class="sg-sel-check" data-sitio="${_escAttr(g.id)}"${selecc ? ' checked' : ''} ` +
+      `onclick="event.stopPropagation(); sgToggleSeleccion('${idEsc}', this.checked)" title="Seleccionar para cerrar" /></div>`
+    : `<div class="sg-row-marker"></div>`;
+
+  return `<div class="sg-row${rowClass}${selecc ? ' sg-row-sel' : ''} row-obra-clickable" ondblclick="${dbl}" title="${tituloFila}">
+    ${markerHtml}
     <div class="sg-cli-wrap">
       <div class="sg-cli-row">${cli ? dot(cli.color) : ''}<span>${g.clienteId || '—'}</span></div>
       <div class="sg-id">${g.id}${chipPausa}${chipSinCarga}</div>
