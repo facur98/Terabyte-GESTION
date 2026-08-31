@@ -1757,6 +1757,20 @@
     }
     .sg-row.anterior .sg-cli-wrap, .sg-row.anterior .sg-monto-wrap { opacity: 0.72; }
     .sg-acts .ob-act-alta:hover { color: #0d9488; border-color: rgba(13,148,136,0.4); }
+    /* ── #121 · Sitio sin iniciar ──
+       Gris neutro y atenuado: no es una alerta ni un estado del ciclo de vida,
+       es la ausencia de obra. Deliberadamente NO usa ámbar (falta un dato
+       administrativo), rosa (error), violeta (espera de un tercero) ni naranja
+       (falta una acción de hoy): un sitio sin iniciar no reclama nada.
+       Más apagado que .anterior, que sí tiene trabajo cargado detrás. */
+    .sg-row.siniciar .sg-row-marker {
+      background: linear-gradient(180deg, #cbd5e1, #94a3b8);
+    }
+    .sg-row.siniciar .sg-cli-wrap, .sg-row.siniciar .sg-monto-wrap { opacity: 0.62; }
+    .sg-row.siniciar:hover .sg-cli-wrap, .sg-row.siniciar:hover .sg-monto-wrap { opacity: 0.85; }
+    /* Verde azulado, el mismo del alta en "Anteriores": las dos acciones
+       hacen lo mismo —incorporar la obra al sistema— desde estados distintos. */
+    .sg-acts .ob-act-crear:hover { color: #0d9488; border-color: rgba(13,148,136,0.4); }
 
     /* Chip de pausa, al lado del ID */
     /* Chip de "esperando aprobación": violeta, distinto del ámbar de pausa,
@@ -2103,26 +2117,15 @@
       color: var(--accent-blue); font-size: 11px; font-weight: 600; transition: var(--transition);
     }
     .ao-mover:hover { background: rgba(79,128,255,0.18); }
-    /* "Sumar acá" (#119): deja a la persona en las DOS obras. Rosa por pedido
-       explícito del usuario (#120): el verde azulado se confundía con el tag
-       "prevista", que aparece en la misma fila.
-       ⚠ Rompe la convención del LEEME —rosa venía siendo "error o borrado"—.
-       Se aceptó porque acá el rosa cumple la misma función de fondo: marca la
-       acción excepcional, la que hay que mirar antes de tocar. La tabla de
-       colores del LEEME se actualizó para que no queden dos versiones. */
+    /* "Sumar acá" (#119): deja a la persona en las DOS obras. Verde azulado —el
+       mismo tono de la cuadrilla prevista— para que no se confunda con "Mover
+       acá", que es azul y hace lo contrario. Conviven en la misma fila. */
     .ao-sumar {
       flex-shrink: 0; padding: 3px 10px; border-radius: 7px; cursor: pointer;
-      border: 1px solid rgba(248,113,113,0.45); background: rgba(248,113,113,0.10);
-      color: #dc2626; font-size: 11px; font-weight: 600; transition: var(--transition);
+      border: 1px solid rgba(45,212,191,0.45); background: rgba(45,212,191,0.10);
+      color: #0d7d72; font-size: 11px; font-weight: 600; transition: var(--transition);
     }
-    .ao-sumar:hover { background: rgba(248,113,113,0.22); }
-    /* #120 — filas duplicadas exactas en ASIGNACIONES. Ámbar y no rosa: es un
-       dato a corregir, no una acción (código de colores del LEEME). */
-    .ao-dup {
-      flex-shrink: 0; padding: 2px 8px; border-radius: 20px; cursor: help;
-      background: rgba(251,191,36,0.18); color: #92700c;
-      font-size: 10px; font-weight: 700; letter-spacing: .2px;
-    }
+    .ao-sumar:hover { background: rgba(45,212,191,0.22); }
     .ao-tag-prev { flex-shrink: 0; padding: 1px 7px; border-radius: 20px; background: rgba(45,212,191,0.2); color: #0d7d72; font-size: 9.5px; font-weight: 700; letter-spacing: .3px; text-transform: uppercase; }
     .ao-rango-info { font-size: 12px; color: var(--text-mid); padding-bottom: 9px; }
     .ao-rango-info b { color: var(--text-dark); }
@@ -3058,6 +3061,13 @@
            un sitio que nunca se dio de alta. -->
       <button class="sg-tab" data-tab="anteriores" id="sg-tab-anteriores" style="display:none;" onclick="sgSetTab('anteriores')">Anteriores <span class="sg-tab-count" id="sg-tab-cnt-anteriores">0</span></button>
       <button class="sg-tab" data-tab="terminada" onclick="sgSetTab('terminada')">Terminadas <span class="sg-tab-count" id="sg-tab-cnt-terminada">0</span></button>
+      <!-- "Sin iniciar" (cambio #121): sitios con POs cargadas que no tienen ni
+           ficha en OBRAS ni un solo día trabajado. Va ÚLTIMO por decisión del
+           usuario, aunque en el ciclo de vida sea el estadio previo a todos.
+           A diferencia de "Anteriores", este tab se muestra SIEMPRE: nunca va a
+           estar vacío mientras existan sitios sin obra, y esconderlo obligaría
+           a recordar que existe. -->
+      <button class="sg-tab" data-tab="siniciar" onclick="sgSetTab('siniciar')">Sin iniciar <span class="sg-tab-count" id="sg-tab-cnt-siniciar">0</span></button>
     </div>
 
     <!-- Filtros -->
@@ -4034,12 +4044,7 @@
 </div>
 
 <div class="modal-overlay" id="modal-asignar-obra">
-  <!-- ⚠ Va `width` y no solo `max-width`: la clase `.modal` define width:500px
-       fijo, así que un max-width mayor no agranda nada (era el bug del #111,
-       repetido acá). 860px es lo que hace falta para que el nombre completo, el
-       tag "prevista", la lista de obras y los dos botones entren en una línea
-       sin que `.ao-nombre` recorte con ellipsis. -->
-  <div class="modal" style="width:860px;max-width:95vw;padding:26px 30px;">
+  <div class="modal" style="max-width:680px;padding:26px 30px;">
     <div style="display:flex;justify-content:space-between;align-items:start;gap:14px;margin-bottom:18px;">
       <div>
         <div class="modal-title" style="margin:0;line-height:1.2;" id="ao-titulo">Asignar personal</div>
@@ -4374,7 +4379,7 @@ function mesActualStr() {
    a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
    Se pinta en el pie del sidebar (#sidebar-version).
    ═══════════════════════════════════════════════════════ */
-const APP_VERSION = 'V 260826 2320';
+const APP_VERSION = 'V 310826 1620';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
@@ -4705,6 +4710,14 @@ const OBRA_TERMINADA = 'Terminada';
 /* Estado derivado, NO se guarda en la hoja: una obra "Anterior" es la que tiene
    asignaciones pero ninguna fila en OBRAS. */
 const OBRA_ANTERIOR  = 'Anterior';
+/* Estado derivado, NO se guarda (cambio #121): un sitio con POs cargadas que
+   no tiene ni ficha en OBRAS ni un solo día trabajado. Es el estadio previo a
+   todo el ciclo de vida.
+
+   ⚠ El VALOR de la cadena es el que obraEstado() ya devolvía desde la fase 2.
+   Se le pone nombre para dejar de compararlo como literal suelto, pero NO se
+   cambia: cualquier otro valor rompería el filtro del universo del panel. */
+const OBRA_SIN_INICIAR = 'sin-obra';
 /* Tipos de OBRA_EVENTOS. La columna TIPO queda abierta a marcas futuras, igual
    que en INCIDENCIAS: sumar un tipo nuevo no obliga a migrar la hoja. */
 const OEV_PAUSA      = 'PAUSA';
@@ -5996,7 +6009,7 @@ function confirmarTanda() {
    - Tabs + filtros AND estricto (si no matchea → empty state).
 */
 
-let _sgTab = 'curso';            // 'curso' | 'terminada'  (E11, fase 2)
+let _sgTab = 'curso';            // 'curso' | 'esperando' | 'anteriores' | 'terminada' | 'siniciar'
 let _sgSortKey = 'id';     // 'id' | 'monto' | 'fac' | 'cuad' | 'dias' | 'ult'
 let _sgSortDir = 'asc';    // 'asc' | 'desc'
 // (cambio #67) Flags _sgDefaultMontoAplicado / _sgDefaultPctAplicado eliminadas:
@@ -6132,12 +6145,18 @@ function obraDeSitio(idSitio) {
 }
 
 /* Estado efectivo de un sitio, tenga o no fila en OBRAS.
-   Devuelve 'En curso' | 'Terminada' | 'Anterior' | 'sin-obra'.
+   Devuelve 'En curso' | 'Esperando aprobación' | 'Terminada' | 'Anterior' |
+   'sin-obra' (OBRA_SIN_INICIAR).
 
    'Anterior' = tiene trabajo ejecutado pero NUNCA se dio de alta en la hoja
    OBRAS. Son las obras que ya venían andando cuando se creó el panel: entran
    por la regla de gracia (E10) para no perderlas, pero ensucian el tablero de
    trabajo si se mezclan con las actuales.
+
+   'sin-obra' = ni ficha ni un solo día trabajado. Hasta el cambio #121 se
+   descartaba del panel; ahora alimenta el tab "Sin iniciar". Los dos son
+   derivados y complementarios: lo que separa a uno del otro es si alguien
+   llegó a cargar un día.
 
    El corte es el ALTA, no el plazo: una obra nueva creada sin plazo es actual
    y le falta un dato, no es anterior. Y en cuanto se le carga el plazo a una
@@ -6150,7 +6169,7 @@ function obraEstado(idSitio) {
     if (o.estado === OBRA_ESPERANDO) return OBRA_ESPERANDO;
     return OBRA_EN_CURSO;
   }
-  return _asigEjecutadasDeSitio(idSitio).length > 0 ? OBRA_ANTERIOR : 'sin-obra';
+  return _asigEjecutadasDeSitio(idSitio).length > 0 ? OBRA_ANTERIOR : OBRA_SIN_INICIAR;
 }
 
 /* ¿La obra admite asignaciones nuevas? Una pausada NO (E16). */
@@ -6540,19 +6559,25 @@ function aplicarFiltrosSitiosGlobales() {
 
   const $ = id => document.getElementById(id);
 
-  /* ── Universo del panel (E10) ──
-     Solo las que SON obra: con alta en la hoja OBRAS, o con trabajo ejecutado
-     (regla de gracia para las que ya estaban andando). Un sitio del que nunca
-     se cargó nada no es una obra y sigue viviendo en PO sitios. */
-  const universo = todos.filter(g => g.obEstado !== 'sin-obra');
+  /* ── Universo del panel (E10 + cambio #121) ──
+     Hasta el #120 esto descartaba 'sin-obra' y el panel mostraba solo lo que
+     ES obra. Ahora entra todo y es el TAB el que separa: los sitios sin ficha
+     ni días viven en "Sin iniciar" y no se mezclan con ninguno de los otros
+     tres, porque el filtro por estado de más abajo es excluyente.
+
+     No cuesta nada en performance: `mapa` ya recorría los 159 sitios y les
+     calculaba todo; lo único que cambia es que ahora esas filas se muestran
+     en vez de descartarse al final. */
+  const universo = todos;
 
   // ── Contadores de tabs ──
-  const cnt = { curso: 0, esperando: 0, anteriores: 0, terminada: 0 };
+  const cnt = { curso: 0, esperando: 0, anteriores: 0, terminada: 0, siniciar: 0 };
   universo.forEach(g => {
-    if (g.obEstado === OBRA_TERMINADA)      cnt.terminada++;
-    else if (g.obEstado === OBRA_ESPERANDO) cnt.esperando++;
-    else if (g.obEstado === OBRA_ANTERIOR)  cnt.anteriores++;
-    else                                    cnt.curso++;
+    if (g.obEstado === OBRA_TERMINADA)         cnt.terminada++;
+    else if (g.obEstado === OBRA_ESPERANDO)    cnt.esperando++;
+    else if (g.obEstado === OBRA_ANTERIOR)     cnt.anteriores++;
+    else if (g.obEstado === OBRA_SIN_INICIAR)  cnt.siniciar++;
+    else                                       cnt.curso++;
   });
   if ($('sg-tab-cnt-curso'))      $('sg-tab-cnt-curso').textContent      = cnt.curso;
   if ($('sg-tab-cnt-esperando'))  $('sg-tab-cnt-esperando').textContent  = cnt.esperando;
@@ -6567,11 +6592,18 @@ function aplicarFiltrosSitiosGlobales() {
     if (!cnt.anteriores && _sgTab === 'anteriores') { sgSetTab('curso'); return; }
   }
   if ($('sg-tab-cnt-terminada'))  $('sg-tab-cnt-terminada').textContent  = cnt.terminada;
+  if ($('sg-tab-cnt-siniciar'))   $('sg-tab-cnt-siniciar').textContent   = cnt.siniciar;
+
+  /* #121 — Los filtros que no aplican a este tab se ocultan y se limpian.
+     Va ANTES de leer los filtros: si quedaran con selección, filtrarían en
+     silencio sobre una lista donde no pueden dar ningún resultado. */
+  sgAjustarFiltrosDelTab();
 
   // ── Aplicar tab ──
   const estadoTab = _sgTab === 'terminada'  ? OBRA_TERMINADA
                   : _sgTab === 'esperando'  ? OBRA_ESPERANDO
                   : _sgTab === 'anteriores' ? OBRA_ANTERIOR
+                  : _sgTab === 'siniciar'   ? OBRA_SIN_INICIAR
                   : OBRA_EN_CURSO;
   let lista = universo.filter(g => g.obEstado === estadoTab);
 
@@ -6623,7 +6655,11 @@ function aplicarFiltrosSitiosGlobales() {
   if (!lista.length) {
     let msg;
     if (hayFiltros) {
-      msg = 'Sin obras que coincidan con la combinación actual.';
+      msg = _sgTab === 'siniciar'
+        ? 'Ningún sitio sin iniciar coincide con la combinación actual.'
+        : 'Sin obras que coincidan con la combinación actual.';
+    } else if (_sgTab === 'siniciar') {
+      msg = 'Todos los sitios cargados ya tienen obra o días trabajados.';
     } else if (_sgTab === 'terminada') {
       msg = 'Todavía no hay obras terminadas.';
     } else if (_sgTab === 'esperando') {
@@ -6663,11 +6699,49 @@ function aplicarFiltrosSitiosGlobales() {
   }
 }
 
+/* ── #121 · Filtros que no aplican al tab "Sin iniciar" ──────────────
+   Un sitio sin iniciar no tiene plazo ni cuadrilla: por definición nadie
+   trabajó ahí todavía. Dejar visibles "Solo con plazo", "Cuadrilla" y
+   "Contratista" sería ofrecer tres filtros que SIEMPRE devuelven cero, que es
+   peor que no ofrecerlos: parecería que el tab está vacío.
+
+   Se limpian además de ocultarse, por el mismo motivo que en
+   sgToggleContratistaWrap: un filtro oculto con selección sigue filtrando y no
+   hay forma de darse cuenta. `msClearAll` no dispara el onChange, así que no
+   hay recursión con aplicarFiltrosSitiosGlobales.
+
+   Quedan el buscador por ID y el filtro de Cliente, que son justamente los
+   útiles acá: encontrar los sitios de un cliente recién importado. */
+function sgAjustarFiltrosDelTab() {
+  const esSinIniciar = (_sgTab === 'siniciar');
+
+  const chkWrap = document.getElementById('sg-filtro-sinplazo')?.closest('.sg-filtro-check');
+  if (chkWrap) chkWrap.style.display = esSinIniciar ? 'none' : '';
+  const chk = document.getElementById('sg-filtro-sinplazo');
+  if (esSinIniciar && chk && chk.checked) chk.checked = false;
+
+  const cuadWrap = document.getElementById('sg-filtro-cuadrilla');
+  if (cuadWrap) cuadWrap.style.display = esSinIniciar ? 'none' : '';
+  if (esSinIniciar) {
+    if (msGet('sg-filtro-cuadrilla').length)   msClearAll('sg-filtro-cuadrilla');
+    if (msGet('sg-filtro-contratista').length) msClearAll('sg-filtro-contratista');
+  }
+
+  /* El de contratista tiene dueño propio: lo muestra sgToggleContratistaWrap
+     solo cuando "Contratista" está tildado en Cuadrilla. Acá únicamente se
+     fuerza el ocultamiento; devolverlo a la vista es decisión de esa función,
+     que se llama sola al cambiar el multiselect. */
+  const contrWrap = document.getElementById('sg-filtro-contratista');
+  if (contrWrap && esSinIniciar) contrWrap.style.display = 'none';
+  if (!esSinIniciar) sgToggleContratistaWrap();
+}
+
 // Devuelve el label del tab en plural, para usar en el footer
 function _sgLabelTab(tab) {
   if (tab === 'terminada')  return 'obras terminadas';
   if (tab === 'esperando')  return 'obras esperando aprobación';
   if (tab === 'anteriores') return 'obras anteriores';
+  if (tab === 'siniciar')   return 'sitios sin iniciar';
   return 'obras en curso';
 }
 
@@ -6707,11 +6781,18 @@ function _sgRenderFila(g) {
      solo devuelve true en las En curso sin pausar— pero el orden lo deja
      explícito por si alguna vez se amplía el criterio. */
   let rowClass = '';
-  if (g.obEstado === OBRA_TERMINADA)      rowClass = ' terminada';
-  else if (g.obEstado === OBRA_ESPERANDO) rowClass = ' esperando';
-  else if (g.obEstado === OBRA_ANTERIOR)  rowClass = ' anterior';
+  if (g.obEstado === OBRA_TERMINADA)         rowClass = ' terminada';
+  else if (g.obEstado === OBRA_ESPERANDO)    rowClass = ' esperando';
+  else if (g.obEstado === OBRA_ANTERIOR)     rowClass = ' anterior';
+  else if (g.obEstado === OBRA_SIN_INICIAR)  rowClass = ' siniciar';
   else if (g.pausada)                    rowClass = ' pausada';
   else if (g.sinCargaHoy)                rowClass = ' sincarga';
+
+  /* #121 — Un sitio sin iniciar no tiene obra: ni plazo, ni avance, ni
+     acciones de ciclo de vida. Las celdas que describen la obra van con guion
+     en vez de con un cero, que se leería como "midió cero" en lugar de
+     "todavía no hay nada que medir". */
+  const sinIniciar = (g.obEstado === OBRA_SIN_INICIAR);
 
   const cuad = g.cuadrilla;
   let cuadIcon = 'fa-hourglass-start';
@@ -6765,7 +6846,13 @@ function _sgRenderFila(g) {
      la P del plan. Sin plazo la obra funciona igual: se muestra el aviso y se
      carga desde ahí. El reglamento liquida al 40% la obra sin plazo publicado. */
   let plazoHtml;
-  if (g.plazoDias !== null && g.plazoDias > 0) {
+  if (sinIniciar) {
+    /* Sin ficha en OBRAS no hay dónde guardar un plazo. El link a
+       obraEditarPlazo() se omite a propósito: crearía la obra por un camino
+       lateral, salteando la cuadrilla prevista y la fecha de inicio que sí
+       pide el alta. Acá el único camino es el botón "Crear obra". */
+    plazoHtml = `<div><span class="sg-dias-vacio">—</span></div>`;
+  } else if (g.plazoDias !== null && g.plazoDias > 0) {
     const dot = (g.obra && g.obra.dotacion) ? g.obra.dotacion : 0;
     /* Sin dotación prevista no hay P: se avisa en vez de inventar un número.
        Es clickeable para poder completarla. */
@@ -6786,7 +6873,9 @@ function _sgRenderFila(g) {
      visualmente en 100% pero el número sigue creciendo: una obra al 130% tiene
      que poder leerse como tal. */
   let avHtml;
-  if (g.avance) {
+  if (sinIniciar) {
+    avHtml = `<div><span class="ob-av-vacio">—</span></div>`;
+  } else if (g.avance) {
     const pct   = g.avance.pct;
     const clase = pct > 100 ? 'pasa' : (pct > 85 ? 'cerca' : 'ok');
     avHtml = `<div class="ob-av-wrap">
@@ -6818,7 +6907,14 @@ function _sgRenderFila(g) {
      El botón principal abre la vista de obra (Gantt). El modal "Días
      trabajados" se conserva y sigue accesible desde ahí. */
   let accEstado = '';
-  if (g.obEstado === OBRA_ESPERANDO) {
+  if (sinIniciar) {
+    /* Nada del ciclo de vida aplica todavía. La única acción posible es dar
+       de alta la obra, y se hace con el formulario completo (sitio, cuadrilla
+       prevista y plazo), no cargando el plazo suelto como en "Anteriores":
+       ahí la obra ya existía de hecho y solo faltaba formalizarla; acá no
+       existe nada. */
+    accEstado = '';
+  } else if (g.obEstado === OBRA_ESPERANDO) {
     accEstado =
       `<button class="sg-act-btn ob-act-fin" onclick="obraAprobarCierre('${idEsc}')" title="Aprobar el cierre"><i class="fa-solid fa-circle-check"></i></button>` +
       `<button class="sg-act-btn ob-act-retomar" onclick="obraRetrabajo('${idEsc}')" title="Volver a En curso (retrabajo)"><i class="fa-solid fa-rotate-left"></i></button>`;
@@ -6836,7 +6932,31 @@ function _sgRenderFila(g) {
       `<button class="sg-act-btn ob-act-fin" onclick="obraTerminarTrabajo('${idEsc}')" title="Terminar el trabajo"><i class="fa-solid fa-flag-checkered"></i></button>`;
   }
 
-  return `<div class="sg-row${rowClass} row-obra-clickable" ondblclick="abrirVistaObra('${idEsc}')" title="Doble click para abrir la obra">
+  /* ── Barra de acciones ──
+     En "Sin iniciar" se reemplaza entera: abrir el Gantt de un sitio sin obra
+     dejaría cargar días y lo convertiría en una obra "Anterior" por la puerta
+     de atrás, justo lo que el tab busca evitar. Y una nota sobre una obra que
+     no existe crearía la ficha sin plazo ni cuadrilla.
+
+     El botón NO está en VIEWER_PERMITIDO, así que el barrido se lo oculta al
+     viewer y a Colab. proyecto; abrirFormObra() lleva su bloqueoViewer() igual. */
+  /* El salto de línea y la indentación replican EXACTAMENTE el markup previo.
+     `.sg-acts` es flex y los nodos de texto en blanco se ignoran, así que el
+     formato no cambia nada visual; se conserva para que el HTML generado en
+     los cuatro tabs existentes sea idéntico carácter por carácter al baseline
+     y cualquier diferencia futura salte como lo que es: una regresión. */
+  const actsHtml = sinIniciar
+    ? `\n      <button class="sg-act-btn ob-act-crear" onclick="abrirFormObra('${idEsc}')" title="Crear la obra de este sitio"><i class="fa-solid fa-plus"></i></button>\n    `
+    : `\n      <button class="sg-act-btn" onclick="abrirVistaObra('${idEsc}')" title="Asignar día"><i class="fa-solid fa-diagram-project"></i></button>\n      ${accEstado}\n      <button class="sg-act-btn" onclick="obraNuevaNota('${idEsc}')" title="${_escAttr(tituloNota)}"><i class="fa-solid fa-pencil"></i>${chipNotas}</button>\n    `;
+
+  const dbl = sinIniciar
+    ? `abrirFormObra('${idEsc}')`
+    : `abrirVistaObra('${idEsc}')`;
+  const tituloFila = sinIniciar
+    ? 'Doble click para crear la obra'
+    : 'Doble click para abrir la obra';
+
+  return `<div class="sg-row${rowClass} row-obra-clickable" ondblclick="${dbl}" title="${tituloFila}">
     <div class="sg-row-marker"></div>
     <div class="sg-cli-wrap">
       <div class="sg-cli-row">${cli ? dot(cli.color) : ''}<span>${g.clienteId || '—'}</span></div>
@@ -6852,11 +6972,7 @@ function _sgRenderFila(g) {
     ${plazoHtml}
     ${diasHtml}
     ${avHtml}
-    <div class="sg-acts">
-      <button class="sg-act-btn" onclick="abrirVistaObra('${idEsc}')" title="Asignar día"><i class="fa-solid fa-diagram-project"></i></button>
-      ${accEstado}
-      <button class="sg-act-btn" onclick="obraNuevaNota('${idEsc}')" title="${_escAttr(tituloNota)}"><i class="fa-solid fa-pencil"></i>${chipNotas}</button>
-    </div>
+    <div class="sg-acts">${actsHtml}</div>
   </div>`;
 }
 
@@ -7593,52 +7709,25 @@ function gtDondeEstaTodas(empId, fecha, exceptoSitio) {
 function gtSituacion(empId, fecha, idSitio) {
   const otras = gtDondeEstaTodas(empId, fecha, idSitio);
   const especial = otras.find(o => o.especial) || null;
-
-  /* ── ⚠ #120 · Deduplicación por SITIO ──
-     `otras` son FILAS, y en la base real hay filas duplicadas exactas (mismo
-     empleado, misma fecha, mismo sitio): las 16 del 03/07/2026 documentadas en
-     el LEEME, y otras que aparecieron después. Sin deduplicar, la lista decía
-     "en CFO1140 y CFO1140" y —peor— una fila repetida se contaba como una
-     segunda obra, inventando una doble asignación que no existe.
-
-     La regla queda en términos de SITIOS distintos, que es lo que la doble
-     asignación significa. Las filas repetidas se informan aparte para poder
-     corregirlas, no se esconden: son un error de datos que infla la X de la
-     obra y mueve plata. */
-  const vistos = new Set();
-  const sitios = [];
-  otras.forEach(o => {
-    if (vistos.has(o.sitioId)) return;
-    vistos.add(o.sitioId);
-    sitios.push(o);
-  });
-
   return {
-    otras,                                       // filas crudas
-    sitios,                                      // una entrada por sitio distinto
-    duplicadas: otras.length - sitios.length,    // filas repetidas detectadas
-    especial,                                    // si hay uno, bloquea siempre
-    ocupado:    sitios.length > 0,
-    puedeDoble: sitios.length > 0 && !especial,  // solo obra + obra
-    /* "Mover acá" pide UNA sola FILA de origen, no un solo sitio: con filas
-       repetidas, mover borraría una y dejaría la otra colgada en la obra de
-       origen. Con duplicados queda solo "Sumar acá" hasta que se limpien. */
+    otras,
+    especial,                                   // si hay uno, bloquea siempre
+    ocupado:    otras.length > 0,
+    puedeDoble: otras.length > 0 && !especial,  // solo obra + obra
+    /* "Mover acá" solo tiene sentido con UN origen: con dos, de cuál se lo
+       quita sería una adivinanza. Con dos o más queda solo "Sumar acá". */
     movible: (otras.length === 1 && !especial) ? otras[0] : null
   };
 }
 
-/* ¿Este empleado tiene esa fecha en dos o más obras REALES DISTINTAS? Devuelve
-   la lista de sitios únicos, o null. Se usa para marcar la celda en el Gantt.
-   ⚠ #120 — cuenta SITIOS y no filas: dos filas duplicadas del mismo sitio no
-   son una doble asignación, son un error de carga. */
+/* ¿Este empleado tiene esa fecha en dos o más obras REALES? Devuelve la lista
+   de sitios, o null. Se usa para marcar la celda en el Gantt: la excepción
+   tiene que quedar a la vista, no escondida en un tooltip. */
 function gtEsDoble(empId, fecha) {
   if (!empId || !fecha || !Array.isArray(asignaciones)) return null;
-  const reales = [...new Set(
-    asignaciones.filter(x => x.empleadoId === empId && x.fecha === fecha &&
-                             !esEstadoEspecial(x.sitioId))
-                .map(x => x.sitioId)
-  )];
-  return reales.length > 1 ? reales : null;
+  const reales = asignaciones.filter(x => x.empleadoId === empId && x.fecha === fecha &&
+                                          !esEstadoEspecial(x.sitioId));
+  return reales.length > 1 ? reales.map(x => x.sitioId) : null;
 }
 
 /* Confirmación de la excepción, compartida por las dos vías de carga.
@@ -9203,7 +9292,7 @@ function _gtRenderGrid(id, obra) {
         if (dobleAqui) cls.push('doble');
       } else cls.push('libre');
       const dis = (!admite || (!on && sit.especial)) ? 'disabled' : '';
-      const otrasTxt = on ? '' : sit.sitios.map(o => o.label).join(' y ');
+      const otrasTxt = on ? '' : sit.otras.map(o => o.label).join(' y ');
       const tit = on
         ? `${nom} · ${_gtFechaLarga(c.fecha)}${futuro ? ' (planificado)' : ''}` +
           (dobleAqui ? ` · también en ${dobleAqui.filter(s => s !== id).join(', ')}` : '') +
@@ -9449,7 +9538,7 @@ async function gtToggleCelda(empId, fecha) {
 
   const hoy = fechaHoyStr();
   const r = doble
-    ? await _gtConfirmarDoble(empId, fecha, id, sit.sitios)
+    ? await _gtConfirmarDoble(empId, fecha, id, sit.otras)
     : await cfAbrir({
         titulo: 'Asignar personal', confirmar: 'Asignar',
         tono: fecha > hoy ? 'aviso' : '',
@@ -9761,12 +9850,8 @@ function _aoRenderLista() {
            se lo quita sería una adivinanza); "Sumar acá" aparece siempre que
            lo que bloquea sea una obra y no un estado especial. */
         const s = gtSituacion(x.e.id, fechas[0], id);
-        const donde = s.sitios.length ? s.sitios.map(o => o.label).join(' y ') : '—';
+        const donde = s.otras.length ? s.otras.map(o => o.label).join(' y ') : '—';
         der = `<span class="ao-donde">en <b>${_escHtml(donde)}</b></span>` +
-              /* #120 — filas repetidas del MISMO sitio. Se muestran en vez de
-                 silenciarse: inflan la X de la obra y hay que limpiarlas a
-                 mano en la hoja. Ver el LEEME, sección 8. */
-              (s.duplicadas ? `<span class="ao-dup" title="${_escAttr('Hay ' + (s.duplicadas + 1) + ' filas iguales en ASIGNACIONES para esta persona, esta fecha y ese mismo sitio. Es un error de carga: infla los días-persona de esa obra. Hay que borrar las repetidas desde la hoja.')}">⚠ ${s.duplicadas + 1} filas iguales</span>` : '') +
               (s.movible ? `<button class="ao-mover" onclick="aoMover('${jsId}','${_escJs(fechas[0])}')">Mover acá</button>` : '') +
               (s.puedeDoble ? `<button class="ao-sumar" title="Dejarlo en las dos obras ese día" onclick="aoSumar('${jsId}','${_escJs(fechas[0])}')">Sumar acá</button>` : '');
       } else {
@@ -9962,7 +10047,7 @@ async function aoSumar(empId, fecha) {
      aoMover(): si no, quedan dos modales apilados y el de atrás sigue
      capturando la vista. Si cancela, se vuelve a abrir con lo tildado. */
   cerrarModalAsignarObra();
-  const r = await _gtConfirmarDoble(empId, fecha, id, sit.sitios);
+  const r = await _gtConfirmarDoble(empId, fecha, id, sit.otras);
   if (!r) { abrirModalAsignarObra(fecha, selPrevia); return; }
 
   /* Revalidación post-modal, con el mismo criterio que gtToggleCelda: lo que
@@ -9983,7 +10068,7 @@ async function aoSumar(empId, fecha) {
     await apiPost('INSERT', 'ASIGNACIONES', _gtFilaAsig(nueva));
     asignaciones.push(nueva);
     _gtRefrescar();
-    _undoRegistrar(`${nom} sumado a ${id} el ${_sgFormatoFechaCorta(fecha)} (queda en ${sit2.sitios.length + 1} obras)`,
+    _undoRegistrar(`${nom} sumado a ${id} el ${_sgFormatoFechaCorta(fecha)} (queda en ${sit2.otras.length + 1} obras)`,
                    [nueva], []);
   } catch (e) {
     toast(`No se pudo sumar a ${id}: ${e.message}. No se modificó la asignación original.`, 'err');
@@ -9992,7 +10077,12 @@ async function aoSumar(empId, fecha) {
 
 /* ── Alta de obra (E6) ─────────────────────────────────────────── */
 
-function abrirFormObra() {
+/* Alta de obra. `preSitio` (cambio #121) preselecciona el sitio: lo usa el
+   botón "Crear obra" del tab "Sin iniciar", para no obligar a buscarlo de
+   nuevo en un desplegable que puede tener cientos de entradas.
+   El parámetro es OPCIONAL: el botón "+ Nueva obra" sigue llamándola sin
+   argumentos y se comporta exactamente igual que antes. */
+function abrirFormObra(preSitio) {
   if (bloqueoViewer()) return;
 
   /* Solo sitios SIN obra: una obra por sitio (E5). */
@@ -10000,6 +10090,12 @@ function abrirFormObra() {
   const sel  = document.getElementById('ob-sitio');
   sel.innerHTML = '<option value="">— Seleccionar sitio —</option>' +
     disp.map(s => `<option value="${_escAttr(s.id)}">${_escHtml(s.id)}${s.clienteId ? ' · ' + _escHtml(s.clienteId) : ''}</option>`).join('');
+
+  /* Se asigna DESPUÉS de poblar el select y solo si el sitio sigue siendo
+     elegible. Si entre el render del panel y el click alguien le creó la obra,
+     el <option> no existe y asignarlo dejaría el select en blanco: es el
+     comportamiento correcto —obliga a elegir— y no rompe nada. */
+  if (preSitio && disp.some(s => s.id === preSitio)) sel.value = preSitio;
 
   /* Solo empleados activos: un dado de baja no puede integrar una cuadrilla
      prevista, igual que no aparece en las listas de carga (cambio #88). */
@@ -11551,12 +11647,8 @@ function renderAsigCalendario() {
 
     /* Cuántas personas están ese día en más de una obra. Es el número que
        explica por qué "En obra" puede ser menor que la suma de los planteles
-       de cada obra.
-       ⚠ #120 — se cuentan pares EMPLEADO|SITIO únicos, no filas: dos filas
-       duplicadas del mismo sitio (las hay en la base real) no son una doble
-       asignación y contarlas como tal inventaba dobles en todo el histórico. */
-    const paresObra = new Set(enObra.map(a => a.empleadoId + '|' + a.sitioId));
-    const dobles = Math.max(0, paresObra.size - idsObra.size);
+       de cada obra. */
+    const dobles = idsObra.size ? (enObra.length - idsObra.size) : 0;
 
     /* Desglose de especiales, para el tooltip. */
     const porEstado = {};
