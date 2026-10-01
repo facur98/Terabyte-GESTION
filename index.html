@@ -6,7 +6,10 @@
   <title>Terabyte SRL — Sistema de Gestión</title>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@600;700&display=swap" rel="stylesheet"/>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <!-- #124 — Chart.js NO se usa en ninguna vista (0 referencias en el código). Se
+       carga con `defer` para que sus ~200 KB dejen de bloquear el primer render.
+       Se conserva por si se reactiva un gráfico. -->
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
   <!-- PDF de las órdenes de compra (fase 4). Mismo CDN que Chart.js y Font Awesome.
        jsPDF 4.2.1: la 4.1.0 parcheó CVE-2026-24737 (inyección vía AcroForm); además
        este feature no usa el módulo AcroForm.
@@ -4377,7 +4380,7 @@
 // ═══════════════════════════════════════════════════════
 //  CONFIGURACIÓN
 // ═══════════════════════════════════════════════════════
-const API_URL = 'https://script.google.com/macros/s/AKfycbznYXK9LDfBelKhW6GZnQEqPqT6Tg0EmJ-DpYtsYhdqvSb8TMBdFad7Gg86qTCq-aiK/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbyZrYQyyPq6osRcVxDxFPJ5NV5ArAyJfMmSZBoqiT87FawSBjGjnu_9r3g4DI5Kn-JX/exec';
 
 /* ═══════════════════════════════════════════════════════════════
    PEQ — Punto de Equilibrio mensual
@@ -4416,7 +4419,7 @@ function mesActualStr() {
    a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
    Se pinta en el pie del sidebar (#sidebar-version).
    ═══════════════════════════════════════════════════════ */
-const APP_VERSION = 'V 310826 1816';
+const APP_VERSION = 'V 011026 1515';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
@@ -4490,8 +4493,15 @@ async function _apiGetJson(url) {
   throw ultimo;
 }
 
+/* #124 — Contador de escrituras. Lo incrementa TODO POST, salga bien o mal.
+   La resincronización en segundo plano lo compara antes y después de traer el
+   ALL: si cambió, hubo una escritura en el medio y esa foto puede no incluirla,
+   así que se descarta y se vuelve a pedir. */
+let _apiSeqEscritura = 0;
+
 /* POST sin reintento (ver la advertencia de arriba). */
 async function _apiPostJson(bodyStr) {
+  _apiSeqEscritura++;
   let res;
   try { res = await fetch(API_URL, { method: 'POST', body: bodyStr }); }
   catch (e) { throw _errTransporte(`${API_MSG_SIN_CONN} Sincronizá para verificar si el cambio se aplicó.`); }
@@ -4812,11 +4822,39 @@ function nuevoId(prefix) {
   return prefix + '-' + Date.now() + '-' + _idCounter + '-' + Math.floor(Math.random() * 9999);
 }
 
+/* #124 — Contador de cargas en PRIMER plano (login, Sincronizar). Si una corre
+   mientras la de segundo plano está en vuelo, la de segundo plano se descarta:
+   la de primer plano ya trae una foto igual o más nueva. */
+let _cargaSeq = 0;
+
 async function cargarTodo(mensaje) {
+  _cargaSeq++;
   setLoading(true, mensaje || 'Cargando datos');
   try {
     const data = await apiGet('ALL');
-    console.log('=== RESPUESTA APPS SCRIPT ===', JSON.stringify(data));
+    _aplicarDatosAll(data);
+  } catch (err) {
+    toast('Error al cargar: ' + err.message, 'err');
+    console.error('ERROR cargarTodo:', err);
+  } finally {
+    setLoading(false);
+  }
+}
+
+/* #124 — El procesamiento del ALL se separó de la descarga para poder usarlo
+   también desde la resincronización en segundo plano. El cuerpo es EL MISMO
+   que tenía cargarTodo, línea por línea: parseo de las 11 hojas y re-render.
+   Si lanza, el error lo atrapa quien llama (cargarTodo lo tostea, igual que
+   antes). */
+function _aplicarDatosAll(data) {
+    /* #124 — Antes se imprimía JSON.stringify de la respuesta ENTERA (~1 MB):
+       serializarla costaba tiempo en cada login y cada Sincronizar, y con la
+       consola abierta frenaba la pestaña. Queda un resumen con los conteos,
+       que es lo que sirve para diagnosticar. El volcado completo sigue
+       disponible en el botón 🔍 Debug. */
+    console.log('=== RESPUESTA APPS SCRIPT ===', Object.keys(data || {})
+      .filter(k => Array.isArray(data[k]))
+      .map(k => k + ': ' + data[k].length).join(' · '));
 
     const get = (row, key) => {
       const k = Object.keys(row).find(k => k.trim().toUpperCase() === key.toUpperCase());
@@ -5039,12 +5077,6 @@ async function cargarTodo(mensaje) {
     if (typeof renderAsignaciones === 'function') renderAsignaciones();
     if (typeof renderOC === 'function') renderOC();
     if (typeof renderObras === 'function') renderObras();
-  } catch (err) {
-    toast('Error al cargar: ' + err.message, 'err');
-    console.error('ERROR cargarTodo:', err);
-  } finally {
-    setLoading(false);
-  }
 }
 
 /* ── PALETA ── */
@@ -5467,15 +5499,19 @@ async function guardarEdicionSitio() {
     // Si cambió el monto, recalcular y actualizar todas las líneas vinculadas
     if (cambioMonto && lineasVinculadas.length > 0) {
       let okLineas = 0, errLineas = 0;
-      for (const l of lineasVinculadas) {
-        setLoadingPaso(okLineas + errLineas + 1, lineasVinculadas.length, 'Actualizando líneas');   // cambio #91
-        const nuevoMonto = Math.round(po * l.pct / 100);
-        try {
-          await apiPost('UPDATE', 'FACTURACION', { MONTO: nuevoMonto }, l.id);
-          l.monto = nuevoMonto;
-          okLineas++;
-        } catch(e) { errLineas++; }
-      }
+      /* #124 — UN solo pedido para todas las líneas (antes, uno por línea a ~2 s
+         cada uno). Es todo o nada: si falla, ninguna línea cambia de monto y se
+         avisa igual que antes, con el conteo de las que quedaron con error. */
+      setLoadingDetalle(`Actualizando ${lineasVinculadas.length} línea${lineasVinculadas.length!==1?'s':''}`);
+      const montos = lineasVinculadas.map(l => Math.round(po * l.pct / 100));
+      try {
+        await apiPostRaw({
+          action: 'BULK_UPDATE', sheet: 'FACTURACION',
+          updates: lineasVinculadas.map((l, i) => ({ id: l.id, data: { MONTO: montos[i] } }))
+        });
+        lineasVinculadas.forEach((l, i) => { l.monto = montos[i]; });
+        okLineas = lineasVinculadas.length;
+      } catch(e) { errLineas = lineasVinculadas.length; }
       cerrarModal(); renderSitios(); renderClientes(); actualizarDashboard(); renderSeguimiento();
       if (errLineas === 0) {
         toast(`Sitio actualizado ✓ · ${okLineas} línea${okLineas!==1?'s':''} recalculada${okLineas!==1?'s':''}`);
@@ -7496,14 +7532,14 @@ async function obraPausar(idSitio) {
 
     let borradas = 0;
     if (liberar) {
-      /* DELETE secuencial, no BULK_DELETE: este último matchea por valor exacto
-         de UNA columna y no puede filtrar por fecha (R7). */
-      for (let k = 0; k < futuras.length; k++) {
-        setLoadingPaso(k + 1, futuras.length, 'Liberando días futuros');
-        await apiPost('DELETE', 'ASIGNACIONES', {}, futuras[k].id);
-        asignaciones = asignaciones.filter(a => a.id !== futuras[k].id);
-        borradas++;
-      }
+      /* #124 — BULK_DELETE_IDS: borra por ID, así que el filtro por fecha (R7)
+         lo sigue haciendo el frontend al armar `futuras`. Un solo pedido en vez
+         de uno por día; todo o nada. */
+      setLoadingDetalle(`Liberando ${futuras.length} día(s) futuro(s)`);
+      const idsFut = futuras.map(a => a.id);
+      await apiPostRaw({ action: 'BULK_DELETE_IDS', sheet: 'ASIGNACIONES', ids: idsFut });
+      asignaciones = asignaciones.filter(a => !idsFut.includes(a.id));
+      borradas = idsFut.length;
     }
     _gtRefrescar();
     toast(`${idSitio} pausada${borradas ? ` · ${borradas} día(s) futuro(s) liberado(s)` : ''} ✓`);
@@ -8061,23 +8097,26 @@ async function deshacerUltimo() {
   const total = op.inserts.length + op.deletes.length;
   setLoading(true, 'Deshaciendo');
   try {
-    let paso = 0;
     /* Se revierte en orden inverso al de la operación: primero se borra lo que
        se creó, después se recrea lo que se borró. Así nunca hay un instante
-       con el mismo empleado dos veces el mismo día. */
-    for (const a of op.inserts) {
-      setLoadingPaso(++paso, total, 'Deshaciendo');
-      await apiPost('DELETE', 'ASIGNACIONES', {}, a.id);
-      asignaciones = asignaciones.filter(x => x.id !== a.id);
+       con el mismo empleado dos veces el mismo día.
+       #124 — Cada mitad va en UN solo pedido (antes, uno por asignación:
+       deshacer un "Traer último día" de 8 personas eran 8 pedidos). El orden
+       borrar → recrear se mantiene. */
+    if (op.inserts.length) {
+      setLoadingDetalle(`Quitando ${op.inserts.length} de ${total}`);
+      const idsIns = op.inserts.map(a => a.id);
+      await apiPostRaw({ action: 'BULK_DELETE_IDS', sheet: 'ASIGNACIONES', ids: idsIns });
+      asignaciones = asignaciones.filter(x => !idsIns.includes(x.id));
     }
-    for (const a of op.deletes) {
-      setLoadingPaso(++paso, total, 'Deshaciendo');
-      await apiPost('INSERT', 'ASIGNACIONES', {
+    if (op.deletes.length) {
+      setLoadingDetalle(`Restaurando ${op.deletes.length} de ${total}`);
+      await apiPostRaw({ action: 'BULK_INSERT', sheet: 'ASIGNACIONES', rows: op.deletes.map(a => ({
         ID: a.id, FECHA: a.fecha, SITIO_ID: a.sitioId, EMPLEADO_ID: a.empleadoId,
         OBSERVACION: a.observacion || '', CONFIRMADO_AT: a.confirmadoAt || '',
         USUARIO_CARGA: a.usuarioCarga || ''
-      });
-      if (!asignaciones.some(x => x.id === a.id)) asignaciones.push(a);
+      }))});
+      op.deletes.forEach(a => { if (!asignaciones.some(x => x.id === a.id)) asignaciones.push(a); });
     }
     _gtRefrescar();
     toast('Deshecho ✓');
@@ -10631,18 +10670,18 @@ async function _ejecutarEliminarSitio(uid, conLineas) {
   setLoading(true, 'Eliminando el sitio');
   try {
     const borradas = [];
-    for (const l of vinculadas) {
-      setLoadingPaso(borradas.length + 1, vinculadas.length, 'Eliminando líneas');   // cambio #91
+    /* #124 — Todas las líneas en UN solo pedido, todo o nada (antes, una por
+       una). Se mantiene el orden: primero las líneas, el sitio al final; si el
+       borrado de líneas falla, no se borró ninguna y el sitio queda intacto. */
+    if (vinculadas.length) {
+      setLoadingDetalle(`Eliminando ${vinculadas.length} línea${vinculadas.length!==1?'s':''}`);
       try {
-        await apiPost('DELETE', 'FACTURACION', {}, l.id);
-        borradas.push(l.id);
+        await apiPostRaw({ action: 'BULK_DELETE_IDS', sheet: 'FACTURACION', ids: vinculadas.map(l => l.id) });
       } catch (e) {
-        if (borradas.length) {
-          lineas = lineas.filter(x => !borradas.includes(x.id));
-          renderSeguimiento(); renderSitios(); actualizarDashboard(); actualizarBadge();
-        }
-        throw new Error(`Se borraron ${borradas.length} de ${vinculadas.length} líneas y falló la siguiente (${e.message}). El sitio NO se eliminó.`);
+        throw new Error(`No se borró ninguna de las ${vinculadas.length} líneas (${e.message}). El sitio NO se eliminó.`);
       }
+      vinculadas.forEach(l => borradas.push(l.id));
+      setLoadingDetalle('');
     }
     if (borradas.length) lineas = lineas.filter(x => !borradas.includes(x.id));
 
@@ -11407,26 +11446,31 @@ async function ejecutarSolicitudes() {
   try {
     const pendientes = [..._solPendientes];
     let ok = 0, err = 0;
-    // Procesamos de a una para evitar condiciones de carrera en el backend
-    for (const p of pendientes) {
-      setLoadingPaso(ok + err + 1, pendientes.length, 'Registrando solicitudes');   // cambio #91
-      try {
-        await apiPost('UPDATE', 'FACTURACION', {
+    /* #124 — UN solo pedido para todo el lote (antes, uno por línea a ~2 s).
+       Todo o nada: si falla, ninguna cambia y la cola queda ENTERA para
+       reintentar. (Antes, un fallo a mitad de lote dejaba la cola recortada
+       por posición, que podía no coincidir con las que realmente fallaron.) */
+    try {
+      await apiPostRaw({
+        action: 'BULK_UPDATE', sheet: 'FACTURACION',
+        updates: pendientes.map(p => ({ id: p.lineaId, data: {
           FECHA_SOLICITUD: p.fecha,
           ESTADO: 'Solicitado',
-          _SITIO_ID: p.sitioId,  // contexto extra para el backend
+          _SITIO_ID: p.sitioId,  // contexto extra (el backend ignora columnas inexistentes)
           _PCT: p.pct
-        }, p.lineaId);
+        }}))
+      });
+      pendientes.forEach(p => {
         const l = lineas.find(x => x.id === p.lineaId);
         if (l) { l.fechaSolicitud = p.fecha; l.estado = 'Solicitado'; }
-        ok++;
-      } catch(e) { err++; }
-    }
-    _solPendientes = err > 0 ? _solPendientes.slice(ok) : [];
+      });
+      ok = pendientes.length;
+    } catch(e) { err = pendientes.length; console.warn('BULK_UPDATE solicitudes:', e.message); }
+    _solPendientes = err > 0 ? _solPendientes : [];
     actualizarBannerSolicitudes();
     renderSeguimiento(); actualizarDashboard(); actualizarBadge();
     if (err === 0) { toast(`${ok} solicitud${ok!==1?'es':''} confirmada${ok!==1?'s':''} ✓`); setTimeout(autoSync, 1000); }
-    else toast(`${ok} OK, ${err} con error.`, 'err');
+    else toast(`No se registró ninguna: ${err} quedan pendientes para reintentar. Sincronizá y probá de nuevo.`, 'err');
   } finally { setLoading(false); }
 }
 
@@ -11514,27 +11558,30 @@ async function ejecutarFacturas() {
   try {
     const pendientes = [..._facPendientes];
     let ok = 0, err = 0;
-    // Procesamos de a una para evitar condiciones de carrera en el backend
-    for (const p of pendientes) {
-      setLoadingPaso(ok + err + 1, pendientes.length, 'Registrando facturas');   // cambio #91
-      try {
-        await apiPost('UPDATE', 'FACTURACION', {
+    /* #124 — UN solo pedido para todo el lote, todo o nada (ver
+       ejecutarSolicitudes). */
+    try {
+      await apiPostRaw({
+        action: 'BULK_UPDATE', sheet: 'FACTURACION',
+        updates: pendientes.map(p => ({ id: p.lineaId, data: {
           FECHA_FACTURA: p.fecha,
           NRO_FACTURA: p.nroFactura,
           ESTADO: 'Facturado',
           _SITIO_ID: p.sitioId,
           _PCT: p.pct
-        }, p.lineaId);
+        }}))
+      });
+      pendientes.forEach(p => {
         const l = lineas.find(x => x.id === p.lineaId);
         if (l) { l.fechaFactura = p.fecha; l.nroFactura = p.nroFactura; l.estado = 'Facturado'; }
-        ok++;
-      } catch(e) { err++; }
-    }
-    _facPendientes = err > 0 ? _facPendientes.slice(ok) : [];
+      });
+      ok = pendientes.length;
+    } catch(e) { err = pendientes.length; console.warn('BULK_UPDATE facturas:', e.message); }
+    _facPendientes = err > 0 ? _facPendientes : [];
     actualizarBannerFacturas();
     renderSeguimiento(); actualizarDashboard(); actualizarBadge();
     if (err === 0) { toast(`${ok} factura${ok!==1?'s':''} confirmada${ok!==1?'s':''} ✓`); setTimeout(autoSync, 1000); }
-    else toast(`${ok} OK, ${err} con error.`, 'err');
+    else toast(`No se registró ninguna: ${err} quedan pendientes para reintentar. Sincronizá y probá de nuevo.`, 'err');
   } finally { setLoading(false); }
 }
 
@@ -12195,18 +12242,15 @@ async function eliminarObraConfirmada(sitioId) {
   try {
     let okCount = 0;
     let primerError = null;
-    for (const item of items) {
-      setLoadingPaso(okCount + 1, items.length, 'Eliminando la obra del día');   // cambio #91
-      try {
-        const json = await _apiPostJson(JSON.stringify({ action: 'DELETE', sheet: 'ASIGNACIONES', id: item.id }));
-        if (!json.ok) throw new Error(json.error || 'Error al eliminar');
-        // D2: solo borrar local si server confirmó
-        asignaciones = asignaciones.filter(a => a.id !== item.id);
-        okCount++;
-      } catch (err) {
-        primerError = err.message;
-        break; // detener al primer error para no seguir desincronizando
-      }
+    /* #124 — Un solo pedido, todo o nada (antes, uno por registro). D2 se
+       mantiene: el estado local se toca recién cuando el servidor confirmó. */
+    try {
+      const idsDia = items.map(it => it.id);
+      await apiPostRaw({ action: 'BULK_DELETE_IDS', sheet: 'ASIGNACIONES', ids: idsDia });
+      asignaciones = asignaciones.filter(a => !idsDia.includes(a.id));
+      okCount = idsDia.length;
+    } catch (err) {
+      primerError = err.message;
     }
 
     renderModalAsigDia();
@@ -12868,8 +12912,71 @@ async function sincronizar(silencioso = false) {
   }
 }
 
+/* ══ RESINCRONIZACIÓN EN SEGUNDO PLANO (cambio #124) ═══════════════════
+   Después de cada guardado, 12 funciones llaman a autoSync() para traer los
+   cambios que otro usuario pudiera haber hecho. Antes eso era un Sincronizar
+   completo CON la pantalla bloqueada: 10 a 40 s de espera extra por cada
+   guardado, cuando el estado local ya estaba actualizado.
+
+   Ahora trae el mismo ALL y aplica exactamente el mismo procesamiento, pero
+   sin overlay: se puede seguir trabajando mientras llega. Tres reglas para
+   que nunca pise un dato más nuevo con uno más viejo:
+     1. Si hay una operación en curso (overlay abierto), espera y no pide nada.
+     2. Si durante la descarga hubo una escritura (contador de POST), descarta
+        la foto y vuelve a pedir: esa escritura podría no estar incluida.
+     3. Si durante la descarga corrió una carga en primer plano (login,
+        Sincronizar), descarta la suya: la otra ya trae algo igual o más nuevo.
+   Varias llamadas seguidas se agrupan en UNA sola descarga.
+   El botón Sincronizar sigue siendo bloqueante, como siempre. */
+let _bgSyncEnCurso   = false;
+let _bgSyncPendiente = false;
+let _bgSyncTimer     = null;
+const BG_SYNC_REINTENTO_MS = 1500;
+
+function _overlayCargaAbierto() {
+  const ov = document.getElementById('load-overlay');
+  return !!(ov && ov.classList.contains('open'));
+}
+
+function _bgSyncReprogramar() {
+  clearTimeout(_bgSyncTimer);
+  _bgSyncTimer = setTimeout(autoSync, BG_SYNC_REINTENTO_MS);
+}
+
 async function autoSync() {
-  await sincronizar(true);   // cambio #92 — el overlay ya avisa; el toast duplicaba
+  if (_bgSyncEnCurso) { _bgSyncPendiente = true; return; }
+  // Regla 1: no competir con una operación en curso.
+  if (_overlayCargaAbierto()) { _bgSyncReprogramar(); return; }
+
+  _bgSyncEnCurso = true;
+  _bgSyncPendiente = false;
+  const seqEsc   = _apiSeqEscritura;
+  const seqCarga = _cargaSeq;
+  try {
+    const data = await apiGet('ALL');
+    if (seqEsc !== _apiSeqEscritura) {
+      _bgSyncPendiente = true;                    // Regla 2
+    } else if (seqCarga === _cargaSeq) {          // Regla 3
+      _aplicarDatosAll(data);
+      /* Mismo re-render de la vista activa que hacía sincronizar() después de
+         cargarTodo(). */
+      const vistaActiva = document.querySelector('.view.active');
+      if (vistaActiva) {
+        const id = vistaActiva.id.replace('view-', '');
+        if (id === 'sitios')      renderSitios();
+        if (id === 'clientes')    renderClientes();
+        if (id === 'seguimiento') renderSeguimiento();
+      }
+    }
+  } catch (err) {
+    /* Silencioso: el guardado ya se confirmó y el estado local está al día.
+       Una falla acá solo significa que no llegaron cambios de otros usuarios;
+       el próximo Sincronizar los trae. */
+    console.warn('Resincronización en segundo plano sin éxito:', err && err.message);
+  } finally {
+    _bgSyncEnCurso = false;
+    if (_bgSyncPendiente) { _bgSyncPendiente = false; _bgSyncReprogramar(); }
+  }
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -15080,12 +15187,38 @@ function saludo(nombre) {
   return esFem ? 'Bienvenida de vuelta,' : 'Bienvenido de vuelta,';
 }
 
+/* #124 — La prueba de conexión inicial ahora pide ?sheet=ADMIN (antes
+   CLIENTES, cuyo contenido se descartaba) y deja la lista de usuarios en este
+   caché. Así el login y la restauración de sesión se ahorran un pedido entero
+   al servidor. El caché vale ADMIN_CACHE_MS: pasado ese tiempo se vuelve a
+   pedir, para que un cambio de rol o de habilitación en ADMIN siga aplicando
+   al iniciar sesión, como antes. Se usa UNA sola vez y se descarta. */
+let _adminCache = null;              // { t: ms, lista: [...] }
+const ADMIN_CACHE_MS = 120000;
+
+function _adminTomarCache() {
+  const c = _adminCache;
+  _adminCache = null;
+  if (c && c.lista && c.lista.length && (Date.now() - c.t) < ADMIN_CACHE_MS) return c.lista;
+  return null;
+}
+
 async function cargarUsuariosAdmin() {
+  const cache = _adminTomarCache();
+  if (cache) return cache;
   try {
     // cambio #90 — pasa por el transporte con reintento; el catch de abajo
     // sigue devolviendo [] ante cualquier fallo, como antes.
     const data = await _apiGetJson(`${API_URL}?sheet=ADMIN`);
-    if (!data.ok || !data.data || !data.data.length) return [];
+    return _parsearUsuariosAdmin(data);
+  } catch(e) { return []; }
+}
+
+/* Parseo de la respuesta de ?sheet=ADMIN. Mismo criterio de siempre; se separó
+   para poder aplicarlo también a la respuesta de la prueba de conexión. */
+function _parsearUsuariosAdmin(data) {
+  try {
+    if (!data || !data.ok || !data.data || !data.data.length) return [];
     const get = (row, key) => {
       const k = Object.keys(row).find(k => k.trim().toUpperCase() === key.trim().toUpperCase());
       return k ? String(row[k] ?? '').trim() : '';
@@ -15145,15 +15278,19 @@ function mostrarBienvenida(user) {
   document.getElementById('sidebar-rol').textContent    = user.rol || 'Usuario';
   aplicarPerfil();   // #68 solo lectura · #117 Facturación · #118 Colab. proyecto
   actAplicarVisibilidad();   // cambio #112 — campanita según el rol
+  /* #124 — Los tiempos de salida de la bienvenida bajaron de 0,5 + 2,5 + 0,5 s
+     a 0,15 + 0,9 + 0,4 s. Eran 3,5 s de espera pura DESPUÉS de que los datos
+     ya habían llegado; la animación de entrada (2,8 s) siempre termina antes
+     porque la carga tarda más. Misma secuencia y mismo efecto, más corta. */
   cargarTodo().then(() => {
     setTimeout(() => {
       bienvenida.style.opacity = '1';
-      bienvenida.style.transition = 'opacity 0.5s ease';
+      bienvenida.style.transition = 'opacity 0.4s ease';
       setTimeout(() => {
         bienvenida.style.opacity = '0';
-        setTimeout(() => { bienvenida.style.display = 'none'; }, 500);
-      }, 2500);
-    }, 500);
+        setTimeout(() => { bienvenida.style.display = 'none'; }, 400);
+      }, 900);
+    }, 150);
   });
 }
 
@@ -15202,8 +15339,12 @@ function cerrarSesion() {
   }, 130);
   const t0 = Date.now();
   try {
-    const data = await _apiGetJson(`${API_URL}?sheet=CLIENTES`);   // cambio #90 — con reintento
+    /* #124 — ADMIN en vez de CLIENTES: prueba la conexión igual y además deja
+       la lista de usuarios lista para el login (ver _adminCache). */
+    const data = await _apiGetJson(`${API_URL}?sheet=ADMIN`);   // cambio #90 — con reintento
     const ms   = Date.now() - t0;
+    const lista = _parsearUsuariosAdmin(data);
+    if (lista.length) _adminCache = { t: Date.now(), lista };
     clearInterval(timer);
     if (data.ok !== false) {
       bar.style.transition = 'width 0.3s ease';
