@@ -4419,7 +4419,7 @@ function mesActualStr() {
    a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
    Se pinta en el pie del sidebar (#sidebar-version).
    ═══════════════════════════════════════════════════════ */
-const APP_VERSION = 'V 011026 1515';
+const APP_VERSION = 'V 021026 1503';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
@@ -4899,7 +4899,16 @@ function _aplicarDatosAll(data) {
     };
     // Normaliza el campo MES a "YYYY-MM" (Sheets a veces lo guarda como
     // "2026-05-01" cuando autoformatea la celda como fecha).
-    const normMes = v => normFecha(v).slice(0, 7);
+    /* #126 — Además completa el cero del mes: un "2026-9" escrito a mano en la
+       hoja se lee como "2026-09". Sin esto el sistema lo trataba como un mes
+       DISTINTO de septiembre: el dashboard lo dejaba afuera, el selector
+       mostraba "Sep 2026" dos veces y el GAP acumulado le descontaba el PEQ
+       por segunda vez. Los valores bien formados dan lo mismo que antes. */
+    const normMes = v => {
+      const s = normFecha(v);
+      const m = /^(\d{4})-(\d{1,2})(?:-|$)/.exec(s);
+      return m ? `${m[1]}-${m[2].padStart(2, '0')}` : s.slice(0, 7);
+    };
 
     lineas = (data.facturacion || []).map(r => {
       const rawSitioId = get(r, 'SITIO_ID');
@@ -10894,38 +10903,122 @@ function quitarDeCola(id) {
   abrirConfirmarTraspaso();
 }
 
+/* ── #126 · El traspaso no puede grabar dos veces la misma cola ──────────
+   Los IDs de la cola se generan al ARMARLA, no al enviarla, así que reenviar
+   la cola es reenviar las mismas filas con los mismos IDs. El 18/09/2026 eso
+   duplicó 24 líneas de CF01140: el primer envío se grabó pero su respuesta no
+   llegó, el mensaje decía "la cola queda intacta para reintentar" y el
+   reintento las grabó de nuevo. Con dos filas del mismo ID, editar toca la
+   primera y borrar la última.
+
+   _proyEnviando  : hay un envío de la cola en vuelo. El vigilante de 90 s del
+                    overlay puede destrabar la pantalla con el POST todavía
+                    viajando; sin esta marca, un segundo click lo duplicaba.
+   _proyVerificar : el último intento terminó SIN confirmación del servidor.
+                    No se sabe si se grabó, así que el próximo intento primero
+                    le pregunta al servidor qué IDs ya tiene. */
+let _proyEnviando  = false;
+let _proyVerificar = false;
+
+/* IDs de línea que YA están en FACTURACION del servidor. Lanza si no se puede
+   leer: sin esa respuesta no se puede decidir y no hay que enviar nada. */
+async function _proyIdsEnServidor() {
+  const data = await _apiGetJson(`${API_URL}?sheet=FACTURACION`);
+  if (!data.ok || !Array.isArray(data.data)) {
+    throw new Error(data.error || 'No se pudo leer la hoja de facturación');
+  }
+  const ids = new Set();
+  data.data.forEach(r => {
+    const k = Object.keys(r).find(k => k.trim().toUpperCase() === 'ID');
+    const v = k !== undefined ? String(r[k] ?? '').trim() : '';
+    if (v) ids.add(v);
+  });
+  return ids;
+}
+
+/* Pasa ítems de la cola al estado local, en el formato del resto de `lineas`
+   (ID corto + poNroLinea separado) y los saca de la cola. No duplica: si una
+   sincronización ya trajo esa línea, no se agrega otra vez. */
+function _proyPasarALineas(items) {
+  if (!items.length) return;
+  items.forEach(p => {
+    if (lineas.some(l => l.id === p.id)) return;
+    const tieneUid = String(p.sitioId).includes('||');
+    lineas.push({
+      ...p,
+      sitioId:    tieneUid ? p.sitioId.split('||')[0] : p.sitioId,
+      poNroLinea: tieneUid ? p.sitioId.split('||')[1] : ''
+    });
+  });
+  /* Se quitan SOLO los ítems resueltos, no la cola entera: si el vigilante
+     destrabó la pantalla y se sumaron proyecciones con el envío en vuelo,
+     esas siguen pendientes. */
+  const resueltos = new Set(items.map(p => p.id));
+  _proyPendientes = _proyPendientes.filter(p => !resueltos.has(p.id));
+}
+
 async function ejecutarTraspaso() {
   if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   if (!_proyPendientes.length) return;
+  if (_proyEnviando) {
+    cerrarModal();
+    return toast('Ya hay un traspaso en curso. Esperá a que termine.', 'err');
+  }
   cerrarModal();
+  _proyEnviando = true;
   setLoading(true, 'Traspasando líneas');
-  const pendientes = [..._proyPendientes];
-  const rows = pendientes.map(p => ({
-    ID: p.id, SITIO_ID: p.sitioId, CLIENTE_ID: p.clienteId,
-    PCT: p.pct, MONTO: p.monto, MES: p.mes,
-    FECHA_SOLICITUD: '', FECHA_FACTURA: '', NRO_FACTURA: '', ESTADO: 'Proyectado'
-  }));
-  try {
-    const json = await _apiPostJson(JSON.stringify({ action: 'BULK_INSERT', sheet: 'FACTURACION', rows }));
-    if (!json.ok) throw new Error(json.error || 'Error en BULK_INSERT');
-
-    // Normalizar al formato del resto del estado local (ID corto + poNroLinea separado)
-    pendientes.forEach(p => {
-      const tieneUid = String(p.sitioId).includes('||');
-      lineas.push({
-        ...p,
-        sitioId:    tieneUid ? p.sitioId.split('||')[0] : p.sitioId,
-        poNroLinea: tieneUid ? p.sitioId.split('||')[1] : ''
-      });
-    });
-    _proyPendientes = [];
+  let pendientes = [..._proyPendientes];
+  let yaGrabadas = [];
+  let verificando = false;
+  const refrescar = () => {
     actualizarBannerProyecciones();
     renderSitios(); renderSeguimiento(); actualizarDashboard(); actualizarBadge();
-    toast(`${pendientes.length} línea${pendientes.length!==1?'s':''} traspasada${pendientes.length!==1?'s':''} a Seguimiento ✓`);
+  };
+  try {
+    /* Intento anterior sin confirmación: antes de enviar, ver qué llegó. */
+    if (_proyVerificar) {
+      verificando = true;
+      setLoadingDetalle('Verificando el intento anterior...');
+      const enServidor = await _proyIdsEnServidor();
+      yaGrabadas = pendientes.filter(p => enServidor.has(p.id));
+      pendientes = pendientes.filter(p => !enServidor.has(p.id));
+      _proyPasarALineas(yaGrabadas);
+      _proyVerificar = false;
+      verificando = false;
+      setLoadingDetalle('');
+    }
+
+    if (pendientes.length) {
+      const rows = pendientes.map(p => ({
+        ID: p.id, SITIO_ID: p.sitioId, CLIENTE_ID: p.clienteId,
+        PCT: p.pct, MONTO: p.monto, MES: p.mes,
+        FECHA_SOLICITUD: '', FECHA_FACTURA: '', NRO_FACTURA: '', ESTADO: 'Proyectado'
+      }));
+      const json = await _apiPostJson(JSON.stringify({ action: 'BULK_INSERT', sheet: 'FACTURACION', rows }));
+      if (!json.ok) throw new Error(json.error || 'Error en BULK_INSERT');
+      _proyPasarALineas(pendientes);
+    }
+
+    refrescar();
+    const n = pendientes.length, y = yaGrabadas.length;
+    const txt = k => `${k} línea${k!==1?'s':''} traspasada${k!==1?'s':''} a Seguimiento ✓`;
+    if (!y)      toast(txt(n));
+    else if (!n) toast(`${y} línea${y!==1?'s':''} ya se había${y!==1?'n':''} grabado en el intento anterior ✓`);
+    else         toast(`${txt(n)} (${y} ya estaba${y!==1?'n':''} grabada${y!==1?'s':''})`);
     setTimeout(autoSync, 1000);
   } catch (e) {
-    toast(`Error en el traspaso: ${e.message}. La cola queda intacta para reintentar.`, 'err');
+    /* Pase lo que pase, el próximo intento verifica antes de enviar. */
+    _proyVerificar = true;
+    if (yaGrabadas.length) refrescar();
+    if (verificando) {
+      toast(`No se pudo verificar el intento anterior. No se envió nada: probá de nuevo en un momento.`, 'err');
+    } else if (e && e._transporte) {
+      toast('No se pudo confirmar el traspaso. La cola queda guardada: al reintentar se verifica primero qué llegó a grabarse.', 'err');
+    } else {
+      toast(`Error en el traspaso: ${e.message}. La cola queda guardada para reintentar.`, 'err');
+    }
   } finally {
+    _proyEnviando = false;
     setLoading(false);
   }
 }
