@@ -2166,6 +2166,18 @@
        la cola, así que tiene que verse sin buscarla. NO bloquea la pantalla a
        propósito: expira sola a los 6 segundos y la Líder tiene que poder seguir
        cargando mientras tanto. */
+    /* #127 — Aviso de carga fallida. Rosa: es el color de error del sistema. */
+    .carga-fallo {
+      align-items: center; gap: 14px; margin-bottom: 22px; padding: 14px 20px;
+      background: rgba(248,113,113,0.10); border: 1px solid rgba(248,113,113,0.45);
+      border-radius: var(--radius);
+    }
+    .carga-fallo-ico { font-size: 20px; color: #b91c1c; flex-shrink: 0; }
+    .carga-fallo-txt { flex: 1; min-width: 0; font-size: 12.5px; color: var(--text-mid); }
+    .carga-fallo-tit { font-weight: 700; font-size: 14px; color: #b91c1c; margin-bottom: 2px; }
+    .carga-fallo-btn { background: #dc2626; color: #fff; flex-shrink: 0; }
+    .carga-fallo-btn:hover { background: #b91c1c; }
+
     .undo-bar {
       position: fixed; left: 50%; bottom: 30px; transform: translateX(-50%) translateY(16px);
       z-index: 4000; display: flex; align-items: center; gap: 16px;
@@ -2943,6 +2955,16 @@
 
 <!-- MAIN -->
 <main class="main">
+
+  <!-- #127 — Aviso de carga fallida. Lo maneja _cargaMarcar(). -->
+  <div id="carga-fallo" class="carga-fallo" style="display:none;" role="alert">
+    <span class="carga-fallo-ico">⚠</span>
+    <div class="carga-fallo-txt">
+      <div class="carga-fallo-tit">No se pudieron cargar los datos</div>
+      <div id="carga-fallo-sub"></div>
+    </div>
+    <button class="btn carga-fallo-btn" onclick="sincronizar()">Reintentar</button>
+  </div>
 
   <!-- ═══ DASHBOARD ═══ -->
   <div id="view-dashboard" class="view active">
@@ -4380,7 +4402,7 @@
 // ═══════════════════════════════════════════════════════
 //  CONFIGURACIÓN
 // ═══════════════════════════════════════════════════════
-const API_URL = 'https://script.google.com/macros/s/AKfycbyZrYQyyPq6osRcVxDxFPJ5NV5ArAyJfMmSZBoqiT87FawSBjGjnu_9r3g4DI5Kn-JX/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycby49Q_nyduP_wg-JXr-UwyZEvvVkG2zs2t9kO_B1X-PAC521Ffpx6mUzSxFMZtgIJf_/exec';
 
 /* ═══════════════════════════════════════════════════════════════
    PEQ — Punto de Equilibrio mensual
@@ -4419,7 +4441,7 @@ function mesActualStr() {
    a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
    Se pinta en el pie del sidebar (#sidebar-version).
    ═══════════════════════════════════════════════════════ */
-const APP_VERSION = 'V 021026 1514';
+const APP_VERSION = 'V 051026 1310';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
@@ -4431,17 +4453,67 @@ const APP_VERSION = 'V 021026 1514';
    que no le dice nada al usuario y, en una escritura, tampoco aclara si la
    operación llegó a aplicarse.
 
-   ⚠ EL REINTENTO AUTOMÁTICO ES SOLO PARA GET, y es a propósito.
+   ⚠ UN GET SE REPITE SIN MIEDO; UN POST, SOLO CON SU `reqId`.
    Un GET es idempotente: repetirlo no cambia nada. Un POST NO: si el pedido
    llegó al servidor y se ejecutó pero la respuesta se perdió en el camino,
-   reintentarlo DUPLICARÍA el INSERT. Por eso las escrituras fallan a la
-   primera y el mensaje pide sincronizar para verificar antes de reintentar.
-   No agregar reintentos a los POST. */
+   reintentarlo DUPLICARÍA el INSERT.
+   Hasta el #126 las escrituras fallaban a la primera por eso. Desde el #127
+   se reintentan, pero ÚNICAMENTE por _apiPostJson, que le pone a cada guardado
+   un `reqId` que el backend reconoce (ver más abajo). Cualquier reintento de
+   un POST por otro camino, o contra un backend que no avisó `api >= 2`,
+   vuelve a duplicar. No escribir un `fetch` de POST fuera de _apiPostUnaVez. */
 const API_MSG_GET      = 'El servidor no respondió correctamente. Reintentá en unos segundos con Sincronizar.';
 const API_MSG_POST     = 'El servidor no respondió correctamente. Sincronizá para verificar si el cambio se aplicó antes de reintentar.';
 const API_MSG_SIN_CONN = 'No se pudo conectar con el servidor. Revisá tu conexión.';
-const API_GET_INTENTOS = 2;      // 1 original + 1 reintento
-const API_GET_ESPERA   = 1200;   // ms entre intentos
+const API_GET_INTENTOS = 3;      // #127 — antes 2 (1 original + 1 reintento)
+const API_GET_ESPERA   = 1200;   // ms antes de relanzar un intento que FALLÓ
+
+/* ══ #127 · CUANDO GOOGLE NO ENTREGA LA RESPUESTA ═══════════════════
+   Medido el 5/10/2026 con registros de red y el panel de Ejecuciones: el
+   script corre bien y rápido, pero el servicio de Google que entrega la
+   respuesta (script.googleusercontent.com/macros/echo) falla de a ratos. Se
+   queda entre 10 y 50 s esperando y devuelve un 404, o reenvía el pedido por
+   su cuenta. No depende del navegador, de la red ni del proyecto: un script
+   de control recién creado, de siete líneas, falló igual.
+
+   Dos defensas, una por tipo de pedido:
+
+   LECTURAS — intentos en paralelo. Si la respuesta no llegó en un tiempo
+   razonable NO se sigue esperando a Google: se lanza otro pedido igual, sin
+   cortar el primero, y se usa el que conteste antes. Leer dos veces no cambia
+   nada, y las fallas son independientes entre un pedido y el siguiente.
+     · `paralelo`: cuánto se espera antes de sumar otro intento.
+     · `tope`    : plazo total. Queda por debajo de LOAD_WATCHDOG_MS (90 s)
+                   para que la operación cierre sola antes que el vigilante.
+   El ALL tarda 5 a 19 s cuando todo anda bien, por eso su espera es más
+   larga: con menos, una carga normal dispararía una segunda lectura completa.
+   Una hoja chica tardó 1,4 a 2,2 s en las mediciones (las más grandes, como
+   los preciarios, no se midieron sueltas); cuando Google falla, la espera
+   medida arranca en 10 s. Los 7 s quedan entre las dos. Si una hoja grande
+   resultara tardar más que eso en condiciones normales, el único efecto es
+   una lectura de más, no un error.
+
+   GUARDADOS — ver _apiPostJson. */
+const API_GET_PLAN_ALL   = { paralelo: 22000, tope: 85000 };
+const API_GET_PLAN_CHICA = { paralelo: 7000,  tope: 40000 };
+let _apiGetSeq = 0;
+
+const API_POST_INTENTOS = 3;
+const API_POST_TIMEOUT  = 20000;  // ms por intento
+const API_POST_ESPERA   = 1500;   // ms entre intentos
+
+/* El backend avisa en cada respuesta qué versión del contrato habla (`api`).
+   Desde la 2 reconoce un guardado repetido por su `reqId`. Arranca en false y
+   se enciende con la primera respuesta que lo confirme; como el ingreso
+   siempre lee antes de que alguien pueda guardar, para el primer guardado ya
+   se sabe. Contra un backend viejo queda en false y los guardados se
+   comportan EXACTAMENTE como antes: un solo intento, sin plazo. */
+let _apiIdem = false;
+let _apiReqSeq = 0;
+function _apiNuevoReqId() {
+  return 'r' + Date.now().toString(36) + '-' + (++_apiReqSeq).toString(36) +
+         '-' + Math.random().toString(36).slice(2, 10);
+}
 
 /* Marca los errores de transporte para distinguirlos de los de negocio
    (los que el backend devuelve como { ok:false, error }), que NO se reintentan
@@ -4467,30 +4539,80 @@ async function _apiLeerJson(res, msgHtml) {
   catch (e) { throw _errTransporte(msgHtml); }
   if (!res.ok)               throw _errTransporte(`${msgHtml} (HTTP ${res.status})`);
   if (_esRespuestaHtml(txt)) throw _errTransporte(msgHtml);
-  try { return JSON.parse(txt); }
+  let json;
+  try { json = JSON.parse(txt); }
   catch (e) { throw _errTransporte(msgHtml); }
+  if (json && Number(json.api) >= 2) _apiIdem = true;   // #127
+  return json;
 }
 
-/* GET con un reintento. Devuelve el JSON crudo: validar `ok` es del llamador,
-   que es donde estaba antes y donde están los mensajes específicos de cada uno. */
-async function _apiGetJson(url) {
-  let ultimo = null;
-  for (let intento = 1; intento <= API_GET_INTENTOS; intento++) {
-    try {
-      let res;
-      try { res = await fetch(url); }
-      catch (e) { throw _errTransporte(API_MSG_SIN_CONN); }
-      return await _apiLeerJson(res, API_MSG_GET);
-    } catch (e) {
-      ultimo = e;
-      if (intento < API_GET_INTENTOS) {
-        // cambio #91 — que el usuario vea por qué la espera se alargó
-        if (typeof setLoadingDetalle === 'function') setLoadingDetalle('Reintentando...');
-        await _dormir(API_GET_ESPERA);
+/* GET con intentos en paralelo (#127; antes, un reintento en serie). Devuelve
+   el JSON crudo: validar `ok` es del llamador, que es donde estaba antes y
+   donde están los mensajes específicos de cada uno.
+
+   Gana el primer intento que devuelva un JSON; los demás se cortan. Un
+   intento que FALLA (404, página de error, sin conexión) relanza otro tras
+   API_GET_ESPERA; uno que simplemente no vuelve suma otro en paralelo al
+   cumplirse `paralelo`. Nunca hay más de API_GET_INTENTOS pedidos en total.
+
+   Cada intento lleva un `_r` distinto en la URL. El backend lo ignora; está
+   para que el navegador no ponga a un pedido en fila detrás de otro idéntico
+   que todavía no volvió, que es lo que hace con dos URL iguales. */
+function _apiGetJson(url) {
+  const plan = /[?&]sheet=ALL(&|$)/i.test(url) ? API_GET_PLAN_ALL : API_GET_PLAN_CHICA;
+  return new Promise((resolve, reject) => {
+    const cortes = [];
+    let lanzados = 0, enVuelo = 0, cerrado = false, ultimo = null;
+    let tParalelo = null, tRelanzar = null, tTope = null;
+    /* El "Reintentando..." se muestra solo si este pedido nació con el overlay
+       abierto, es decir, si es parte de la operación que el usuario está
+       mirando. Una lectura en segundo plano no tiene que escribir sobre el
+       cartel de otra operación. */
+    const conOverlay = _overlayCargaAbierto();
+    let quitarAviso = () => {};
+
+    const cerrar = (fn, valor) => {
+      if (cerrado) return;
+      cerrado = true;
+      clearTimeout(tParalelo); clearTimeout(tRelanzar); clearTimeout(tTope);
+      cortes.forEach(c => { try { c.abort(); } catch (e) {} });
+      quitarAviso();
+      fn(valor);
+    };
+
+    const lanzar = () => {
+      if (cerrado || lanzados >= API_GET_INTENTOS) return;
+      lanzados++; enVuelo++;
+      // cambio #91 — que el usuario vea por qué la espera se alargó
+      if (lanzados > 1 && conOverlay) {
+        quitarAviso();
+        quitarAviso = _apiAvisarEspera('Reintentando...');
       }
-    }
-  }
-  throw ultimo;
+      const corte = new AbortController();
+      cortes.push(corte);
+      const u = url + (url.includes('?') ? '&' : '?') + '_r=' + (++_apiGetSeq);
+      fetch(u, { signal: corte.signal })
+        .then(res => _apiLeerJson(res, API_MSG_GET),
+              ()  => { throw _errTransporte(API_MSG_SIN_CONN); })
+        .then(json => cerrar(resolve, json),
+              err  => {
+                enVuelo--;
+                if (cerrado) return;
+                ultimo = err;
+                if (lanzados < API_GET_INTENTOS) {
+                  clearTimeout(tParalelo); clearTimeout(tRelanzar);
+                  tRelanzar = setTimeout(lanzar, API_GET_ESPERA);
+                } else if (enVuelo === 0) {
+                  cerrar(reject, ultimo);
+                }
+              });
+      clearTimeout(tParalelo);
+      if (lanzados < API_GET_INTENTOS) tParalelo = setTimeout(lanzar, plan.paralelo);
+    };
+
+    tTope = setTimeout(() => cerrar(reject, ultimo || _errTransporte(API_MSG_GET)), plan.tope);
+    lanzar();
+  });
 }
 
 /* #124 — Contador de escrituras. Lo incrementa TODO POST, salga bien o mal.
@@ -4499,13 +4621,106 @@ async function _apiGetJson(url) {
    así que se descarta y se vuelve a pedir. */
 let _apiSeqEscritura = 0;
 
-/* POST sin reintento (ver la advertencia de arriba). */
+/* Un envío de POST. Con `plazoMs` en 0 espera lo que haga falta, como siempre. */
+async function _apiPostUnaVez(bodyStr, plazoMs) {
+  const corte = new AbortController();
+  let vencio = false;
+  const reloj = plazoMs ? setTimeout(() => { vencio = true; corte.abort(); }, plazoMs) : null;
+  try {
+    let res;
+    try { res = await fetch(API_URL, { method: 'POST', body: bodyStr, signal: corte.signal }); }
+    catch (e) {
+      if (vencio) throw _errTransporte(API_MSG_POST);
+      throw _errTransporte(`${API_MSG_SIN_CONN} Sincronizá para verificar si el cambio se aplicó.`);
+    }
+    return await _apiLeerJson(res, API_MSG_POST);
+  } finally {
+    clearTimeout(reloj);
+  }
+}
+
+/* Texto de espera sobre el overlay que NO pisa lo que hubiera (por ejemplo el
+   "3 de 12" de una operación de varios pasos): devuelve cómo deshacerlo. */
+function _apiAvisarEspera(txt) {
+  const paso = document.getElementById('load-paso');
+  const box  = document.getElementById('load-box');
+  if (!paso) return () => {};
+  const antes = paso.textContent;
+  const teniaPaso = !!(box && box.classList.contains('con-paso'));
+  setLoadingDetalle(txt);
+  return () => {
+    if (paso.textContent !== txt) return;      // ya lo cambió otro: no tocar
+    paso.textContent = antes;
+    if (box) box.classList.toggle('con-paso', teniaPaso);
+  };
+}
+
+/* ══ POST (#127) ═════════════════════════════════════════════════════
+   ⚠ UN POST NO SE REPITE A CIEGAS, y eso no cambió. Lo que cambió es que
+   ahora cada guardado lleva un `reqId` único y el backend (api >= 2) recuerda
+   cuáles procesó: si el mismo reqId llega dos veces, la segunda NO escribe y
+   devuelve la respuesta de la primera. Recién con esa garantía es seguro
+   reintentar, y el reintento usa SIEMPRE el mismo reqId.
+
+   Se reintenta cuando no se pudo saber qué pasó:
+     · el pedido no volvió en API_POST_TIMEOUT,
+     · volvió un 404 o una página de error,
+     · no hubo conexión,
+     · volvió un JSON que NO trae nuestro reqId. Este último es el caso medido
+       el 5/10/2026: Google reenvía el guardado como si fuera una lectura y la
+       respuesta que llega es la de esa lectura, con ok:true. Antes el sistema
+       la tomaba como "guardado".
+   Un error de negocio ({ ok:false, error } con nuestro reqId) NO se
+   reintenta: es la respuesta real y tiene que llegar tal cual.
+
+   Si después de API_POST_INTENTOS sigue sin saberse, falla con el mismo
+   mensaje de siempre, que pide sincronizar antes de repetir.
+
+   Contra un backend viejo (_apiIdem en false) no hay reqId ni reintento: un
+   solo envío, sin plazo, igual que antes. NO agregar reintentos por otro
+   camino: sin el reqId, repetir un INSERT lo duplica. */
 async function _apiPostJson(bodyStr) {
   _apiSeqEscritura++;
-  let res;
-  try { res = await fetch(API_URL, { method: 'POST', body: bodyStr }); }
-  catch (e) { throw _errTransporte(`${API_MSG_SIN_CONN} Sincronizá para verificar si el cambio se aplicó.`); }
-  return await _apiLeerJson(res, API_MSG_POST);
+
+  let cuerpo = null, reqId = '';
+  if (_apiIdem) {
+    try {
+      const obj = JSON.parse(bodyStr);
+      if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
+        reqId = _apiNuevoReqId();
+        obj.reqId = reqId;
+        cuerpo = JSON.stringify(obj);
+      }
+    } catch (e) { /* cuerpo no interpretable: va por el camino de siempre */ }
+  }
+  if (!cuerpo) return await _apiPostUnaVez(bodyStr, 0);
+
+  let ultimo = null;
+  let quitarAviso = () => {};
+  try {
+    for (let intento = 1; intento <= API_POST_INTENTOS; intento++) {
+      try {
+        const json = await _apiPostUnaVez(cuerpo, API_POST_TIMEOUT);
+        if (json && json.reqId === reqId) {
+          if (!json.ocupado) return json;
+          // No se ejecutó nada: el servidor estaba con otro guardado.
+          ultimo = new Error(json.error || 'El servidor está ocupado. Probá de nuevo en unos segundos.');
+        } else {
+          ultimo = _errTransporte(API_MSG_POST);   // respuesta ajena
+        }
+      } catch (e) {
+        ultimo = e;
+      }
+      if (intento < API_POST_INTENTOS) {
+        quitarAviso();
+        quitarAviso = _apiAvisarEspera('Confirmando con el servidor...');
+        await _dormir(API_POST_ESPERA);
+      }
+    }
+    throw ultimo;
+  } finally {
+    quitarAviso();
+  }
 }
 
 async function apiGet(sheet = 'ALL') {
@@ -4827,13 +5042,46 @@ function nuevoId(prefix) {
    la de primer plano ya trae una foto igual o más nueva. */
 let _cargaSeq = 0;
 
+/* ── #127 · Aviso de carga fallida ──
+   Antes, si el ALL no llegaba, quedaba solo un toast de 3 segundos y el
+   tablero mostraba "Sin datos cargados para <mes>", que es el cartel de un mes
+   vacío: parecía que no había nada cargado cuando lo que había fallado era la
+   lectura. Ahora queda un aviso fijo arriba de todas las vistas, con botón de
+   reintento, hasta que una carga salga bien.
+
+   _cargaFallo     : la última carga en primer plano no trajo datos.
+   _cargaHuboDatos : en esta sesión ya hubo al menos una carga buena, así que
+                     lo que está en pantalla es real pero puede estar viejo. */
+let _cargaFallo = false;
+let _cargaHuboDatos = false;
+
+function _cargaMarcar(fallo) {
+  _cargaFallo = !!fallo;
+  if (!fallo) _cargaHuboDatos = true;
+  const el  = document.getElementById('carga-fallo');
+  const sub = document.getElementById('carga-fallo-sub');
+  if (el) el.style.display = fallo ? 'flex' : 'none';
+  if (fallo && sub) {
+    sub.textContent = _cargaHuboDatos
+      ? 'El servidor no respondió. Estás viendo los datos de la última carga: pueden faltar cambios recientes.'
+      : 'El servidor no respondió. Los datos existen, pero todavía no se pudieron traer.';
+  }
+  if (fallo) {
+    // El cartel de "mes sin datos" no aplica: no se sabe si el mes está vacío.
+    const vacio = document.getElementById('dash-empty-banner');
+    if (vacio) vacio.style.display = 'none';
+  }
+}
+
 async function cargarTodo(mensaje) {
   _cargaSeq++;
   setLoading(true, mensaje || 'Cargando datos');
   try {
     const data = await apiGet('ALL');
+    _cargaMarcar(false);   // antes de aplicar: el re-render ya tiene que verlo en false
     _aplicarDatosAll(data);
   } catch (err) {
+    _cargaMarcar(true);
     toast('Error al cargar: ' + err.message, 'err');
     console.error('ERROR cargarTodo:', err);
   } finally {
@@ -12686,7 +12934,7 @@ function actualizarDashboard() {
   const banner = document.getElementById('dash-empty-banner');
   const bannerTitle = document.getElementById('dash-empty-title');
   if (banner && bannerTitle) {
-    if (sinDatos && mesSel) {
+    if (sinDatos && mesSel && !_cargaFallo) {   // #127 — si la carga falló no se sabe si el mes está vacío
       bannerTitle.textContent = `Sin datos cargados para ${mesLabel(mesSel)}`;
       banner.style.display = 'flex';
     } else {
@@ -13050,6 +13298,7 @@ async function autoSync() {
     if (seqEsc !== _apiSeqEscritura) {
       _bgSyncPendiente = true;                    // Regla 2
     } else if (seqCarga === _cargaSeq) {          // Regla 3
+      _cargaMarcar(false);   // #127 — llegaron datos buenos: se va el aviso de carga fallida
       _aplicarDatosAll(data);
       /* Mismo re-render de la vista activa que hacía sincronizar() después de
          cargarTodo(). */
@@ -15401,6 +15650,9 @@ function cerrarSesion() {
   actCerrarPanel();
   _actLineasRemotas = null;
   try { sessionStorage.removeItem('terabyte_user'); } catch(e) {}
+  /* #127 — el aviso de carga fallida es de la sesión que se cierra. */
+  _cargaFallo = false;
+  { const av = document.getElementById('carga-fallo'); if (av) av.style.display = 'none'; }
   document.getElementById('login-user').value = '';
   document.getElementById('login-error').style.display = 'none';
   document.getElementById('btn-login').textContent = 'Ingresar';
