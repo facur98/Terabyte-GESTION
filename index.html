@@ -1617,8 +1617,13 @@
        N° de OC. Anchos medidos para que entre completa desde 1280 px
        (los minmax ceden antes que la tabla se desborde). */
     .oc-head, .oc-row {
-      grid-template-columns: 112px 84px minmax(60px, 1fr) minmax(82px, 96px) minmax(82px, 96px)
-                             64px minmax(130px, 150px) 88px minmax(176px, 196px);
+      /* Contratista toma el ancho de su nombre más largo (--oc-contr-w, lo mide
+         renderOC); el espacio que sobra se reparte entre las demás columnas. */
+      /* En pantallas angostas (1280) Contratista puede ceder hasta 70px y partir
+         el nombre en dos renglones antes que la tabla se desborde. */
+      grid-template-columns: minmax(100px, 1.1fr) minmax(76px, 1fr) minmax(70px, var(--oc-contr-w, 130px))
+                             minmax(92px, 1fr) minmax(92px, 1fr) minmax(64px, 0.8fr)
+                             minmax(128px, 150px) minmax(88px, 1fr) minmax(172px, 196px);
       gap: 8px; padding-left: 14px; padding-right: 14px;
     }
     .oc-tiles { grid-template-columns: repeat(5, minmax(0, 1fr)); }
@@ -4866,7 +4871,7 @@ function mesActualStr() {
    a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
    Se pinta en el pie del sidebar (#sidebar-version).
    ═══════════════════════════════════════════════════════ */
-const APP_VERSION = 'V 191026 1130';
+const APP_VERSION = 'V 191026 1200';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
@@ -14373,7 +14378,7 @@ function renderOC() {
     headOc.innerHTML =
       '<div>N° OC · Fecha</div><div>Sitio</div>' +
       '<div>Contratista <div class="ms-wrap ms-th" id="oc-filtro-contratista" data-title="Contratista"></div></div>' +
-      '<div class="num">Venta</div><div class="num">Costo</div><div class="num">Margen</div>' +
+      '<div class="num">Paga cliente</div><div class="num">Precio OC</div><div class="num">Margen</div>' +
       '<div>Liberado / saldo</div>' +
       '<div>Estado <div class="ms-wrap ms-th" id="oc-filtro-estado" data-title="Estado"></div></div><div class="num">Acciones</div>';
     headOc.dataset.init = '1';
@@ -14448,6 +14453,8 @@ function renderOC() {
   }
 
 
+  _ocAjustarAnchoContratista();
+
   if (!lista.length) {
     body.innerHTML = `<div class="pr-empty">${universo === 0
       ? 'Todavía no hay órdenes de compra. Creá la primera con "+ Nueva OC".'
@@ -14497,6 +14504,31 @@ function renderOC() {
   /* #133 — Si el modal de liberaciones está abierto (p. ej. llegó una
      sincronización), se refrescan sus datos sin tocar lo que se está tipeando. */
   olbRefrescarSiAbierto();
+}
+
+/* Ancho de la columna Contratista = nombre más largo de TODAS las OC (no solo
+   las filtradas, para que la tabla no salte al filtrar), o el encabezado con su
+   embudo si es más ancho. Se aplica como variable CSS sobre la tarjeta, así el
+   encabezado y las filas usan exactamente la misma grilla. */
+let _ocMedidor = null;
+function _ocAjustarAnchoContratista() {
+  const head = document.getElementById('oc-head');
+  const card = head && head.parentElement;
+  if (!card) return;
+  try {
+    if (!_ocMedidor) _ocMedidor = document.createElement('canvas').getContext('2d');
+    const ctx = _ocMedidor;
+    ctx.font = '400 12.5px "DM Sans", sans-serif';
+    let max = 0;
+    new Set(oc.map(o => nombreEmpleado(o.contratistaId) || '')).forEach(n => {
+      max = Math.max(max, ctx.measureText(n).width);
+    });
+    ctx.font = '700 10.5px "DM Sans", sans-serif';
+    const lbl = 'CONTRATISTA';
+    const enc = ctx.measureText(lbl).width + lbl.length * 0.7 + 30;   // letter-spacing + embudo
+    const ancho = Math.round(Math.min(Math.max(max + 16, enc, 90), 240));
+    card.style.setProperty('--oc-contr-w', ancho + 'px');
+  } catch (e) { /* sin canvas queda el ancho por defecto */ }
 }
 
 function ocLimpiarFiltros() {
@@ -15024,15 +15056,22 @@ async function guardarOC(destino) {
   const notas = document.getElementById('ocf-notas').value || '';
   const pct   = ocfPctActual();
   const { venta, costo } = ocfTotales();
-  const esNueva = !_ocfCtx.ocId;
+  let esNueva = !_ocfCtx.ocId;
   const ahora = new Date().toISOString();
 
   /* El número se asigna AL EMITIR (D24/R7) y solo si todavía no tiene.
-     Reemitir una OC que ya fue emitida conserva su número. */
-  let nroOc = _ocfCtx.nroOc || '';
+     Reemitir una OC que ya fue emitida conserva su número.
+     #134 — En una OC nueva, el ID y el número se fijan en el PRIMER intento y
+     se reusan en los reintentos del mismo formulario. Antes cada "Emitir"
+     después de un error generaba ID nuevo con el mismo número: así nacieron
+     las 5 copias de OC-2026-0026 (7/10) y las de OC-0001 y OC-0015. */
+  let nroOc = _ocfCtx.nroOc || _ocfCtx.nroReservado || '';
   if (destino === OC_ESTADO_EMITIDA && !nroOc) nroOc = ocProximoNumero(fecha);
+  if (esNueva && nroOc) _ocfCtx.nroReservado = nroOc;
+  if (esNueva && !_ocfCtx.idNuevo) _ocfCtx.idNuevo = nuevoId('OCH');
+  if (esNueva && !_ocfCtx.creadoAt) _ocfCtx.creadoAt = ahora;   // el alta conserva su hora en los reintentos
 
-  const ocId = _ocfCtx.ocId || nuevoId('OCH');
+  const ocId = _ocfCtx.ocId || _ocfCtx.idNuevo;
   const cab = {
     ID: ocId, NRO_OC: nroOc, FECHA: fecha, SITIO_ID: _ocfCtx.sitioId,
     CONTRATISTA_ID: conId, CLIENTE_ID: ocClienteDeSitio(_ocfCtx.sitioId),
@@ -15059,6 +15098,14 @@ async function guardarOC(destino) {
 
   setLoading(true, 'Guardando la OC');
   try {
+    /* #134 — Reintento de una OC nueva: el intento anterior pudo haberse
+       grabado aunque la respuesta no llegó. Se consulta la hoja OC: si la
+       cabecera con este ID ya está, se sigue por el camino de EDICIÓN (que
+       borra y reinserta las líneas), así nunca queda una segunda copia. */
+    if (esNueva && _ocfCtx.intentos > 0) {
+      const actual = await apiGet('OC');
+      if ((actual.data || []).some(r => String(r.ID || '').trim() === ocId)) esNueva = false;
+    }
     /* Edición = 3 llamadas atómicas (por eso existe BULK_DELETE):
        borrar líneas viejas → insertar las nuevas → actualizar cabecera. */
     if (esNueva) {
@@ -15080,7 +15127,8 @@ async function guardarOC(destino) {
       totalVenta: ocRoundImporte(venta), totalCosto: ocRoundImporte(costo), pctGlobal: pct,
       usuarioCarga: cab.USUARIO_CARGA, creadoAt: cab.CREADO_AT, modificadoAt: cab.MODIFICADO_AT
     };
-    if (esNueva) oc.push(local);
+    /* #134 — por id: un reintento que siguió por edición todavía no está en `oc` */
+    if (!oc.some(o => o.id === ocId)) oc.push(local);
     else oc = oc.map(o => (o.id === ocId ? local : o));
 
     ocLineas = ocLineas.filter(l => l.ocId !== ocId).concat(filas.map(f => ({
@@ -15096,6 +15144,7 @@ async function guardarOC(destino) {
     cerrarFormOC();
     renderOC();
   } catch (err) {
+    if (_ocfCtx) _ocfCtx.intentos = (_ocfCtx.intentos || 0) + 1;   // #134 — el próximo "Emitir" verifica antes de crear
     toast('No se pudo guardar: ' + err.message, 'err');
     console.error('ERROR guardarOC:', err);
   } finally { setLoading(false); }
@@ -15507,7 +15556,7 @@ function olbRender() {
   const anchoLib = total > 0 ? Math.min(lib / total * 100, 100) : 0;
   document.getElementById('olb-resumen').innerHTML = `
     <div class="olb-kpis">
-      <div class="olb-kpi"><div class="olb-kpi-l">Total costo</div><div class="olb-kpi-v">${prFmtMonto(total)}</div></div>
+      <div class="olb-kpi"><div class="olb-kpi-l">Precio OC</div><div class="olb-kpi-v">${prFmtMonto(total)}</div></div>
       <div class="olb-kpi"><div class="olb-kpi-l">Liberado</div>
         <div class="olb-kpi-v">${prFmtMonto(lib)}<small>${olbPctTexto(lib, total)}</small></div></div>
       <div class="olb-kpi ${saldo > 0 ? 'saldo' : 'cero'}"><div class="olb-kpi-l">Saldo</div>
@@ -15576,7 +15625,20 @@ function _olbOC() { return _olbCtx ? oc.find(x => x.id === _olbCtx.ocId) : null;
 
 function olbOnMonto() {
   const o = _olbOC(); if (!o) return;
-  const m = olbParseMonto(document.getElementById('olb-monto').value);
+  /* Separadores de miles mientras se escribe: 500000 → "$500.000". Solo pesos
+     enteros. El cursor se recoloca detrás del mismo dígito en que estaba. */
+  const el = document.getElementById('olb-monto');
+  const pos = el.selectionStart == null ? el.value.length : el.selectionStart;
+  const digAntes = el.value.slice(0, pos).replace(/\D/g, '').length;
+  const digitos = el.value.replace(/\D/g, '').replace(/^0+(?=\d)/, '');
+  el.value = digitos ? prFmtMonto(Number(digitos)) : '';
+  if (document.activeElement === el && el.setSelectionRange) {
+    let i = 0, n = 0;
+    if (digAntes > 0) { for (; i < el.value.length; i++) { if (/\d/.test(el.value[i]) && ++n === digAntes) { i++; break; } } }
+    else i = el.value.startsWith('$') ? 1 : 0;
+    try { el.setSelectionRange(i, i); } catch (e) {}
+  }
+  const m = olbParseMonto(el.value);
   const total = o.totalCosto || 0;
   document.getElementById('olb-pct').value = (isFinite(m) && total > 0) ? olbFmtNum(m / total * 100, 2) : '';
   olbValidarForm();
