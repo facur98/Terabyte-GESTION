@@ -1612,6 +1612,102 @@
     .oc-acciones { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
     .oc-acciones .btn { white-space: nowrap; }
 
+    /* ═══ #133 · Liberaciones de OC ═══
+       La lista suma la columna "Liberado / saldo" y la fecha pasa debajo del
+       N° de OC. Anchos medidos para que entre completa desde 1280 px
+       (los minmax ceden antes que la tabla se desborde). */
+    .oc-head, .oc-row {
+      grid-template-columns: 112px 84px minmax(60px, 1fr) minmax(82px, 96px) minmax(82px, 96px)
+                             64px minmax(130px, 150px) 88px minmax(176px, 196px);
+      gap: 8px; padding-left: 14px; padding-right: 14px;
+    }
+    .oc-tiles { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+    .oc-fecha-sub { font-size: 11.5px; color: var(--text-light); margin-top: 2px; }
+    .pr-tile.olb-tile { background: rgba(79,128,255,0.07); border-color: rgba(79,128,255,0.25); }
+    .pr-tile.olb-tile .pr-tile-label { color: #3a6bf0; }
+
+    .olb-cell {
+      display: block; width: 100%; box-sizing: border-box; text-align: left;
+      padding: 4px 9px; border-radius: 10px; cursor: pointer; line-height: 1.25;
+      border: 1px solid transparent; background: transparent;
+      font-family: inherit; color: var(--text-dark); transition: background .12s ease;
+    }
+    .olb-cell:hover { background: rgba(79,128,255,0.08); }
+    .olb-cell.cero {
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      border: 1px dashed rgba(79,128,255,0.45); font-size: 12px; min-height: 32px;
+    }
+    .olb-cell.cero .olb-sin { color: var(--text-light); }
+    .olb-cell.cero .olb-mas { color: #3a6bf0; font-weight: 700; white-space: nowrap; }
+    .olb-l1 { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; font-size: 12px; }
+    .olb-l1 b { font-weight: 700; }
+    .olb-l1 .olb-pct { font-size: 11px; font-weight: 700; color: #3a6bf0; }
+    .olb-cell.full .olb-l1 .olb-pct { color: #047857; }
+    .olb-bar { display: block; height: 6px; border-radius: 3px; background: rgba(150,160,190,0.22); margin: 4px 0 3px; overflow: hidden; }
+    .olb-bar > i { display: block; height: 100%; border-radius: 3px; background: var(--accent-blue); }
+    .olb-cell.full .olb-bar > i { background: #10b981; }
+    .olb-l2 { display: block; font-size: 11px; color: var(--text-mid); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .olb-l2 b { color: var(--text-dark); }
+    .olb-cell.full .olb-l2 { color: #047857; font-weight: 600; }
+    .olb-na { color: var(--text-light); }
+
+    /* Modal */
+    #modal-olb .modal { width: 760px; max-width: 95vw; max-height: 92vh; overflow-y: auto; padding: 26px 30px; }
+    .olb-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .olb-x { background: none; border: none; cursor: pointer; font-size: 20px; color: var(--text-light); line-height: 1; padding: 6px; }
+    .olb-enc-btn { margin-left: auto; flex-shrink: 0; }
+    .olb-kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+    .olb-kpi { padding: 11px 14px; border-radius: 10px; background: rgba(255,255,255,0.7); border: 1px solid rgba(200,205,225,0.5); }
+    .olb-kpi.saldo { background: rgba(16,185,129,0.08); border-color: rgba(16,185,129,0.28); }
+    .olb-kpi.saldo .olb-kpi-l, .olb-kpi.saldo .olb-kpi-v { color: #047857; }
+    .olb-kpi.cero { background: rgba(150,160,190,0.10); border-color: rgba(150,160,190,0.30); }
+    .olb-kpi.cero .olb-kpi-l, .olb-kpi.cero .olb-kpi-v { color: var(--text-mid); }
+    .olb-kpi-l { font-size: 10px; font-weight: 700; letter-spacing: .7px; text-transform: uppercase; color: var(--text-light); }
+    .olb-kpi-v { font-size: 18px; font-weight: 700; margin-top: 4px; color: var(--text-dark); }
+    .olb-kpi-v small { font-size: 12px; color: #3a6bf0; margin-left: 4px; }
+    .olb-bigbar { height: 8px; border-radius: 4px; background: rgba(150,160,190,0.22); margin: 10px 0 20px; overflow: hidden; display: flex; }
+    .olb-bigbar > i { display: block; height: 100%; background: var(--accent-blue); }
+    .olb-bigbar > i.prev { background: repeating-linear-gradient(45deg, rgba(79,128,255,0.55) 0 5px, rgba(79,128,255,0.30) 5px 10px); }
+    .olb-bigbar.full > i { background: #10b981; }
+    .olb-sec { font-size: 11px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; color: var(--text-light); margin-bottom: 8px; }
+    .olb-sec span { color: #3a6bf0; }
+    .olb-sec-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .olb-sec-row .olb-sec { margin-bottom: 0; }
+    .olb-atajos { display: flex; gap: 6px; }
+    .olb-atajos .cf-op { padding: 5px 11px; font-size: 12px; }
+    .olb-tabla { border-radius: 12px; overflow: hidden; border: 1px solid rgba(200,205,225,0.5); margin-bottom: 20px; }
+    .olb-th, .olb-tr {
+      display: grid; grid-template-columns: 46px 88px 110px 60px minmax(0, 1fr) 150px;
+      gap: 10px; padding: 9px 14px; align-items: center;
+    }
+    .olb-th { background: rgba(15,23,42,0.86); color: #fff; font-size: 10px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; }
+    .olb-tr { font-size: 12.5px; background: rgba(255,255,255,0.6); border-top: 1px solid rgba(200,205,225,0.35); }
+    .olb-th + .olb-tr { border-top: none; }
+    .olb-th .r, .olb-tr .r { text-align: right; }
+    .olb-tr .olb-nro { font-weight: 700; color: #3a6bf0; }
+    .olb-tr .olb-monto { font-weight: 700; }
+    .olb-tr .olb-obs { min-width: 0; }
+    .olb-tr .olb-obs > div:first-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .olb-tr .olb-por { font-size: 11px; color: var(--text-light); }
+    .olb-tr .olb-acc { display: flex; gap: 6px; justify-content: flex-end; }
+    .olb-tr.anulada { background: rgba(248,113,113,0.04); color: var(--text-light); }
+    .olb-tr.anulada .olb-nro, .olb-tr.anulada .olb-monto, .olb-tr.anulada .olb-tach { text-decoration: line-through; color: var(--text-light); }
+    .olb-tr.anulada .olb-motivo { color: #b91c1c; font-size: 12px; }
+    .olb-vacio { padding: 18px 14px; text-align: center; font-size: 12.5px; color: var(--text-light); background: rgba(255,255,255,0.5); }
+    .olb-grid { display: grid; grid-template-columns: 160px minmax(0, 1fr) 110px; gap: 12px; }
+    .olb-grid .form-input, #olb-notas { width: 100%; box-sizing: border-box; }
+    #olb-monto, #olb-pct { font-size: 15px; font-weight: 700; }
+    .olb-campo > label {
+      display: block; font-size: 11px; font-weight: 700; color: var(--text-light);
+      text-transform: uppercase; letter-spacing: .6px; margin-bottom: 7px;
+    }
+    .olb-campo > label small { text-transform: none; letter-spacing: 0; font-weight: 500; }
+    .form-input.olb-err { border-color: rgba(248,113,113,0.7); }
+    #olb-msg .cf-caja { margin: 12px 0 0; padding: 10px 14px; font-size: 12.5px; }
+    #olb-msg .cf-caja.peligro { color: #b91c1c; }
+    .olb-completa { display: flex; gap: 12px; align-items: center; }
+    .olb-completa i { color: #047857; font-size: 18px; }
+
     /* ── Formulario ──
        Usa el andamiaje de formularios del sistema: .form-row / .form-group /
        .form-label / .form-input / .form-select. No define clases propias para
@@ -3072,6 +3168,11 @@
     @media (prefers-reduced-motion: reduce) {
       .lg-side, .lg-main, #lg-fly.lg-volando, #lg-fly img { transition: none; }
     }
+    /* #133 · Con 5 tiles, en pantallas angostas van de a 3 (va al final para
+       ganarle a la regla de 2 columnas del bloque de Emisión OC). */
+    @media (max-width: 1250px) {
+      .oc-tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
   </style>
 </head>
 <body>
@@ -4371,6 +4472,49 @@
   </div>
 </div>
 
+<!-- #133 · Liberaciones de una OC. Se abre desde la columna "Liberado / saldo"
+     de Emisión OC. El formulario no se muestra a los perfiles de solo lectura. -->
+<div class="modal-overlay" id="modal-olb">
+  <div class="modal">
+    <div class="olb-top">
+      <div class="modal-title" style="margin:0;">Liberaciones</div>
+      <button class="olb-x" onclick="cerrarModalOlb()" aria-label="Cerrar">✕</button>
+    </div>
+    <div id="olb-enc"></div>
+    <div id="olb-resumen"></div>
+    <div class="olb-sec">Historial</div>
+    <div id="olb-historial"></div>
+    <div id="olb-form-wrap">
+      <div class="olb-sec-row">
+        <div class="olb-sec">Nueva liberación · <span id="olb-nro"></span></div>
+        <div class="olb-atajos">
+          <button type="button" class="cf-op" onclick="olbAtajo('25')">25%</button>
+          <button type="button" class="cf-op" onclick="olbAtajo('saldo')">Todo el saldo</button>
+        </div>
+      </div>
+      <div class="olb-grid">
+        <div class="olb-campo"><label for="olb-fecha">Fecha</label>
+          <input type="date" class="form-input" id="olb-fecha" oninput="olbValidarForm()"></div>
+        <div class="olb-campo"><label for="olb-monto">Monto a liberar</label>
+          <input type="text" inputmode="numeric" class="form-input" id="olb-monto" placeholder="$ 0"
+                 autocomplete="off" oninput="olbOnMonto()" onblur="olbFormatearMonto()"></div>
+        <div class="olb-campo"><label for="olb-pct">% de la OC</label>
+          <input type="text" inputmode="decimal" class="form-input" id="olb-pct" placeholder="0"
+                 autocomplete="off" oninput="olbOnPct()"></div>
+      </div>
+      <div class="olb-campo" style="margin-top:12px;"><label for="olb-notas">Observación <small>(opcional)</small></label>
+        <input type="text" class="form-input" id="olb-notas" maxlength="300" autocomplete="off"
+               placeholder="Certificado de avance, entrega de materiales…"></div>
+      <div id="olb-msg"></div>
+    </div>
+    <div id="olb-aviso"></div>
+    <div class="modal-footer">
+      <button class="btn btn-glass" onclick="cerrarModalOlb()">Cerrar</button>
+      <button class="btn btn-primary" id="olb-btn" onclick="registrarLiberacion()">Registrar liberación</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modal-confirmar">
   <div class="modal" style="max-width:500px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
@@ -4683,7 +4827,7 @@
 // ═══════════════════════════════════════════════════════
 //  CONFIGURACIÓN
 // ═══════════════════════════════════════════════════════
-const API_URL = 'https://script.google.com/macros/s/AKfycby49Q_nyduP_wg-JXr-UwyZEvvVkG2zs2t9kO_B1X-PAC521Ffpx6mUzSxFMZtgIJf_/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbwJQLzEGpo9NAw1TaB1Efbe1tTGrDdYBjZz70febRXVBW3IC-rci11CMm6pXFI1YeOt/exec';
 
 /* ═══════════════════════════════════════════════════════════════
    PEQ — Punto de Equilibrio mensual
@@ -4722,7 +4866,7 @@ function mesActualStr() {
    a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
    Se pinta en el pie del sidebar (#sidebar-version).
    ═══════════════════════════════════════════════════════ */
-const APP_VERSION = 'V 151026 2244';
+const APP_VERSION = 'V 191026 1130';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
@@ -5231,6 +5375,12 @@ let incidencias = [];
 /* Órdenes de compra a contratistas (fase 3 de OC).
    `oc` = cabeceras (1 fila por orden), `ocLineas` = ítems (N por orden, ligados por ocId). */
 let oc = [], ocLineas = [];
+/* #133 — Liberaciones de OC (hoja OC_LIBERACIONES): N por orden, ligadas por
+   ocId. `_olbDisponible` dice si el backend ya las soporta: lo sabe porque el
+   ALL trae la clave `ocLiberaciones` (aunque venga vacía). Con un backend sin
+   redesplegar queda en false y la columna se muestra como "no disponible". */
+let ocLiberaciones = [];
+let _olbDisponible = false;
 /* ── PANEL DE OBRAS (fase 2 del rediseño) ──
    `obras` = 1 fila por obra, clave de negocio SITIO_ID (ID corto, único: una
    obra por sitio). `obraEventos` = historial de pausas, retomos y reaperturas.
@@ -5551,6 +5701,25 @@ function _aplicarDatosAll(data) {
       importeVenta: Math.round(prParseMonto(get(r, 'IMPORTE_VENTA')) || 0),
       costoLinea:   Math.round(prParseMonto(get(r, 'COSTO_LINEA')) || 0),
       manual:       String(get(r, 'MANUAL') || '').trim() === '1'
+    })).filter(l => l.id && l.ocId);
+
+    /* #133 — Liberaciones. MONTO entero y PCT con punto, como texto (igual que
+       OC). ESTADO vacío se lee como Vigente: es el valor con que se crean. */
+    _olbDisponible = Array.isArray(data.ocLiberaciones);
+    ocLiberaciones = (data.ocLiberaciones || []).map(r => ({
+      id:           String(get(r, 'ID') || '').trim(),
+      ocId:         String(get(r, 'OC_ID') || '').trim(),
+      nro:          String(get(r, 'NRO') || '').trim(),
+      fecha:        normFecha(get(r, 'FECHA')),
+      monto:        Math.round(prParseMonto(get(r, 'MONTO')) || 0),
+      pct:          prParseMonto(get(r, 'PCT')) || 0,
+      notas:        get(r, 'NOTAS'),
+      estado:       String(get(r, 'ESTADO') || OLB_VIGENTE).trim(),
+      motivoAnula:  get(r, 'MOTIVO_ANULA'),
+      usuarioAnula: get(r, 'USUARIO_ANULA'),
+      usuarioCarga: get(r, 'USUARIO_CARGA'),
+      creadoAt:     get(r, 'CREADO_AT'),
+      modificadoAt: get(r, 'MODIFICADO_AT')
     })).filter(l => l.id && l.ocId);
 
     /* ── OBRAS (fase 2) ──
@@ -14200,10 +14369,12 @@ function renderOC() {
      si no existiera al primer msInit, msInit no crearía el estado del filtro. */
   const headOc = document.getElementById('oc-head');
   if (headOc && !headOc.dataset.init) {
+    /* #133 — La fecha pasa debajo del N° de OC y se suma "Liberado / saldo". */
     headOc.innerHTML =
-      '<div>N° OC</div><div>Fecha</div><div>Sitio</div>' +
+      '<div>N° OC · Fecha</div><div>Sitio</div>' +
       '<div>Contratista <div class="ms-wrap ms-th" id="oc-filtro-contratista" data-title="Contratista"></div></div>' +
       '<div class="num">Venta</div><div class="num">Costo</div><div class="num">Margen</div>' +
+      '<div>Liberado / saldo</div>' +
       '<div>Estado <div class="ms-wrap ms-th" id="oc-filtro-estado" data-title="Estado"></div></div><div class="num">Acciones</div>';
     headOc.dataset.init = '1';
   }
@@ -14264,7 +14435,16 @@ function renderOC() {
         <div class="pr-tile-sub">Solo OC emitidas</div></div>
       <div class="pr-tile"><div class="pr-tile-label">Margen global</div>
         <div class="pr-tile-valor ${mg == null ? '' : (mg < 0 ? 'pos' : 'neg')}">${mg == null ? '—' : mg.toFixed(1) + '%'}</div>
-        <div class="pr-tile-sub">Sobre precio de venta</div></div>`;
+        <div class="pr-tile-sub">Sobre precio de venta</div></div>
+      ${(() => {
+        /* #133 — Liberado sobre las OC emitidas (las únicas que admiten liberaciones). */
+        if (!_olbDisponible) return `<div class="pr-tile olb-tile"><div class="pr-tile-label">Liberado a contratistas</div>
+          <div class="pr-tile-valor">—</div><div class="pr-tile-sub">Falta actualizar el backend</div></div>`;
+        const lib = emitidas.reduce((a, o) => a + olbLiberado(o.id), 0);
+        return `<div class="pr-tile olb-tile"><div class="pr-tile-label">Liberado a contratistas</div>
+          <div class="pr-tile-valor">${prFmtEntero(lib)}</div>
+          <div class="pr-tile-sub">Saldo por liberar ${prFmtEntero(Math.max(tc - lib, 0))}</div></div>`;
+      })()}`;
   }
 
 
@@ -14294,13 +14474,13 @@ function renderOC() {
         acciones.push(`<button class="btn btn-glass btn-sm" onclick="reactivarOC('${_escJs(o.id)}')">Reactivar</button>`);
       }
       return `<div class="oc-row ${o.estado === OC_ESTADO_ANULADA ? 'anulada' : ''}">
-        <div>${nro}</div>
-        <div style="font-size:12px;color:var(--text-mid);">${_escHtml(fechaCorta(o.fecha) || o.fecha)}</div>
+        <div>${nro}<div class="oc-fecha-sub">${_escHtml(fechaCorta(o.fecha) || o.fecha)}</div></div>
         <div style="font-weight:600;">${_escHtml(o.sitioId)}</div>
         <div style="font-size:12.5px;">${_escHtml(nombreEmpleado(o.contratistaId))}</div>
         <div class="num"><span class="oc-monto">${prFmtEntero(o.totalVenta)}</span></div>
         <div class="num"><span class="oc-monto">${prFmtEntero(o.totalCosto)}</span></div>
         <div class="num">${ocMargenHtml(o.totalVenta, o.totalCosto)}</div>
+        <div>${olbCeldaHtml(o)}</div>
         <div><span class="oc-estado ${est}">${_escHtml(o.estado)}</span></div>
         <div class="oc-acciones">${acciones.join('')}</div>
       </div>`;
@@ -14313,6 +14493,10 @@ function renderOC() {
     footer.innerHTML = `<span>Mostrando ${lista.length} de ${universo} órdenes${
       ocultas > 0 ? ` · ${ocultas} ocultas por filtros` : ''}</span><span></span>`;
   }
+
+  /* #133 — Si el modal de liberaciones está abierto (p. ej. llegó una
+     sincronización), se refrescan sus datos sin tocar lo que se está tipeando. */
+  olbRefrescarSiAbierto();
 }
 
 function ocLimpiarFiltros() {
@@ -14328,6 +14512,24 @@ async function anularOC(ocId) {
   if (bloqueoViewer()) return;
   const o = oc.find(x => x.id === ocId);
   if (!o) return;
+  /* #133 — Con liberaciones vigentes no se anula: primero hay que anularlas.
+     El backend repite este control (por si otra sesión liberó en el medio). */
+  const vigentes = olbVigentes(ocId);
+  if (vigentes.length) {
+    const total = vigentes.reduce((a, l) => a + l.monto, 0);
+    const r = await cfAbrir({
+      titulo: 'No se puede anular la OC',
+      encabezado: { icon: 'fa-file-invoice', etiqueta: 'Orden de compra', valor: o.nroOc,
+                    sub: `${o.sitioId} · ${nombreEmpleado(o.contratistaId)}` },
+      detalle: `Esta OC tiene <b>${vigentes.length === 1 ? '1 liberación vigente' : vigentes.length + ' liberaciones vigentes'} por ${_escHtml(prFmtMonto(total))}</b>. ` +
+               'Para anularla, primero anulá sus liberaciones.',
+      tono: 'aviso',
+      cancelar: 'Cerrar',
+      confirmar: 'Ver liberaciones'
+    });
+    if (r) abrirLiberacionesOC(ocId);
+    return;
+  }
   if (!confirm(`¿Anular la OC ${o.nroOc || '(sin número)'}?\n\nDeja de contar en los totales y en la rentabilidad. Se puede reactivar después.`)) return;
   setLoading(true, 'Anulando la OC');
   try {
@@ -14365,6 +14567,12 @@ async function eliminarOC(ocId) {
   if (!o) return;
   if (o.estado !== OC_ESTADO_BORRADOR) {
     toast('Solo se pueden eliminar borradores. Una OC emitida se anula.', 'err');
+    return;
+  }
+  /* #133 — Un borrador que alguna vez tuvo liberaciones (volvió a borrador
+     después de anularlas todas) no se borra: perdería el historial. */
+  if (olbDeOC(ocId).length) {
+    toast('Este borrador tiene historial de liberaciones y no se puede eliminar.', 'err');
     return;
   }
   if (!confirm('¿Eliminar este borrador?\n\nSe borra junto con todas sus líneas. No se puede deshacer.')) return;
@@ -14728,7 +14936,9 @@ function ocfRender() {
 
   const sub = document.getElementById('ocf-subtitulo');
   if (sub) sub.textContent = _ocfCtx.ocId
-    ? `${_ocfCtx.estado}${_ocfCtx.nroOc ? ' · ' + _ocfCtx.nroOc : ''} · ${_ocfCtx.lineas.length} ítem(s)`
+    ? `${_ocfCtx.estado}${_ocfCtx.nroOc ? ' · ' + _ocfCtx.nroOc : ''} · ${_ocfCtx.lineas.length} ítem(s)` +
+      /* #133 — referencia para no bajar el total por debajo de lo liberado */
+      (olbLiberado(_ocfCtx.ocId) > 0 ? ` · Liberado ${prFmtMonto(olbLiberado(_ocfCtx.ocId))}` : '')
     : 'El número se asigna al emitir. Podés guardarla como borrador.';
 
   if (head) head.innerHTML =
@@ -14784,6 +14994,21 @@ function _ocfValidar(destino) {
   if (!fecha)        return 'Poné una fecha.';
   if (destino === OC_ESTADO_EMITIDA && !c.lineas.length) return 'Una OC emitida necesita al menos un ítem.';
   if (c.lineas.some(l => l.cantidad <= 0)) return 'Hay líneas con cantidad en cero.';
+  /* #133 — Una OC con liberaciones vigentes sigue emitida y su total costo no
+     puede quedar por debajo de lo ya liberado. Se valida ANTES de cualquier
+     POST: la edición borra y reinserta las líneas antes de tocar la cabecera. */
+  if (c.ocId) {
+    const lib = olbLiberado(c.ocId);
+    if (lib > 0) {
+      if (destino !== OC_ESTADO_EMITIDA) {
+        return `La OC tiene liberaciones vigentes por ${prFmtMonto(lib)}: no puede volver a borrador.`;
+      }
+      const costo = ocRoundImporte(ocfTotales().costo);
+      if (costo < lib) {
+        return `El total costo (${prFmtMonto(costo)}) no puede quedar por debajo de lo ya liberado (${prFmtMonto(lib)}).`;
+      }
+    }
+  }
   return '';
 }
 
@@ -14952,10 +15177,10 @@ function descargarPdfOC(ocId) {
     const derecha = ancho - M;
 
     /* ── Encabezado ── */
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(17);
-    doc.text('TERABYTE SRL', M, 22);
+    /* #133 — Logo del sistema en lugar del texto (si falla, vuelve al texto). */
+    _pdfLogo(doc, M, 22);
 
+    doc.setFont('helvetica', 'bold');
     doc.setFontSize(14);
     doc.text('ORDEN DE COMPRA', derecha, 22, { align: 'right' });
 
@@ -15085,6 +15310,613 @@ function descargarPdfOC(ocId) {
     console.error('ERROR descargarPdfOC:', err);
     toast('No se pudo generar el PDF: ' + err.message, 'err');
   }
+}
+
+/* ═══════════════════════════════════════════════════════
+   #133 · LIBERACIONES DE OC
+
+   Una liberación autoriza al contratista a facturar una parte del TOTAL_COSTO
+   de una OC emitida. Hoja OC_LIBERACIONES, N filas por OC (OC_ID).
+
+   Reglas (decididas con el usuario el 19/10/2026):
+     · Solo sobre OC EMITIDAS y contra el TOTAL_COSTO (lo que se le paga).
+     · Se carga monto o %; el otro se calcula. Nunca más que el saldo.
+     · Número correlativo DENTRO de la OC: OC-2026-0014/L1, /L2…
+       Una anulada conserva su número y no se reutiliza.
+     · No se borra: se ANULA con motivo, y el saldo vuelve a la OC.
+     · No se anula una OC con liberaciones vigentes (anularOC).
+     · No se guarda una OC cuyo total costo quede por debajo de lo liberado,
+       ni vuelve a borrador si tiene vigentes (_ocfValidar).
+     · Viewer: ve el historial y descarga los PDF. No registra ni anula.
+       (Colab. y Facturación no llegan a Emisión OC.)
+
+   El backend repite los controles de saldo, número y estado bajo su candado:
+   es la única instancia que ve la planilla real si dos sesiones liberan a la vez.
+
+   Porcentajes en pantalla y en el PDF: se calculan contra el total costo
+   VIGENTE de la OC. La columna PCT de la hoja es la foto al momento de liberar
+   y queda como registro.
+   ═══════════════════════════════════════════════════════ */
+
+const OLB_VIGENTE = 'Vigente';
+const OLB_ANULADA = 'Anulada';
+
+let _olbCtx = null;        // { ocId } mientras el modal está abierto
+let _olbTocado = false;    // se intentó registrar: mostrar errores aunque el campo esté vacío
+
+/* "L12" → 12. Cualquier otra cosa → 0. */
+function olbNum(nro) {
+  const m = /^L(\d+)$/i.exec(String(nro || '').trim());
+  return m ? parseInt(m[1], 10) : 0;
+}
+
+/* Todas las liberaciones de la OC (vigentes y anuladas), en orden de número. */
+function olbDeOC(ocId) {
+  return ocLiberaciones.filter(l => l.ocId === ocId)
+    .sort((a, b) => (olbNum(a.nro) - olbNum(b.nro)) ||
+                    String(a.creadoAt || '').localeCompare(String(b.creadoAt || '')));
+}
+function olbVigentes(ocId) { return olbDeOC(ocId).filter(l => l.estado !== OLB_ANULADA); }
+function olbLiberado(ocId) { return olbVigentes(ocId).reduce((a, l) => a + (l.monto || 0), 0); }
+
+/* Próximo número: uno más que el mayor usado, anuladas incluidas. */
+function olbProximoNro(ocId) {
+  const max = olbDeOC(ocId).reduce((m, l) => Math.max(m, olbNum(l.nro)), 0);
+  return 'L' + (max + 1);
+}
+
+/* 50 → "50", 55.555 → "55,56" (dec = decimales máximos). */
+function olbFmtNum(n, dec) {
+  if (!isFinite(n)) return '';
+  return Number(n).toLocaleString('es-AR', { maximumFractionDigits: dec, useGrouping: false });
+}
+
+/* % liberado para mostrar. Si queda saldo, nunca dice 100%: redondeado
+   engañaría justo en el dato que se usa para decidir si se puede liberar. */
+function olbPctTexto(lib, total, dec) {
+  if (!(total > 0)) return '—';
+  const d = dec == null ? 1 : dec;
+  let p = lib / total * 100;
+  const tope = 100 - Math.pow(10, -d);
+  if (lib < total && p > tope) p = tope;
+  return olbFmtNum(p, d) + '%';
+}
+
+/* Monto tipeado: "$ 2.500.000", "2500000", "2.500.000,50". Entero o NaN. */
+function olbParseMonto(v) {
+  let s = String(v == null ? '' : v).replace(/[^\d,]/g, '');
+  if (!s) return NaN;
+  s = (s.split(',').length > 2) ? s.replace(/,/g, '') : s.replace(',', '.');
+  const n = Number(s);
+  return isFinite(n) ? Math.round(n) : NaN;
+}
+
+/* Porcentaje tipeado: "25", "33,33", "12.5%". Número o NaN. */
+function olbParsePct(v) {
+  const s = String(v == null ? '' : v).replace('%', '').trim().replace(',', '.');
+  if (!s) return NaN;
+  const n = Number(s);
+  return isFinite(n) ? n : NaN;
+}
+
+function olbUsuario() {
+  return (_usuarioActual && (_usuarioActual.idUsuario || _usuarioActual.usuario)) || '';
+}
+
+/* Traduce los errores de "backend sin actualizar" a algo accionable. */
+function olbMsgError(msg) {
+  const m = String(msg || '');
+  if (/Solapa no encontrada.*OC_LIBERACIONES/i.test(m))
+    return 'Falta crear la hoja OC_LIBERACIONES: corré inicializarSolapasOC() en Apps Script.';
+  if (/Hoja no v[aá]lida.*OC_LIBERACIONES/i.test(m))
+    return 'Falta actualizar el backend (Code.gs) para usar liberaciones.';
+  return m;
+}
+
+/* ── Celda de la lista ─────────────────────────────────── */
+
+function olbCeldaHtml(o) {
+  if (o.estado !== OC_ESTADO_EMITIDA) return '<span class="olb-na">—</span>';
+  if (!_olbDisponible) {
+    return '<span class="olb-na" title="Falta actualizar el backend (Code.gs) para usar liberaciones">No disponible</span>';
+  }
+  const id    = _escJs(o.id);
+  const total = o.totalCosto || 0;
+  const vig   = olbVigentes(o.id);
+  const lib   = vig.reduce((a, l) => a + (l.monto || 0), 0);
+  const saldo = total - lib;
+
+  /* Sin liberaciones: quien puede cargar ve directamente la acción; el viewer,
+     el estado (el botón le abre igual el historial, vacío). */
+  if (lib <= 0) {
+    return `<button type="button" class="olb-cell cero" onclick="abrirLiberacionesOC('${id}')" title="Ver o registrar liberaciones">` +
+      (esSoloLectura() ? '<span class="olb-sin">Sin liberaciones</span>' : '<span class="olb-mas">+ Liberar</span>') + '</button>';
+  }
+  const full = saldo <= 0;
+  const ancho = total > 0 ? Math.min(lib / total * 100, 100) : 100;
+  /* La cantidad va en el tooltip: en la celda no entra a 1366 px. */
+  const cant = vig.length === 1 ? '1 liberación vigente' : `${vig.length} liberaciones vigentes`;
+  const l2 = !full ? `Saldo <b>${prFmtMonto(saldo)}</b>`
+    : (saldo < 0 ? `Excede en ${prFmtMonto(-saldo)}` : 'Liberada por completo');
+  return `<button type="button" class="olb-cell ${full ? 'full' : ''}" onclick="abrirLiberacionesOC('${id}')" title="${cant} · ver liberaciones">` +
+    `<span class="olb-l1"><b>${prFmtMonto(lib)}</b><span class="olb-pct">${olbPctTexto(lib, total)}</span></span>` +
+    `<span class="olb-bar"><i style="width:${ancho.toFixed(1)}%"></i></span>` +
+    `<span class="olb-l2">${l2}</span></button>`;
+}
+
+/* ── Modal ─────────────────────────────────────────────── */
+
+function abrirLiberacionesOC(ocId) {
+  const o = oc.find(x => x.id === ocId);
+  if (!o) { toast('No se encontró la OC', 'err'); return; }
+  if (!_olbDisponible) { toast('Para usar liberaciones falta actualizar el backend (Code.gs).', 'err'); return; }
+  if (o.estado !== OC_ESTADO_EMITIDA && !olbDeOC(ocId).length) {
+    toast('Solo las OC emitidas admiten liberaciones.', 'err');
+    return;
+  }
+  _olbCtx = { ocId };
+  _olbTocado = false;
+  document.getElementById('olb-fecha').value = fechaHoyStr();
+  ['olb-monto', 'olb-pct', 'olb-notas'].forEach(id => { document.getElementById(id).value = ''; });
+  olbRender();
+  document.getElementById('modal-olb').classList.add('open');
+  const monto = document.getElementById('olb-monto');
+  const wrap  = document.getElementById('olb-form-wrap');
+  if (monto && wrap && wrap.style.display !== 'none') setTimeout(() => monto.focus(), 40);
+}
+
+function cerrarModalOlb() {
+  document.getElementById('modal-olb').classList.remove('open');
+  _olbCtx = null;
+  _olbTocado = false;
+}
+
+/* Lo llama renderOC al final: si llega una sincronización con el modal abierto,
+   se actualizan historial y saldo. Los campos del formulario no se tocan. */
+function olbRefrescarSiAbierto() {
+  const modal = document.getElementById('modal-olb');
+  if (!modal || !modal.classList.contains('open') || !_olbCtx) return;
+  if (!oc.some(x => x.id === _olbCtx.ocId)) { cerrarModalOlb(); return; }
+  olbRender();
+}
+
+function olbRender() {
+  const o = _olbCtx && oc.find(x => x.id === _olbCtx.ocId);
+  if (!o) return;
+  const total = o.totalCosto || 0;
+  const libs  = olbDeOC(o.id);
+  const lib   = olbLiberado(o.id);
+  const saldo = total - lib;
+  const soloLectura = esSoloLectura();
+  const emitida = o.estado === OC_ESTADO_EMITIDA;
+  const puedeLiberar = !soloLectura && emitida && total > 0 && saldo > 0;
+
+  document.getElementById('olb-enc').innerHTML = `
+    <div class="cf-enc">
+      <div class="cf-enc-ico"><i class="fa-solid fa-file-invoice"></i></div>
+      <div class="cf-enc-txt">
+        <div class="cf-enc-lbl">Orden de compra</div>
+        <div class="cf-enc-val">${_escHtml(o.nroOc || 'sin número')}</div>
+        <div class="cf-enc-sub">${_escHtml(o.sitioId)} · ${_escHtml(nombreEmpleado(o.contratistaId))} · ${
+          emitida ? 'emitida el ' + _escHtml(fechaCorta(o.fecha)) : _escHtml(o.estado)}</div>
+      </div>
+      ${emitida ? `<button type="button" class="btn btn-glass btn-sm olb-enc-btn" onclick="descargarPdfOC('${_escJs(o.id)}')">PDF de la OC</button>` : ''}
+    </div>`;
+
+  const full = total > 0 && saldo <= 0;
+  const anchoLib = total > 0 ? Math.min(lib / total * 100, 100) : 0;
+  document.getElementById('olb-resumen').innerHTML = `
+    <div class="olb-kpis">
+      <div class="olb-kpi"><div class="olb-kpi-l">Total costo</div><div class="olb-kpi-v">${prFmtMonto(total)}</div></div>
+      <div class="olb-kpi"><div class="olb-kpi-l">Liberado</div>
+        <div class="olb-kpi-v">${prFmtMonto(lib)}<small>${olbPctTexto(lib, total)}</small></div></div>
+      <div class="olb-kpi ${saldo > 0 ? 'saldo' : 'cero'}"><div class="olb-kpi-l">Saldo</div>
+        <div class="olb-kpi-v">${saldo < 0 ? '−' + prFmtMonto(-saldo) : prFmtMonto(saldo)}</div></div>
+    </div>
+    <div class="olb-bigbar ${full ? 'full' : ''}"><i style="width:${anchoLib.toFixed(2)}%"></i><i class="prev" id="olb-prev" style="width:0%"></i></div>`;
+
+  let hist;
+  if (!libs.length) {
+    hist = '<div class="olb-vacio">Todavía no hay liberaciones para esta OC.</div>';
+  } else {
+    hist = libs.map(l => {
+      const pct = olbPctTexto(l.monto, total, 1);
+      if (l.estado === OLB_ANULADA) {
+        const cuando = l.modificadoAt ? ' · ' + fechaCorta(String(l.modificadoAt).slice(0, 10)) : '';
+        return `<div class="olb-tr anulada">
+          <div class="olb-nro">${_escHtml(l.nro)}</div>
+          <div>${_escHtml(fechaCorta(l.fecha))}</div>
+          <div class="r olb-monto">${prFmtMonto(l.monto)}</div>
+          <div class="r olb-tach">${pct}</div>
+          <div class="olb-obs"><div class="olb-motivo">Anulada${l.motivoAnula ? ': ' + _escHtml(l.motivoAnula) : ''}</div>
+            <div class="olb-por">${l.usuarioAnula ? 'por ' + _escHtml(l.usuarioAnula) : ''}${_escHtml(cuando)}</div></div>
+          <div class="olb-acc"><span class="oc-estado anulada">Anulada</span></div>
+        </div>`;
+      }
+      const acc = [`<button type="button" class="btn btn-primary btn-sm" onclick="descargarPdfLiberacion('${_escJs(l.id)}')">PDF</button>`];
+      if (!soloLectura) acc.push(`<button type="button" class="btn btn-rose btn-sm" onclick="anularLiberacion('${_escJs(l.id)}')">Anular</button>`);
+      return `<div class="olb-tr">
+        <div class="olb-nro">${_escHtml(l.nro)}</div>
+        <div>${_escHtml(fechaCorta(l.fecha))}</div>
+        <div class="r olb-monto">${prFmtMonto(l.monto)}</div>
+        <div class="r" style="color:var(--text-mid);">${pct}</div>
+        <div class="olb-obs"><div title="${_escAttr(l.notas || '')}">${l.notas ? _escHtml(l.notas) : '<span style="color:var(--text-light);">—</span>'}</div>
+          <div class="olb-por">${l.usuarioCarga ? 'por ' + _escHtml(l.usuarioCarga) : ''}</div></div>
+        <div class="olb-acc">${acc.join('')}</div>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('olb-historial').innerHTML = `
+    <div class="olb-tabla">
+      <div class="olb-th"><div>N°</div><div>Fecha</div><div class="r">Monto</div><div class="r">%</div><div>Observación</div><div class="r">Acciones</div></div>
+      ${hist}
+    </div>`;
+
+  document.getElementById('olb-form-wrap').style.display = puedeLiberar ? '' : 'none';
+  document.getElementById('olb-btn').style.display = puedeLiberar ? '' : 'none';
+  document.getElementById('olb-nro').textContent = `${o.nroOc}/${olbProximoNro(o.id)}`;
+
+  let aviso = '';
+  if (!emitida) {
+    aviso = `<div class="cf-caja aviso">La OC está <b>${_escHtml(o.estado.toLowerCase())}</b>: no admite nuevas liberaciones.</div>`;
+  } else if (!(total > 0)) {
+    aviso = '<div class="cf-caja aviso">La OC no tiene total costo: no hay nada para liberar.</div>';
+  } else if (saldo <= 0) {
+    aviso = `<div class="cf-caja ok olb-completa"><i class="fa-solid fa-circle-check"></i><div><b>La OC está liberada por completo.</b>${
+      soloLectura ? '' : ' No admite nuevas liberaciones. Si hace falta corregir, anulá una liberación y el saldo vuelve a la OC.'}</div></div>`;
+  }
+  document.getElementById('olb-aviso').innerHTML = aviso;
+
+  if (puedeLiberar) olbValidarForm();
+}
+
+/* ── Formulario ────────────────────────────────────────── */
+
+function _olbOC() { return _olbCtx ? oc.find(x => x.id === _olbCtx.ocId) : null; }
+
+function olbOnMonto() {
+  const o = _olbOC(); if (!o) return;
+  const m = olbParseMonto(document.getElementById('olb-monto').value);
+  const total = o.totalCosto || 0;
+  document.getElementById('olb-pct').value = (isFinite(m) && total > 0) ? olbFmtNum(m / total * 100, 2) : '';
+  olbValidarForm();
+}
+
+function olbFormatearMonto() {
+  const el = document.getElementById('olb-monto');
+  const m = olbParseMonto(el.value);
+  if (isFinite(m) && m > 0) el.value = prFmtMonto(m);
+}
+
+function olbOnPct() {
+  const o = _olbOC(); if (!o) return;
+  const p = olbParsePct(document.getElementById('olb-pct').value);
+  const total = o.totalCosto || 0;
+  const m = (isFinite(p) && total > 0) ? Math.round(total * p / 100) : NaN;
+  document.getElementById('olb-monto').value = isFinite(m) && m > 0 ? prFmtMonto(m) : '';
+  olbValidarForm();
+}
+
+function olbAtajo(tipo) {
+  if (bloqueoViewer()) return;
+  const o = _olbOC(); if (!o) return;
+  const total = o.totalCosto || 0;
+  if (!(total > 0)) return;
+  const saldo = total - olbLiberado(o.id);
+  const m = tipo === 'saldo' ? saldo : Math.round(total * Number(tipo) / 100);
+  document.getElementById('olb-monto').value = m > 0 ? prFmtMonto(m) : '';
+  document.getElementById('olb-pct').value = tipo === 'saldo' ? olbFmtNum(saldo / total * 100, 2) : String(tipo);
+  olbValidarForm();
+}
+
+/* Lee y valida el formulario. Devuelve { monto, fecha, notas, error, campo }. */
+function _olbLeerForm() {
+  const o = _olbOC();
+  const out = { monto: NaN, fecha: '', notas: '', error: '', campo: '' };
+  if (!o) { out.error = 'No se encontró la OC.'; return out; }
+  out.fecha = document.getElementById('olb-fecha').value || '';
+  out.notas = (document.getElementById('olb-notas').value || '').trim();
+  out.monto = olbParseMonto(document.getElementById('olb-monto').value);
+  const total = o.totalCosto || 0;
+  const saldo = total - olbLiberado(o.id);
+  if (o.estado !== OC_ESTADO_EMITIDA) { out.error = 'Solo se puede liberar sobre una OC emitida.'; return out; }
+  if (!(isFinite(out.monto) && out.monto > 0)) { out.error = 'Ingresá un monto o un porcentaje.'; out.campo = 'monto'; return out; }
+  if (out.monto > saldo) {
+    out.error = `Supera el saldo disponible de la OC (${prFmtMonto(Math.max(saldo, 0))}). Ajustá el monto.`;
+    out.campo = 'monto'; return out;
+  }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(out.fecha)) { out.error = 'Poné la fecha de la liberación.'; out.campo = 'fecha'; return out; }
+  return out;
+}
+
+function olbValidarForm() {
+  const o = _olbOC(); if (!o) return;
+  const v = _olbLeerForm();
+  const hayDato = !!(document.getElementById('olb-monto').value.trim() || document.getElementById('olb-pct').value.trim());
+  const mostrarError = v.error && (_olbTocado || (hayDato && v.campo === 'monto'));
+  ['olb-monto', 'olb-pct'].forEach(id => document.getElementById(id).classList.toggle('olb-err', !!mostrarError && v.campo === 'monto'));
+  document.getElementById('olb-fecha').classList.toggle('olb-err', !!mostrarError && v.campo === 'fecha');
+
+  const total = o.totalCosto || 0;
+  const lib = olbLiberado(o.id);
+  const prev = document.getElementById('olb-prev');
+  let html = '';
+  if (mostrarError) {
+    html = `<div class="cf-caja peligro" role="alert">${_escHtml(v.error)}</div>`;
+    if (prev) prev.style.width = '0%';
+  } else if (!v.error) {
+    html = `<div class="cf-caja">Con esta liberación la OC queda <b>${olbPctTexto(lib + v.monto, total)} liberada</b> y con saldo <b>${prFmtMonto(total - lib - v.monto)}</b>.</div>`;
+    if (prev) prev.style.width = (total > 0 ? Math.min(v.monto / total * 100, 100) : 0).toFixed(2) + '%';
+  } else if (prev) {
+    prev.style.width = '0%';
+  }
+  document.getElementById('olb-msg').innerHTML = html;
+}
+
+async function registrarLiberacion() {
+  if (bloqueoViewer()) return;
+  const o = _olbOC();
+  if (!o) return;
+  if (!_olbDisponible) { toast('Para usar liberaciones falta actualizar el backend (Code.gs).', 'err'); return; }
+  _olbTocado = true;
+  const v = _olbLeerForm();
+  if (v.error) { olbValidarForm(); return; }
+
+  const total = o.totalCosto || 0;
+  const nro = olbProximoNro(o.id);
+  const ahora = new Date().toISOString();
+  const fila = {
+    ID: nuevoId('OLB'), OC_ID: o.id, NRO: nro, FECHA: v.fecha,
+    MONTO: String(v.monto), PCT: (total > 0 ? v.monto / total * 100 : 0).toFixed(2),
+    NOTAS: v.notas, ESTADO: OLB_VIGENTE, MOTIVO_ANULA: '', USUARIO_ANULA: '',
+    USUARIO_CARGA: olbUsuario(), CREADO_AT: ahora, MODIFICADO_AT: ''
+  };
+
+  setLoading(true, 'Registrando la liberación');
+  try {
+    await apiPost('INSERT', 'OC_LIBERACIONES', fila);
+    /* Estado local — solo después de que el server confirmó */
+    ocLiberaciones.push({
+      id: fila.ID, ocId: o.id, nro, fecha: v.fecha, monto: v.monto,
+      pct: parseFloat(fila.PCT) || 0, notas: v.notas, estado: OLB_VIGENTE,
+      motivoAnula: '', usuarioAnula: '', usuarioCarga: fila.USUARIO_CARGA,
+      creadoAt: ahora, modificadoAt: ''
+    });
+    ['olb-monto', 'olb-pct', 'olb-notas'].forEach(id => { document.getElementById(id).value = ''; });
+    _olbTocado = false;
+    toast(`Liberación ${o.nroOc}/${nro} registrada`, 'ok');
+    renderOC();   // repinta la lista y, por olbRefrescarSiAbierto, el modal
+  } catch (err) {
+    toast('No se pudo registrar: ' + olbMsgError(err.message), 'err');
+    console.error('ERROR registrarLiberacion:', err);
+  } finally { setLoading(false); }
+}
+
+async function anularLiberacion(libId) {
+  if (bloqueoViewer()) return;
+  const l = ocLiberaciones.find(x => x.id === libId);
+  if (!l || l.estado === OLB_ANULADA) return;
+  const o = oc.find(x => x.id === l.ocId);
+  if (!o) { toast('No se encontró la OC', 'err'); return; }
+  const saldo = (o.totalCosto || 0) - olbLiberado(o.id);
+
+  const r = await cfAbrir({
+    titulo: 'Anular liberación',
+    peligroso: true,
+    encabezado: { icon: 'fa-arrow-down', etiqueta: 'Liberación', valor: `${o.nroOc}/${l.nro}`,
+                  sub: `${o.sitioId} · ${nombreEmpleado(o.contratistaId)}` },
+    detalle: cfDatos([
+      ['Monto', `${prFmtMonto(l.monto)} (${olbPctTexto(l.monto, o.totalCosto || 0)})`],
+      ['Fecha', fechaCorta(l.fecha)],
+      ['Saldo de la OC', `${prFmtMonto(saldo)} → ${prFmtMonto(saldo + l.monto)}`]
+    ]),
+    tono: 'peligro',
+    campos: [{ id: 'motivo', label: 'Motivo', tipo: 'texto', req: true,
+               placeholder: 'Por qué se anula (queda en el historial)' }],
+    nota: 'La liberación no se borra: queda tachada en el historial con el motivo, y su PDF deja de estar disponible.',
+    confirmar: 'Anular liberación'
+  });
+  if (!r) return;
+  const motivo = String(r.motivo || '').trim();
+  if (!motivo) return;
+
+  const ahora = new Date().toISOString();
+  const usuario = olbUsuario();
+  setLoading(true, 'Anulando la liberación');
+  try {
+    await apiPost('UPDATE', 'OC_LIBERACIONES',
+      { ESTADO: OLB_ANULADA, MOTIVO_ANULA: motivo, USUARIO_ANULA: usuario, MODIFICADO_AT: ahora }, libId);
+    l.estado = OLB_ANULADA;
+    l.motivoAnula = motivo;
+    l.usuarioAnula = usuario;
+    l.modificadoAt = ahora;
+    toast(`Liberación ${o.nroOc}/${l.nro} anulada`, 'ok');
+    renderOC();
+  } catch (err) {
+    toast('No se pudo anular: ' + olbMsgError(err.message), 'err');
+    console.error('ERROR anularLiberacion:', err);
+  } finally { setLoading(false); }
+}
+
+/* ── PDF de la liberación ──────────────────────────────────
+   ⚠ Mismo criterio que el PDF de la OC: lo recibe el contratista. Solo lleva
+   el TOTAL_COSTO y montos de costo; nunca venta, margen ni % global.
+   "Liberado anteriormente" = vigentes con número menor. Si después se anula
+   una anterior, la reimpresión lo refleja (igual que reimprimir la OC). */
+function descargarPdfLiberacion(libId) {
+  const l = ocLiberaciones.find(x => x.id === libId);
+  if (!l) { toast('No se encontró la liberación', 'err'); return; }
+  if (l.estado === OLB_ANULADA) { toast('Esta liberación está anulada: no tiene PDF.', 'err'); return; }
+  const o = oc.find(x => x.id === l.ocId);
+  if (!o) { toast('No se encontró la OC de la liberación', 'err'); return; }
+
+  const JsPDF = _pdfJsPDF();
+  if (!JsPDF) {
+    toast('No se pudo cargar el generador de PDF. Revisá la conexión y refrescá la página.', 'err');
+    return;
+  }
+
+  const total = o.totalCosto || 0;
+  const n = olbNum(l.nro);
+  const anteriores = olbVigentes(o.id).filter(x => x.id !== l.id && olbNum(x.nro) < n)
+    .reduce((a, x) => a + (x.monto || 0), 0);
+  const acumulado = anteriores + l.monto;
+  const saldoTras = total - acumulado;
+  const contratista = nombreEmpleado(o.contratistaId) || o.contratistaId;
+
+  try {
+    const doc = new JsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+    const M = 18;
+    const ancho = doc.internal.pageSize.getWidth();
+    const derecha = ancho - M;
+    const altoPag = doc.internal.pageSize.getHeight();
+
+    /* ── Encabezado (mismo esquema que la OC) ── */
+    _pdfLogo(doc, M, 22);
+    doc.setTextColor(26, 29, 46);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(14);
+    doc.text('LIBERACIÓN DE OC', derecha, 22, { align: 'right' });
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10.5);
+    doc.text(`N° ${o.nroOc}/${l.nro}`,         derecha, 29, { align: 'right' });
+    doc.text(`Fecha: ${_pdfFecha(l.fecha)}`,   derecha, 34.5, { align: 'right' });
+    doc.setDrawColor(190, 195, 210);
+    doc.setLineWidth(0.4);
+    doc.line(M, 41, derecha, 41);
+
+    /* ── Banda SITIO / CONTRATISTA ── */
+    const bandaY = 47, bandaAlto = 15;
+    doc.setFillColor(238, 241, 250);
+    doc.setDrawColor(200, 208, 228);
+    doc.setLineWidth(0.3);
+    doc.rect(M, bandaY, derecha - M, bandaAlto, 'FD');
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(110, 118, 140);
+    doc.text('SITIO', M + 4, bandaY + 5.4);
+    doc.text('CONTRATISTA', derecha - 4, bandaY + 5.4, { align: 'right' });
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(26, 29, 46);
+    doc.setFontSize(16);
+    doc.text(String(o.sitioId || '—'), M + 4, bandaY + 12);
+    doc.setFontSize(11.5);
+    doc.text(String(contratista || '—'), derecha - 4, bandaY + 12, { align: 'right' });
+
+    /* ── Referencia a la OC ── */
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(58, 64, 88);
+    doc.text(`Corresponde a la orden de compra ${o.nroOc} del ${_pdfFecha(o.fecha)}.`, M, 71);
+
+    /* ── Tabla ── */
+    const pctEsta = total > 0 ? olbPctTexto(l.monto, total, 2) : '—';
+    const ok = _pdfAutoTable(doc, {
+      startY: 76,
+      head: [['Concepto', 'Monto']],
+      body: [
+        ['Total de la orden de compra', prFmtMonto(total)],
+        ['Liberado en liberaciones anteriores', prFmtMonto(anteriores)],
+        [{ content: `Esta liberación (${pctEsta} de la OC)`, styles: { fontStyle: 'bold' } },
+         { content: prFmtMonto(l.monto), styles: { fontStyle: 'bold' } }]
+      ],
+      theme: 'grid',
+      margin: { left: M, right: M },
+      styles: {
+        font: 'helvetica', fontSize: 9.5, cellPadding: 2.6,
+        lineColor: [200, 205, 220], lineWidth: 0.2, textColor: [30, 32, 46]
+      },
+      headStyles: { fillColor: [220, 225, 240], textColor: [26, 29, 46], fontStyle: 'bold', fontSize: 9.5, halign: 'center' },
+      columnStyles: { 0: { cellWidth: 'auto', halign: 'left' }, 1: { cellWidth: 38, halign: 'center' } }
+    });
+    if (!ok) {
+      toast('No se pudo cargar el generador de tablas del PDF. Refrescá la página.', 'err');
+      return;
+    }
+
+    /* ── MONTO LIBERADO, en banda propia (como el TOTAL de la OC) ── */
+    let y = (doc.lastAutoTable && doc.lastAutoTable.finalY) ? doc.lastAutoTable.finalY + 6 : 112;
+    const banAncho = 92, banX = derecha - banAncho, banAlto = 13;
+    doc.setFillColor(232, 236, 248);
+    doc.setDrawColor(180, 190, 215);
+    doc.setLineWidth(0.4);
+    doc.rect(banX, y, banAncho, banAlto, 'FD');
+    doc.setTextColor(26, 29, 46);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10.5);
+    doc.text('MONTO LIBERADO', banX + 6, y + 8.6);
+    doc.setFontSize(13);
+    doc.text(prFmtMonto(l.monto), derecha - 6, y + 8.8, { align: 'right' });
+    y += banAlto + 7;
+
+    /* ── Acumulado y saldo ── */
+    const cajaAncho = (derecha - M - 6) / 2, cajaAlto = 15;
+    [[M, 'LIBERADO ACUMULADO', `${prFmtMonto(acumulado)} · ${olbPctTexto(acumulado, total, 2)}`],
+     [M + cajaAncho + 6, 'SALDO RESTANTE DE LA OC', prFmtMonto(saldoTras)]].forEach(([x, lbl, val]) => {
+      doc.setDrawColor(200, 205, 220);
+      doc.setLineWidth(0.3);
+      doc.rect(x, y, cajaAncho, cajaAlto);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8.5);
+      doc.setTextColor(110, 118, 140);
+      doc.text(lbl, x + 4, y + 5.4);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.setTextColor(26, 29, 46);
+      doc.text(val, x + 4, y + 11.6);
+    });
+    y += cajaAlto;
+
+    /* ── Observación (solo si existe) ── */
+    const notas = String(l.notas || '').trim();
+    if (notas) {
+      y += 12;
+      doc.setTextColor(30, 32, 46);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.text('Observación:', M, y);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9.5);
+      doc.splitTextToSize(notas, derecha - M).forEach((linea, i) => doc.text(linea, M, y + 5.5 + i * 4.6));
+    }
+
+    /* ── Pie ── */
+    if (l.usuarioCarga) {
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.setTextColor(110, 118, 140);
+      doc.text(`Autorizó: ${l.usuarioCarga}`, M, altoPag - 15);
+    }
+
+    doc.save(_pdfNombreArchivo(`${o.nroOc}-${l.nro}`, o.sitioId, contratista));
+    toast(`PDF de ${o.nroOc}/${l.nro} generado`, 'ok');
+  } catch (err) {
+    console.error('ERROR descargarPdfLiberacion:', err);
+    toast('No se pudo generar el PDF: ' + err.message, 'err');
+  }
+}
+
+/* Logo de la empresa en el encabezado de los PDF (#133). Toma el mismo PNG del
+   sidebar —así no se duplica en el archivo— y lo apoya sobre la línea base
+   `yBase`, donde antes iba el texto. Si por cualquier motivo no se puede
+   dibujar, vuelve al texto "TERABYTE SRL" de siempre: el PDF sale igual. */
+function _pdfLogo(doc, x, yBase) {
+  const img = document.querySelector('.brand-logo-img');
+  const src = img ? String(img.getAttribute('src') || '') : '';
+  if (src.indexOf('data:image/png') === 0) {
+    try {
+      const prop = (img.naturalWidth > 0 && img.naturalHeight > 0) ? img.naturalWidth / img.naturalHeight : 415 / 106;
+      const alto = 12;
+      doc.addImage(src, 'PNG', x, yBase - alto + 1.5, alto * prop, alto, 'logo-terabyte', 'FAST');   // FAST: comprime (sin esto el logo suma ~170 KB)
+      return true;
+    } catch (e) {
+      console.warn('Logo del PDF no disponible, se usa el texto:', e);
+    }
+  }
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(17);
+  doc.text('TERABYTE SRL', x, yBase);
+  return false;
 }
 
 /* ══ LOGIN ══ */
@@ -15772,6 +16604,10 @@ const VIEWER_PERMITIDO = new Set([
   'renderOC', 'ocLimpiarFiltros', 'cerrarFormOC',
   /* El PDF no escribe nada: el viewer puede reimprimir una OC ya emitida (D15). */
   'descargarPdfOC',
+  /* #133 — Liberaciones: el viewer abre el historial y descarga los PDF.
+     registrarLiberacion, anularLiberacion y olbAtajo quedan FUERA (escriben o
+     solo sirven para cargar): el barrido les oculta el botón. */
+  'abrirLiberacionesOC', 'cerrarModalOlb', 'descargarPdfLiberacion',
   // Navegación general
   'showView', 'toggleNavGroup', 'cerrarSesion', 'navAsigMes',
   'intentarLogin', 'sincronizar',
