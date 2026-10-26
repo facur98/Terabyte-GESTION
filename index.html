@@ -4717,8 +4717,18 @@
       </div>
     </div>
     <div class="form-group" id="edit-lin-row-solicitud" style="margin-bottom:14px;display:none;">
-      <label class="form-label">Fecha de solicitud</label>
-      <input class="form-input" type="date" id="edit-lin-fecha-solicitud" />
+      <!-- #136 — Al lado de la fecha va el N° de certificado, solo en líneas de AMX.
+           Oculto, la fecha ocupa todo el ancho como antes. -->
+      <div style="display:flex;gap:12px;">
+        <div class="form-group" style="flex:1;min-width:0;">
+          <label class="form-label">Fecha de solicitud</label>
+          <input class="form-input" type="date" id="edit-lin-fecha-solicitud" />
+        </div>
+        <div class="form-group" id="edit-lin-grp-cert" style="flex:1;min-width:0;display:none;">
+          <label class="form-label" for="edit-lin-nro-cert">N° de certificado</label>
+          <input class="form-input" id="edit-lin-nro-cert" placeholder="Opcional" maxlength="80" autocomplete="off" />
+        </div>
+      </div>
     </div>
     <div id="edit-lin-row-factura" style="display:none;">
       <div class="form-row" style="grid-template-columns:1fr 1fr;">
@@ -4741,14 +4751,16 @@
 
 <!-- MODAL — Confirmar solicitudes masivas -->
 <div class="modal-overlay" id="modal-confirmar-solicitudes">
-  <div class="modal" style="max-width:760px;width:95vw;">
+  <div class="modal" style="max-width:840px;width:95vw;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
       <div class="modal-title" style="margin:0;">Confirmar solicitudes de factura</div>
       <button onclick="cerrarModal()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--text-light);line-height:1;">✕</button>
     </div>
-    <div style="font-size:13px;color:var(--text-mid);margin-bottom:16px;">Se van a marcar como <strong>Solicitado</strong> las siguientes líneas:</div>
+    <div id="sol-intro" style="font-size:13px;color:var(--text-mid);margin-bottom:16px;">Se van a marcar como <strong>Solicitado</strong> las siguientes líneas:</div>
     <div id="sol-resumen" style="background:rgba(251,191,36,0.05);border:1px solid rgba(251,191,36,0.2);border-radius:var(--radius-sm);padding:4px 0;margin-bottom:22px;max-height:380px;overflow-y:auto;"></div>
     <div class="modal-footer">
+      <!-- #136 — Aviso de líneas de AMX sin N° de certificado. Informa, no bloquea. -->
+      <div id="sol-aviso-cert" style="display:none;margin-right:auto;align-self:center;font-size:12px;font-weight:600;color:#92400e;"></div>
       <button class="btn btn-glass" onclick="cerrarModal()">Cancelar</button>
       <button class="btn" style="background:var(--accent-amber);color:#fff;font-weight:600;padding:9px 20px;border-radius:var(--radius-sm);cursor:pointer;border:none;" onclick="ejecutarSolicitudes()">Confirmar solicitudes</button>
     </div>
@@ -4805,6 +4817,8 @@
             <th style="text-align:left;padding:0 16px 14px;font-size:11px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:.7px;border-bottom:1px solid rgba(200,205,220,0.35);">Cliente</th>
             <th style="text-align:center;padding:0 16px 14px;font-size:11px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:.7px;border-bottom:1px solid rgba(200,205,220,0.35);">%</th>
             <th style="text-align:left;padding:0 16px 14px;font-size:11px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:.7px;border-bottom:1px solid rgba(200,205,220,0.35);">N° PO</th>
+            <!-- #136 — Solo en Proyectados + Solicitados y Solicitados sin facturar (_kpiModalState.mostrarCert) -->
+            <th id="kpi-modal-th-cert" style="display:none;text-align:left;padding:0 16px 14px;font-size:11px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:.7px;border-bottom:1px solid rgba(200,205,220,0.35);">N° certificado</th>
             <th style="text-align:right;padding:0 0 14px 16px;font-size:11px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:.7px;border-bottom:1px solid rgba(200,205,220,0.35);">Monto</th>
             <th style="text-align:center;padding:0 0 14px 16px;font-size:11px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:.7px;border-bottom:1px solid rgba(200,205,220,0.35);">Mes</th>
             <th style="text-align:center;padding:0 0 14px 16px;font-size:11px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:.7px;border-bottom:1px solid rgba(200,205,220,0.35);">Estado</th>
@@ -4874,7 +4888,7 @@ function mesActualStr() {
    a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
    Se pinta en el pie del sidebar (#sidebar-version).
    ═══════════════════════════════════════════════════════ */
-const APP_VERSION = 'V 191026 1210';
+const APP_VERSION = 'V 261026 1405';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
@@ -5616,6 +5630,8 @@ function _aplicarDatosAll(data) {
         fechaSolicitud: normFecha(get(r, 'FECHA_SOLICITUD')),
         fechaFactura:   normFecha(get(r, 'FECHA_FACTURA')),
         nroFactura:     get(r, 'NRO_FACTURA'),
+        /* #136 — N° de certificado (solo AMX). Columna vacía o inexistente → ''. */
+        nroCertificado: get(r, 'NRO_CERTIFICADO').trim(),
         estado:         get(r, 'ESTADO') || 'Proyectado'
       };
     }).filter(l => l.id.trim() !== '');
@@ -12177,6 +12193,31 @@ function renderSeguimiento() {
   }).join('');
 }
 
+/* ══ N° DE CERTIFICADO DE AMX (cambio #136) ══
+   Se carga al confirmar la solicitud (opcional) y se edita desde Editar línea.
+   Vive en la columna NRO_CERTIFICADO de FACTURACION como texto libre.
+   Se muestra en los cuadros "Proyectados + Solicitados" y "Solicitados sin
+   facturar" del dashboard; Seguimiento no lo muestra (pedido explícito). */
+
+/* ¿La línea es de AMX? Por CLIENTE_ID, sin distinguir mayúsculas ni espacios. */
+function esLineaAMX(l) {
+  return !!l && String(l.clienteId || '').trim().toUpperCase() === 'AMX';
+}
+
+/* ¿Editar línea muestra el campo? AMX y con la fecha de solicitud a la vista. */
+function _linCertEditable(l) {
+  return esLineaAMX(l) && (l.estado === 'Solicitado' || l.estado === 'Facturado');
+}
+
+/* Celda del certificado en el modal de detalle KPI. */
+function _kpiCertCelda(l) {
+  if (!esLineaAMX(l)) return '<span style="color:var(--text-light);">—</span>';
+  const nro = String(l.nroCertificado || '').trim();
+  if (nro) return `<span style="font-weight:700;color:var(--text-dark);">${_escHtml(nro)}</span>`;
+  if (l.estado === 'Proyectado') return '<span style="color:var(--text-light);">Sin solicitar</span>';
+  return '<span style="color:#b45309;font-weight:600;">Sin cargar</span>';
+}
+
 /* ══ EDITAR LÍNEA ══ */
 function abrirEditarLinea(lineaId) {
   if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
@@ -12203,6 +12244,11 @@ function abrirEditarLinea(lineaId) {
     document.getElementById('edit-lin-fecha-solicitud').value = l.fechaSolicitud || '';
     rowSol.style.display = 'block';
   } else { rowSol.style.display = 'none'; }
+  /* #136 — N° de certificado: solo AMX, solo con la fila de solicitud visible.
+     Se resetea siempre (R12): el modal es uno solo y se reutiliza entre líneas. */
+  const conCert = _linCertEditable(l);
+  document.getElementById('edit-lin-grp-cert').style.display = conCert ? '' : 'none';
+  document.getElementById('edit-lin-nro-cert').value = conCert ? (l.nroCertificado || '') : '';
   if (l.estado === 'Facturado') {
     document.getElementById('edit-lin-fecha-factura').value = l.fechaFactura || '';
     document.getElementById('edit-lin-nro-factura').value   = l.nroFactura   || '';
@@ -12224,6 +12270,11 @@ async function guardarEdicionLinea() {
     if (!fs) return toast('Ingresá la fecha de solicitud.', 'err');
     payload.FECHA_SOLICITUD = fs;
   }
+  /* #136 — Se manda siempre que el campo esté a la vista, aunque quede vacío:
+     borrarlo tiene que borrar el número en la hoja. */
+  if (_linCertEditable(lineas.find(x => x.id === lineaId))) {
+    payload.NRO_CERTIFICADO = document.getElementById('edit-lin-nro-cert').value.trim();
+  }
   if (estado === 'Facturado') {
     const ff = document.getElementById('edit-lin-fecha-factura').value;
     const nf = document.getElementById('edit-lin-nro-factura').value;
@@ -12241,6 +12292,7 @@ async function guardarEdicionLinea() {
       if (payload.FECHA_SOLICITUD) l.fechaSolicitud = payload.FECHA_SOLICITUD;
       if (payload.FECHA_FACTURA)   l.fechaFactura   = payload.FECHA_FACTURA;
       if (payload.NRO_FACTURA)     l.nroFactura     = payload.NRO_FACTURA;
+      if (payload.NRO_CERTIFICADO !== undefined) l.nroCertificado = payload.NRO_CERTIFICADO;
     }
     cerrarModal(); renderSeguimiento(); actualizarDashboard();
     toast('Línea actualizada ✓');
@@ -12306,7 +12358,8 @@ function abrirModalSolicitud(lineaId) {
   const s = sitios.find(x => x.id === l.sitioId && (!l.poNroLinea || x.poNro === l.poNroLinea));
   _solPendientes.push({
     lineaId, sitioId: l.sitioId, poNro: l.poNroLinea || (s ? s.poNro : ''),
-    clienteId: l.clienteId, pct: l.pct, monto: l.monto, fecha: hoy()
+    clienteId: l.clienteId, pct: l.pct, monto: l.monto, fecha: hoy(),
+    nroCertificado: l.nroCertificado || ''   // #136 — solo se usa en AMX
   });
   actualizarBannerSolicitudes();
   renderSeguimiento();
@@ -12326,22 +12379,58 @@ function actualizarBannerSolicitudes() {
 function abrirConfirmarSolicitudes() {
   if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
   const resumen = document.getElementById('sol-resumen');
+  /* #136 — Columna de N° de certificado: input en las líneas de AMX, "No aplica"
+     en el resto. Solo aparece si en la cola hay alguna de AMX; si no, el modal
+     queda igual que antes. */
+  const hayAMX = _solPendientes.some(p => esLineaAMX(p));
+  const cols   = hayAMX ? 'auto 1fr auto auto auto 160px auto' : 'auto 1fr auto auto auto auto';
+  document.getElementById('sol-intro').innerHTML = hayAMX
+    ? 'Se van a marcar como <strong>Solicitado</strong> las siguientes líneas. En las de <strong>AMX</strong> podés cargar el N° de certificado:'
+    : 'Se van a marcar como <strong>Solicitado</strong> las siguientes líneas:';
   resumen.innerHTML = _solPendientes.map(p => {
     const cli = getCli(p.clienteId);
-    return `<div style="display:grid;grid-template-columns:auto 1fr auto auto auto auto;align-items:center;gap:10px;padding:11px 18px;border-bottom:1px solid rgba(200,205,220,0.2);font-size:13px;">
-      ${cli ? dot(cli.color) : ''}
+    let celdaCert = '';
+    if (hayAMX) {
+      celdaCert = esLineaAMX(p)
+        ? `<input type="text" value="${_escAttr(p.nroCertificado || '')}" placeholder="N° certificado" maxlength="80" autocomplete="off"
+            aria-label="N° de certificado de ${_escAttr(p.sitioId)}"
+            oninput="_solSetCert('${_escJs(p.lineaId)}', this.value)"
+            style="width:100%;box-sizing:border-box;border:1px solid rgba(200,205,220,0.5);border-radius:8px;padding:5px 8px;font-size:12px;font-family:inherit;background:rgba(255,255,255,0.7);color:var(--text-dark);" />`
+        : `<span style="font-size:12px;color:var(--text-light);">No aplica</span>`;
+    }
+    return `<div style="display:grid;grid-template-columns:${cols};align-items:center;gap:10px;padding:11px 18px;border-bottom:1px solid rgba(200,205,220,0.2);font-size:13px;">
+      ${cli ? dot(cli.color) : '<span></span>'}
       <div><span style="font-weight:700;">${p.sitioId}</span><span style="color:var(--text-light);font-size:12px;margin-left:6px;">${p.poNro || ''}</span></div>
       <span class="badge badge-blue">${p.pct}%</span>
       <span style="font-weight:700;min-width:90px;text-align:right;">${fmt(Math.round(p.monto))}</span>
       <input type="date" value="${p.fecha}"
         onchange="_solPendientes.find(x=>x.lineaId==='${p.lineaId}').fecha=this.value"
         style="border:1px solid rgba(200,205,220,0.5);border-radius:8px;padding:5px 8px;font-size:12px;background:rgba(255,255,255,0.7);color:var(--text-dark);min-width:130px;" />
+      ${celdaCert}
       <button onclick="quitarDeSolCola('${p.lineaId}')" title="Quitar"
         style="background:none;border:none;cursor:pointer;color:rgba(248,113,113,0.5);font-size:14px;padding:0 4px;"
         onmouseover="this.style.color='#f87171'" onmouseout="this.style.color='rgba(248,113,113,0.5)'">✕</button>
     </div>`;
   }).join('');
+  _solActualizarAvisoCert();
   document.getElementById('modal-confirmar-solicitudes').classList.add('open');
+}
+
+/* #136 — Guarda lo tipeado en la cola (sobrevive al repintado de "Quitar"). */
+function _solSetCert(lineaId, valor) {
+  const p = _solPendientes.find(x => x.lineaId === lineaId);
+  if (p) p.nroCertificado = valor;
+  _solActualizarAvisoCert();
+}
+
+/* #136 — Aviso de AMX sin certificado. Es opcional: informa, no bloquea. */
+function _solActualizarAvisoCert() {
+  const el = document.getElementById('sol-aviso-cert');
+  if (!el) return;
+  const n = _solPendientes.filter(p => esLineaAMX(p) && !String(p.nroCertificado || '').trim()).length;
+  if (!n) { el.style.display = 'none'; el.textContent = ''; return; }
+  el.textContent = `${n} línea${n !== 1 ? 's' : ''} de AMX sin N° de certificado · se puede cargar después con Editar`;
+  el.style.display = '';
 }
 
 function quitarDeSolCola(lineaId) {
@@ -12373,16 +12462,26 @@ async function ejecutarSolicitudes() {
     try {
       await apiPostRaw({
         action: 'BULK_UPDATE', sheet: 'FACTURACION',
-        updates: pendientes.map(p => ({ id: p.lineaId, data: {
-          FECHA_SOLICITUD: p.fecha,
-          ESTADO: 'Solicitado',
-          _SITIO_ID: p.sitioId,  // contexto extra (el backend ignora columnas inexistentes)
-          _PCT: p.pct
-        }}))
+        updates: pendientes.map(p => {
+          const data = {
+            FECHA_SOLICITUD: p.fecha,
+            ESTADO: 'Solicitado',
+            _SITIO_ID: p.sitioId,  // contexto extra (el backend ignora columnas inexistentes)
+            _PCT: p.pct
+          };
+          /* #136 — Solo AMX y solo si se tipeó algo: vacío no pisa nada. */
+          const cert = esLineaAMX(p) ? String(p.nroCertificado || '').trim() : '';
+          if (cert) data.NRO_CERTIFICADO = cert;
+          return { id: p.lineaId, data };
+        })
       });
       pendientes.forEach(p => {
         const l = lineas.find(x => x.id === p.lineaId);
-        if (l) { l.fechaSolicitud = p.fecha; l.estado = 'Solicitado'; }
+        if (l) {
+          l.fechaSolicitud = p.fecha; l.estado = 'Solicitado';
+          const cert = esLineaAMX(p) ? String(p.nroCertificado || '').trim() : '';
+          if (cert) l.nroCertificado = cert;   // #136
+        }
       });
       ok = pendientes.length;
     } catch(e) { err = pendientes.length; console.warn('BULK_UPDATE solicitudes:', e.message); }
@@ -12638,8 +12737,14 @@ function kpiCardPEQ(totalFac, clickFn, mes) {
 let _kpiModalState = {
   lineas:      [],
   totalCustom: null,    // si no es null, se usa como texto del total (caso abrirDetalleCliente)
-  totalLabel:  ''       // sufijo opcional del total (ej. " facturado")
+  totalLabel:  '',      // sufijo opcional del total (ej. " facturado")
+  mostrarCert: false    // #136 — columna N° certificado (ver KPI_TITULOS_CON_CERT)
 };
+
+/* #136 — Cuadros del dashboard que muestran la columna N° certificado. Se
+   compara contra el título que les pasa actualizarDashboard(): si se cambia
+   el título de alguno de los dos, cambiarlo también acá. */
+const KPI_TITULOS_CON_CERT = ['Proyectados + Solicitados', 'Solicitados sin facturar'];
 
 function irASeguimientoDesdeModalDetalle(idSitio) {
   if (viewerVistaBloqueada('seguimiento')) return;   // cambio #71 — ni siquiera cierra el modal
@@ -12712,12 +12817,18 @@ function _renderTablaModalKPI() {
     'Facturado':  '<span style="background:rgba(16,185,129,0.15);color:#047857;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;">Facturado</span>',
   };
 
+  /* #136 — Encabezado y celdas del N° certificado. Se resetea en cada render:
+     el modal es uno solo para los cinco orígenes (R12). */
+  const conCert = !!_kpiModalState.mostrarCert;
+  const thCert  = document.getElementById('kpi-modal-th-cert');
+  if (thCert) thCert.style.display = conCert ? '' : 'none';
+
   const tbody = document.getElementById('kpi-modal-tbody');
   if (!lineasFiltradas.length) {
     const msg = _kpiHayFiltrosActivos()
       ? 'Sin líneas que coincidan con los filtros'
       : 'Sin líneas para mostrar';
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:48px;color:var(--text-light);font-size:14px;">${msg}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="${conCert ? 8 : 7}" style="text-align:center;padding:48px;color:var(--text-light);font-size:14px;">${msg}</td></tr>`;
     return;
   }
 
@@ -12738,6 +12849,7 @@ function _renderTablaModalKPI() {
         <span style="background:rgba(79,128,255,0.10);color:#3a6bf0;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;">${l.pct}%</span>
       </td>
       <td style="padding:13px 16px;color:var(--text-mid);font-size:12px;">${poNro}</td>
+      ${conCert ? `<td style="padding:13px 16px;font-size:12px;">${_kpiCertCelda(l)}</td>` : ''}
       <td style="padding:13px 0 13px 16px;text-align:right;font-weight:700;font-size:14px;">${fmt(Math.round(l.monto||0))}</td>
       <td style="padding:13px 0 13px 16px;text-align:center;color:var(--text-mid);font-size:12px;">${mesLabel(l.mes)}</td>
       <td style="padding:13px 0 13px 16px;text-align:center;">${estadoBadge[l.estado]||l.estado}</td>
@@ -12784,6 +12896,7 @@ function abrirDetalleKPI(titulo, subtitulo, lineasFiltradas) {
   _kpiModalState.lineas      = lineasFiltradas || [];
   _kpiModalState.totalCustom = null;
   _kpiModalState.totalLabel  = '';
+  _kpiModalState.mostrarCert = KPI_TITULOS_CON_CERT.includes(titulo);   // #136
 
   // Inicializar filtros con las opciones presentes (B2), arrancan vacíos
   _kpiInicializarFiltros(_kpiModalState.lineas);
@@ -13636,6 +13749,7 @@ function abrirDetalleCliente(clienteId) {
   _kpiModalState.lineas      = lineasCliente;
   _kpiModalState.totalCustom = null;
   _kpiModalState.totalLabel  = '';
+  _kpiModalState.mostrarCert = false;   // #136 — el detalle por cliente no la lleva
 
   _kpiInicializarFiltros(_kpiModalState.lineas, {
     hideCliente: true,
