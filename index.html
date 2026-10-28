@@ -1244,14 +1244,6 @@
       to   { opacity: 1; transform: translateY(0) scale(1); }
     }
 
-    .load-spinner {
-      width: 44px; height: 44px; border-radius: 50%;
-      border: 3.5px solid rgba(100,120,175,0.18);
-      border-top-color: var(--accent-blue);
-      animation: loadSpin 0.7s cubic-bezier(.5,.15,.5,.85) infinite;
-      margin-bottom: 20px;
-    }
-    @keyframes loadSpin { to { transform: rotate(360deg); } }
 
     .load-titulo {
       font-size: 15.5px; font-weight: 700; color: var(--text-dark);
@@ -3170,9 +3162,6 @@
     #screen-login.lg-saliendo .lg-main > .login-card { opacity: 0; }
     #lg-fly.lg-volando { transition: left 2.2s cubic-bezier(.76,0,.24,1), top 2.2s cubic-bezier(.76,0,.24,1), height 2.2s cubic-bezier(.76,0,.24,1); }
     #lg-fly img { transition: opacity 1.6s cubic-bezier(.4,0,.2,1) .4s; }
-    /* Estela: por debajo de la caja de carga, sin capturar clics */
-    #load-estela { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-    #load-overlay .load-box { position: relative; z-index: 1; }
     @media (prefers-reduced-motion: reduce) {
       .lg-side, .lg-main, #lg-fly.lg-volando, #lg-fly img { transition: none; }
     }
@@ -3180,6 +3169,244 @@
        ganarle a la regla de 2 columnas del bloque de Emisión OC). */
     @media (max-width: 1250px) {
       .oc-tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+    /* ═══ #137 · Cargas y animaciones ═══════════════════════════════════
+       Solo apariencia. setLoading() y sus ids siguen iguales; el overlay
+       bloquea la interfaz exactamente como antes mientras tiene .open. */
+
+    /* — Cartel al enviar: ícono según la acción, barra en movimiento — */
+    .load-icono {
+      position: relative; width: 66px; height: 66px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 16px; color: #4f80ff; background: rgba(79,128,255,0.12);
+      transition: background .3s ease, color .3s ease;
+    }
+    .load-icono svg { width: 30px; height: 30px; display: none; }
+    .load-halo {
+      position: absolute; inset: -6px; border-radius: 50%;
+      border: 2px solid currentColor; opacity: 0;
+      animation: ldHalo 1.6s ease-out infinite;
+    }
+    .load-halo.b { animation-delay: .8s; }
+    .load-box[data-ic="guardar"]  .li-guardar,
+    .load-box[data-ic="eliminar"] .li-eliminar,
+    .load-box[data-ic="lote"]     .li-lote { display: block; }
+    .load-box[data-ic="eliminar"] .load-icono { color: #e11d48; background: rgba(225,29,72,0.10); }
+    .load-box[data-ic="lote"]     .load-icono { color: #7c3aed; background: rgba(124,58,237,0.10); }
+    .li-guardar .li-flecha { animation: ldSube 1.1s ease-in-out infinite; }
+    .li-eliminar .li-tapa  { transform-origin: 5px 7px; animation: ldTapa 1.2s ease-in-out infinite; }
+    .li-lote .li-hoja      { animation: ldHoja 1s ease-in-out infinite; }
+    .load-cometa {
+      position: relative; width: 100%; height: 4px; margin-top: 18px;
+      border-radius: 4px; background: rgba(100,115,160,0.13); overflow: hidden;
+    }
+    .load-cometa span {
+      position: absolute; top: 0; bottom: 0; width: 38%; border-radius: 4px;
+      background: linear-gradient(90deg, rgba(79,128,255,0), #4f80ff 60%, #2dd4bf);
+      animation: ldCometa 1.15s cubic-bezier(.45,0,.25,1) infinite;
+    }
+    .load-box[data-ic="eliminar"] .load-cometa span { background: linear-gradient(90deg, rgba(225,29,72,0), #e11d48 60%, #fb7185); }
+    .load-box[data-ic="lote"]     .load-cometa span { background: linear-gradient(90deg, rgba(124,58,237,0), #7c3aed 60%, #4f80ff); }
+    /* Con avance real (setLoadingPaso) manda la barra de siempre */
+    .load-box.con-barra .load-cometa { display: none; }
+    .load-dots { display: none; }
+
+    /* — Tilde de confirmación: 0,45 s, ya sin bloquear la interfaz — */
+    #load-overlay.tilde {
+      display: flex; pointer-events: none;
+      animation: ldVelo .45s ease forwards;
+    }
+    .load-box.ok .load-icono { background: #0d9488; color: #fff; transition: none; animation: ldOkPop .45s cubic-bezier(.3,1.6,.5,1); }
+    .load-box.ok .load-icono svg, .load-box.ok .load-halo { display: none; }
+    .load-box.ok .load-icono .li-ok { display: block; }
+    .load-box.ok .li-ok path { stroke-dasharray: 30; stroke-dashoffset: 30; animation: ldTilde .3s cubic-bezier(.6,0,.2,1) forwards; }
+    .load-box.ok .load-titulo { color: #0f766e; }
+    .load-box.ok .load-cometa { display: block; }
+    .load-box.ok .load-cometa span { left: 0; width: 100%; animation: none; background: #0d9488; }
+    .load-box.ok .load-barra { display: none; }
+
+    /* — Carga de datos (login, F5, Sincronizar): píldora, etapas y esqueleto — */
+    #load-overlay.modo-datos {
+      flex-direction: column; justify-content: flex-start; align-items: center;
+      padding-top: 26px; gap: 12px;
+    }
+    #load-overlay.modo-datos .load-box {
+      width: auto; max-width: calc(100% - 40px); flex-direction: row; gap: 12px;
+      padding: 11px 20px; border-radius: 999px;
+    }
+    #load-overlay.modo-datos .load-icono,
+    #load-overlay.modo-datos .load-cometa,
+    #load-overlay.modo-datos .load-barra { display: none; }
+    #load-overlay.modo-datos .load-dots { display: inline-flex; gap: 4px; }
+    .load-dots i {
+      width: 6px; height: 6px; border-radius: 50%; background: #4f80ff;
+      animation: ldPunto 1.2s infinite ease-in-out;
+    }
+    .load-dots i:nth-child(2) { animation-delay: .15s; }
+    .load-dots i:nth-child(3) { animation-delay: .3s; }
+    #load-overlay.modo-datos .load-titulo { font-size: 14px; white-space: nowrap; }
+    #load-overlay.modo-datos .load-paso { margin-top: 0; }
+    #load-overlay.modo-datos .load-box.con-paso .load-paso { height: 17px; margin-top: 0; }
+    .ld-datos { display: none; }
+    #load-overlay.modo-datos .ld-datos {
+      display: flex; flex-direction: column; align-items: center; gap: 22px;
+      width: calc(100% - 56px); max-width: 1600px;
+    }
+    .ld-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+    .ld-chip {
+      font-size: 12px; font-weight: 600; padding: 5px 11px; border-radius: 999px;
+      background: rgba(255,255,255,0.6); color: var(--text-light);
+      display: inline-flex; align-items: center; gap: 6px;
+      transition: background .25s ease, color .25s ease;
+    }
+    .ld-chip i { display: none; font-style: normal; }
+    .ld-chip.on { background: rgba(79,128,255,0.12); color: #3a6bf0; }
+    .ld-chip.on i {
+      display: inline-block; width: 10px; height: 10px; box-sizing: border-box; border-radius: 50%;
+      border: 2px solid currentColor; border-right-color: transparent;
+      animation: ldGiro .8s linear infinite;
+    }
+    .ld-chip.ok { background: rgba(13,148,136,0.12); color: #0f766e; }
+    .ld-chip.ok i { display: inline-block; }
+    .ld-esq { display: none; }
+    #load-overlay.modo-datos.con-esq .ld-esq {
+      position: relative; display: grid; grid-template-columns: 25fr 37fr 38fr; gap: 14px;
+      width: 100%; height: min(470px, calc(100vh - 170px)); overflow: hidden; border-radius: 20px;
+    }
+    .ld-col { display: flex; flex-direction: column; gap: 13px; min-height: 0; }
+    .ld-card {
+      position: relative; flex: 1; min-height: 0; box-sizing: border-box;
+      border-radius: 18px; background: rgba(255,255,255,0.30);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+      padding: 18px; opacity: 0; animation: ldAparece .5s ease forwards;
+    }
+    .ld-borde { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+    .ld-borde rect {
+      fill: none; stroke: rgba(79,128,255,0.45); stroke-width: 1.5;
+      stroke-dasharray: 100; stroke-dashoffset: 100;
+      animation: ldTrazo 1.1s cubic-bezier(.6,0,.2,1) forwards;
+    }
+    .ld-sk {
+      display: block; border-radius: 8px; opacity: 0;
+      background: linear-gradient(90deg, rgba(200,206,222,.35) 0%, rgba(255,255,255,.9) 45%, rgba(200,206,222,.35) 90%);
+      background-size: 300% 100%;
+      animation: ldBrillo 1.4s linear infinite, ldAparece .4s ease .7s forwards;
+    }
+    .ld-fila {
+      width: 100%; box-sizing: border-box; display: flex; align-items: center; gap: 14px;
+      padding: 14px; border-radius: 14px; background: rgba(255,255,255,0.35);
+    }
+    .ld-anillo { animation: ldGiro 1.1s linear infinite; transform-origin: 50% 50%; }
+    .ld-haz {
+      position: absolute; left: 0; right: 0; top: -60px; height: 60px; pointer-events: none; z-index: 1;
+      background: linear-gradient(180deg, rgba(79,128,255,0) 0%, rgba(79,128,255,.10) 70%, rgba(79,128,255,0) 100%);
+      border-bottom: 1.5px solid rgba(79,128,255,.35);
+      animation: ldHaz 2.2s ease-in-out infinite;
+    }
+    @media (max-width: 1100px) { #load-overlay.modo-datos.con-esq .ld-esq { display: none; } }
+
+    /* — Dashboard: números que suben y popup del Facturado — */
+    .dash-cu-on .kpi-bar-fill,
+    .dash-cu-on .peq-ring-fill,
+    .dash-cu-on .dash-cli-bar { transition: none !important; }
+    .dash-pop { animation: dashPop .6s cubic-bezier(.3,1.4,.5,1); }
+
+    /* — Login: pasos de conexión y botón — */
+    .lgc { margin-bottom: 16px; }
+    .lgc-fila { display: flex; align-items: center; padding: 0 22px; }
+    /* Nodos de vidrio: reflejo arriba, brillo del color del estado */
+    .lgc-n {
+      position: relative; flex: none; width: 30px; height: 30px; border-radius: 50%; box-sizing: border-box;
+      display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(150deg, rgba(255,255,255,.75), rgba(255,255,255,.25));
+      border: 1px solid rgba(255,255,255,.9); color: rgba(154,160,184,.6);
+      box-shadow: inset 0 1px 1px rgba(255,255,255,.95), inset 0 -3px 8px rgba(100,120,175,.12), 0 3px 10px rgba(70,85,130,.14);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      transition: background .4s ease, box-shadow .4s ease, border-color .4s ease, color .4s ease;
+    }
+    .lgc-n svg {
+      position: absolute; width: 13px; height: 13px; opacity: 0; transform: scale(.6);
+      transition: opacity .25s ease, transform .35s cubic-bezier(.3,1.6,.5,1);
+    }
+    .lgc-n::before { content: ''; position: absolute; inset: -4px; border-radius: 50%; opacity: 0; transition: opacity .3s ease; }
+    .lgc-n::after { content: ''; position: absolute; width: 6px; height: 6px; border-radius: 50%; background: rgba(154,160,184,.45); transition: opacity .25s ease; }
+    .lgc-n.on {
+      color: #4f80ff; border-color: rgba(79,128,255,.55);
+      box-shadow: inset 0 1px 1px rgba(255,255,255,.95), inset 0 -3px 10px rgba(79,128,255,.22), 0 0 16px rgba(79,128,255,.35);
+    }
+    .lgc-n.on::before {
+      opacity: 1;
+      background: conic-gradient(from 0deg, rgba(79,128,255,0) 0%, rgba(79,128,255,0) 55%, #4f80ff 92%, rgba(79,128,255,0) 93%);
+      -webkit-mask: radial-gradient(circle, transparent 17px, #000 17.5px); mask: radial-gradient(circle, transparent 17px, #000 17.5px);
+      animation: ldGiro 1s linear infinite;
+    }
+    .lgc-n.on::after { background: #4f80ff; box-shadow: 0 0 8px 2px rgba(79,128,255,.7); animation: lgcNucleo 1.1s ease-in-out infinite; }
+    .lgc-n.ok {
+      color: #0f766e; border-color: rgba(45,212,191,.75);
+      background: linear-gradient(150deg, rgba(204,251,241,.85), rgba(45,212,191,.22));
+      box-shadow: inset 0 1px 1px rgba(255,255,255,.95), inset 0 -3px 8px rgba(13,148,136,.22), 0 0 14px rgba(45,212,191,.45);
+    }
+    .lgc-n.err {
+      color: #be123c; border-color: rgba(251,113,133,.8);
+      background: linear-gradient(150deg, rgba(255,228,230,.9), rgba(244,63,94,.2));
+      box-shadow: inset 0 1px 1px rgba(255,255,255,.95), inset 0 -3px 8px rgba(225,29,72,.2), 0 0 14px rgba(244,63,94,.45);
+    }
+    .lgc-n.ok::after, .lgc-n.err::after { opacity: 0; }
+    .lgc-n.ok .lgc-v, .lgc-n.err .lgc-x { opacity: 1; transform: scale(1); }
+    .lgc-l { position: relative; flex: 1; height: 2px; margin: 0 6px; border-radius: 2px; background: rgba(154,160,184,.28); }
+    .lgc-l span {
+      display: block; height: 100%; width: 0; border-radius: 2px;
+      background: linear-gradient(90deg, rgba(79,128,255,.9), rgba(45,212,191,.95));
+      box-shadow: 0 0 8px rgba(79,128,255,.55); transition: width .5s cubic-bezier(.4,0,.2,1);
+    }
+    .lgc-l i {
+      position: absolute; top: -2px; width: 18px; height: 6px; border-radius: 6px; opacity: 0;
+      background: radial-gradient(closest-side, rgba(255,255,255,.95), rgba(79,128,255,0));
+      animation: lgcFlujo 1.2s linear infinite;
+    }
+    .lgc-l.flujo i { opacity: 1; }
+    .lgc-et { display: flex; justify-content: space-between; margin-top: 6px; }
+    .lgc-et span { width: 68px; text-align: center; font-size: 11px; font-weight: 600; color: var(--text-light); }
+    .lgc-et span.on { color: #3a6bf0; } .lgc-et span.ok { color: #0f766e; } .lgc-et span.err { color: #be123c; }
+    .lgc-txt { text-align: center; margin-top: 8px; font-size: 12px; color: var(--text-light); }
+    #btn-login { position: relative; overflow: hidden; transition: background .35s ease, box-shadow .35s ease; }
+    #btn-login .lgb-brillo {
+      position: absolute; top: 0; bottom: 0; width: 45%; pointer-events: none;
+      background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.35), rgba(255,255,255,0));
+      animation: lgbBrillo 1.1s ease-in-out infinite;
+    }
+    #btn-login .load-dots { display: inline-flex; gap: 3px; margin-left: 4px; }
+    #btn-login .load-dots i { width: 4px; height: 4px; background: #fff; }
+    #btn-login.lgb-ok { background: #0d9488; box-shadow: 0 6px 20px rgba(13,148,136,.32); }
+    #btn-login.lgb-ok svg { width: 17px; height: 17px; }
+    #btn-login.lgb-ok svg path { stroke-dasharray: 30; stroke-dashoffset: 30; animation: ldTilde .4s cubic-bezier(.6,0,.2,1) forwards; }
+
+    @keyframes ldHalo   { 0% { transform: scale(.85); opacity: .45; } 100% { transform: scale(1.35); opacity: 0; } }
+    @keyframes ldSube   { 0%,100% { transform: translateY(2px); } 50% { transform: translateY(-3px); } }
+    @keyframes ldTapa   { 0%,100% { transform: rotate(0); } 40%,60% { transform: rotate(-24deg) translateY(-1px); } }
+    @keyframes ldHoja   { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+    @keyframes ldCometa { 0% { left: -40%; } 100% { left: 100%; } }
+    @keyframes ldVelo   { from { background-color: rgba(232,235,243,0.55); } to { background-color: rgba(232,235,243,0); backdrop-filter: blur(0); -webkit-backdrop-filter: blur(0); } }
+    @keyframes ldOkPop  { 0% { transform: scale(.8); } 60% { transform: scale(1.08); } 100% { transform: scale(1); } }
+    @keyframes ldTilde  { to { stroke-dashoffset: 0; } }
+    @keyframes ldPunto  { 0%,80%,100% { opacity: .25; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-3px); } }
+    @keyframes ldGiro   { to { transform: rotate(360deg); } }
+    @keyframes ldAparece{ to { opacity: 1; } }
+    @keyframes ldTrazo  { to { stroke-dashoffset: 0; } }
+    @keyframes ldBrillo { 0% { background-position: 100% 0; } 100% { background-position: 0 0; } }
+    @keyframes ldHaz    { 0% { top: -60px; } 100% { top: 100%; } }
+    @keyframes dashPop  { 0% { transform: scale(1); } 35% { transform: scale(1.17); } 70% { transform: scale(.98); } 100% { transform: scale(1); } }
+    @keyframes lgcNucleo { 0%,100% { transform: scale(.8); opacity: .75; } 50% { transform: scale(1.15); opacity: 1; } }
+    @keyframes lgcFlujo  { 0% { left: -10%; } 100% { left: 100%; } }
+    @keyframes lgbBrillo{ 0% { left: -50%; } 100% { left: 105%; } }
+    @media (prefers-reduced-motion: reduce) {
+      .load-halo, .li-guardar .li-flecha, .li-eliminar .li-tapa, .li-lote .li-hoja, .load-cometa span,
+      .load-box.ok .load-icono, .load-dots i, .ld-chip.on i, .ld-card, .ld-borde rect, .ld-sk, .ld-anillo,
+      .ld-haz, .dash-pop, .lgc-n.on::before, .lgc-n.on::after, .lgc-l i, #btn-login .lgb-brillo, #load-overlay.tilde { animation: none; }
+      .load-box.ok .li-ok path, #btn-login.lgb-ok svg path { animation: none; stroke-dashoffset: 0; }
+      .ld-card, .ld-sk { opacity: 1; }
+      .ld-borde rect { stroke-dashoffset: 0; }
+      .load-cometa span { left: 31%; }
     }
   </style>
 </head>
@@ -3206,14 +3433,15 @@
   <div class="login-card">
     <div class="lg-titulo">Ingresar</div>
     <div class="login-sub lg-sub">Usá tu nombre de usuario</div>
-    <div id="login-conn-status" style="margin-bottom:14px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-        <span id="login-conn-text" style="font-size:12px;color:var(--text-light);">Conectando con el servidor...</span>
-        <span id="login-conn-pct" style="font-size:12px;color:var(--text-light);font-weight:600;">0%</span>
+    <!-- #137 — Conexión en tres pasos (antes: barra con porcentaje) -->
+    <div id="login-conn-status" class="lgc">
+      <div class="lgc-fila">
+        <span class="lgc-n on" id="lgc-n0"><svg class="lgc-v" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg><svg class="lgc-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17"></path></svg></span><span class="lgc-l flujo" id="lgc-c0"><span id="lgc-l0"></span><i></i></span>
+        <span class="lgc-n" id="lgc-n1"><svg class="lgc-v" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg><svg class="lgc-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17"></path></svg></span><span class="lgc-l" id="lgc-c1"><span id="lgc-l1"></span><i></i></span>
+        <span class="lgc-n" id="lgc-n2"><svg class="lgc-v" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg><svg class="lgc-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17"></path></svg></span>
       </div>
-      <div style="height:4px;background:rgba(200,205,220,0.35);border-radius:20px;overflow:hidden;">
-        <div id="login-conn-bar" style="height:100%;width:0%;border-radius:20px;background:linear-gradient(90deg,#4f80ff,#2dd4bf);transition:width 0.4s ease;"></div>
-      </div>
+      <div class="lgc-et"><span id="lgc-e0" class="on">Servidor</span><span id="lgc-e1">Usuarios</span><span id="lgc-e2">Listo</span></div>
+      <div class="lgc-txt"><span id="login-conn-text">Conectando con el servidor...</span></div>
     </div>
     <div class="login-error" id="login-error"></div>
     <div class="form-group" style="margin-bottom:22px;">
@@ -3374,7 +3602,7 @@
         <div style="font-size:13px;color:var(--text-light);margin-top:3px;">Resumen general · <span id="dash-mes"></span></div>
       </div>
       <div class="topbar-actions">
-        <select class="form-select" id="dash-filtro-mes" onchange="actualizarDashboard()" style="min-width:160px;">
+        <select class="form-select" id="dash-filtro-mes" onchange="dashCuPedir(); actualizarDashboard()" style="min-width:160px;">
         </select>
         <button class="btn btn-glass" onclick="sincronizar()" style="font-size:12px;"><i class="fa-solid fa-rotate"></i> Sincronizar</button>
         <button class="btn btn-glass" onclick="mostrarDebug()" style="font-size:12px;"><i class="fa-solid fa-bug"></i> Debug</button>
@@ -4834,12 +5062,29 @@
 
 <!-- OVERLAY DE CARGA (cambio #91) -->
 <div id="load-overlay">
-  <canvas id="load-estela" aria-hidden="true"></canvas>
-  <div class="load-box" id="load-box">
-    <div class="load-spinner"></div>
+  <div class="load-box" id="load-box" data-ic="guardar">
+    <div class="load-icono" aria-hidden="true">
+      <span class="load-halo"></span><span class="load-halo b"></span>
+      <svg class="li-guardar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2"><path d="M7 18a4.5 4.5 0 0 1-.6-8.96A6 6 0 0 1 18 9a4 4 0 0 1 0 9"></path><g class="li-flecha"><path d="M12 19v-7"></path><path d="M9 14.5l3-3 3 3"></path></g></svg>
+      <svg class="li-eliminar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2"><g class="li-tapa"><path d="M4 7h16"></path><path d="M9.5 7V5h5v2"></path></g><path d="M6.5 7.5l.9 11.5a1.5 1.5 0 0 0 1.5 1.4h6.2a1.5 1.5 0 0 0 1.5-1.4l.9-11.5"></path><path d="M10 11v5.5M14 11v5.5"></path></svg>
+      <svg class="li-lote" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2"><path d="M8 4h7l4 4v9"></path><g class="li-hoja"><path d="M5 7h8l3 3v10H5z"></path><path d="M8 13h5M8 16.5h5"></path></g></svg>
+      <svg class="li-ok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2.6"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+    </div>
+    <div class="load-dots" aria-hidden="true"><i></i><i></i><i></i></div>
     <div class="load-titulo" id="load-titulo">Procesando</div>
     <div class="load-paso" id="load-paso"></div>
+    <div class="load-cometa" aria-hidden="true"><span></span></div>
     <div class="load-barra" id="load-barra"><span id="load-barra-fill"></span></div>
+  </div>
+  <!-- #137 — Carga de datos: etapas y esqueleto del dashboard (solo apariencia) -->
+  <div class="ld-datos" aria-hidden="true">
+    <div class="ld-chips" id="ld-chips"></div>
+    <div class="ld-esq">
+      <div class="ld-haz"></div>
+      <div class="ld-col"><div class="ld-card" style="justify-content:flex-start;gap:16px;padding:24px;"><svg class="ld-borde" aria-hidden="true"><rect x="0.75" y="0.75" width="99.4%" height="99.4%" rx="18" pathLength="100" style="animation-delay:0s"></rect></svg><span class="ld-sk" style="width:55%;height:14px;"></span><svg width="140" height="140" viewBox="0 0 160 160" aria-hidden="true" style="margin:auto 0;"><circle cx="80" cy="80" r="68" fill="none" stroke="rgba(200,206,222,.45)" stroke-width="13"></circle><g class="ld-anillo"><circle cx="80" cy="80" r="68" fill="none" stroke="rgba(79,128,255,.55)" stroke-width="13" stroke-linecap="round" stroke-dasharray="70 360"></circle></g></svg><span class="ld-sk" style="width:30%;height:10px;"></span><span class="ld-sk" style="width:70%;height:28px;"></span><span class="ld-sk" style="width:45%;height:10px;"></span></div></div>
+      <div class="ld-col"><div class="ld-card" style="animation-delay:.08s"><svg class="ld-borde" aria-hidden="true"><rect x="0.75" y="0.75" width="99.4%" height="99.4%" rx="18" pathLength="100" style="animation-delay:.08s"></rect></svg><span class="ld-sk" style="width:38%;height:11px;"></span><span class="ld-sk" style="width:62%;height:26px;"></span><span class="ld-sk" style="width:30%;height:9px;"></span><span class="ld-sk" style="width:88%;height:5px;margin-top:6px;"></span></div><div class="ld-card" style="animation-delay:.16s"><svg class="ld-borde" aria-hidden="true"><rect x="0.75" y="0.75" width="99.4%" height="99.4%" rx="18" pathLength="100" style="animation-delay:.16s"></rect></svg><span class="ld-sk" style="width:38%;height:11px;"></span><span class="ld-sk" style="width:62%;height:26px;"></span><span class="ld-sk" style="width:30%;height:9px;"></span><span class="ld-sk" style="width:88%;height:5px;margin-top:6px;"></span></div><div class="ld-card" style="animation-delay:.24s"><svg class="ld-borde" aria-hidden="true"><rect x="0.75" y="0.75" width="99.4%" height="99.4%" rx="18" pathLength="100" style="animation-delay:.24s"></rect></svg><span class="ld-sk" style="width:38%;height:11px;"></span><span class="ld-sk" style="width:62%;height:26px;"></span><span class="ld-sk" style="width:30%;height:9px;"></span><span class="ld-sk" style="width:88%;height:5px;margin-top:6px;"></span></div></div>
+      <div class="ld-col"><div class="ld-card" style="justify-content:flex-start;gap:12px;padding:22px;animation-delay:.25s;"><svg class="ld-borde" aria-hidden="true"><rect x="0.75" y="0.75" width="99.4%" height="99.4%" rx="18" pathLength="100" style="animation-delay:.25s"></rect></svg><span class="ld-sk" style="width:40%;height:13px;"></span><span class="ld-sk" style="width:62%;height:9px;margin-bottom:6px;"></span><div class="ld-fila"><div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;"><span class="ld-sk" style="width:24%;height:10px;"></span><span class="ld-sk" style="width:46%;height:16px;"></span><span class="ld-sk" style="width:100%;height:5px;"></span></div><span class="ld-sk" style="width:62px;height:38px;border-radius:20px;"></span></div><div class="ld-fila"><div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;"><span class="ld-sk" style="width:24%;height:10px;"></span><span class="ld-sk" style="width:46%;height:16px;"></span><span class="ld-sk" style="width:100%;height:5px;"></span></div><span class="ld-sk" style="width:62px;height:38px;border-radius:20px;"></span></div><div class="ld-fila"><div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;"><span class="ld-sk" style="width:24%;height:10px;"></span><span class="ld-sk" style="width:46%;height:16px;"></span><span class="ld-sk" style="width:100%;height:5px;"></span></div><span class="ld-sk" style="width:62px;height:38px;border-radius:20px;"></span></div></div></div>
+    </div>
   </div>
 </div>
 <!-- Tooltip global para sitios -->
@@ -4888,7 +5133,7 @@ function mesActualStr() {
    a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
    Se pinta en el pie del sidebar (#sidebar-version).
    ═══════════════════════════════════════════════════════ */
-const APP_VERSION = 'V 261026 1405';
+const APP_VERSION = 'V 281026 1535';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
@@ -5140,7 +5385,7 @@ async function _apiPostJson(bodyStr) {
       }
     } catch (e) { /* cuerpo no interpretable: va por el camino de siempre */ }
   }
-  if (!cuerpo) return await _apiPostUnaVez(bodyStr, 0);
+  if (!cuerpo) return _loadMarcarPost(await _apiPostUnaVez(bodyStr, 0));   // #137
 
   let ultimo = null;
   let quitarAviso = () => {};
@@ -5149,7 +5394,7 @@ async function _apiPostJson(bodyStr) {
       try {
         const json = await _apiPostUnaVez(cuerpo, API_POST_TIMEOUT);
         if (json && json.reqId === reqId) {
-          if (!json.ocupado) return json;
+          if (!json.ocupado) return _loadMarcarPost(json);   // #137
           // No se ejecutó nada: el servidor estaba con otro guardado.
           ultimo = new Error(json.error || 'El servidor está ocupado. Probá de nuevo en unos segundos.');
         } else {
@@ -5216,6 +5461,7 @@ async function apiPostWithIdFallback(action, sheet, payload, primaryId, fallback
 }
 
 function toast(msg, tipo = 'ok') {
+  if (tipo === 'err') _loadHuboError = true;   // #137 — sin tilde si algo falló
   let t = document.getElementById('toast');
   if (!t) {
     t = document.createElement('div');
@@ -5289,19 +5535,116 @@ function setLoading(on, mensaje) {
     }, LOAD_WATCHDOG_MS);
   }
 
+  /* #137 — Una operación nueva corta la tilde de la anterior. */
+  _loadTildeCortar();
+
   if (on) {
+    const titulo = mensaje || LOAD_TITULO_DEFAULT;
     const tit = document.getElementById('load-titulo');
-    if (tit) tit.textContent = mensaje || LOAD_TITULO_DEFAULT;
+    if (tit) tit.textContent = titulo;
     _loadResetPaso();
+    _loadPostOk = false; _loadHuboError = false;   // #137 — criterio de la tilde
+    _loadAplicarModo(titulo);                      // #137 — datos o envío, e ícono
     /* Si la pantalla de login o la de bienvenida están a la vista, el overlay
        queda tapado por z-index igual; no abrirlo evita el parpadeo del blur
        cuando cargarTodo corre justo detrás de la bienvenida. */
-    if (_loadPantallaInicialVisible()) { ov.classList.remove('open'); return; }
+    if (_loadPantallaInicialVisible()) { ov.classList.remove('open'); _ldEtapasParar(); return; }
     ov.classList.add('open');
   } else {
+    /* #137 — Un envío que el servidor confirmó, sin errores a la vista, cierra
+       con una tilde de 0,45 s. Ya sin .open: nada lo cuenta como operación en
+       curso (autoSync, chequeo diario) y no captura clics. */
+    const tilde = ov.classList.contains('open') && !ov.classList.contains('modo-datos') &&
+                  _loadPostOk && !_loadHuboError;
     ov.classList.remove('open');
+    _ldEtapasParar();
+    if (tilde) {
+      const box = document.getElementById('load-box');
+      const tit = document.getElementById('load-titulo');
+      const paso = document.getElementById('load-paso');
+      if (tit) tit.textContent = '¡Listo!';
+      if (paso) paso.textContent = '';
+      if (box) { box.classList.remove('con-paso'); box.classList.add('ok'); }
+      ov.classList.add('tilde');
+      _loadTildeTimer = setTimeout(_loadTildeCortar, LOAD_TILDE_MS);
+      return;
+    }
     _loadResetPaso();
   }
+}
+
+/* ═══ #137 · Modo del cartel, etapas de la carga de datos y tilde ═══════
+   Dos modos, según el título (el mismo criterio que usaba la estela #132):
+     · "Cargando datos" / "Sincronizando datos" → píldora con etapas y, si el
+       dashboard está a la vista, el esqueleto de sus tarjetas.
+     · Cualquier otro → caja con ícono según la acción y barra en movimiento.
+   Las etapas son una SIMULACIÓN: el ALL es un solo pedido. Avanzan cada
+   700 ms y la última queda girando hasta que llegan los datos. */
+const LOAD_TILDE_MS = 450;
+const LD_ETAPAS = ['Clientes', 'Sitios', 'Facturación', 'Obras', 'Personal', 'Órdenes de compra'];
+const LD_ETAPA_MS = 700;
+var _loadPostOk = false, _loadHuboError = false, _loadTildeTimer = null;   // var: toast() y setLoading() pueden correr antes de esta línea
+var _ldEtapasTimer = null;
+
+function _loadEsDatos(titulo) { return /^(Cargando|Sincronizando) datos/.test(titulo || ''); }
+
+function _loadIcono(titulo) {
+  if (/^(Eliminando|Borrando|Anulando|Quitando)/.test(titulo || '')) return 'eliminar';
+  if (/^(Registrando|Traspasando)/.test(titulo || '')) return 'lote';
+  return 'guardar';
+}
+
+function _loadAplicarModo(titulo) {
+  const ov  = document.getElementById('load-overlay');
+  const box = document.getElementById('load-box');
+  if (!ov || !box) return;
+  const datos = _loadEsDatos(titulo);
+  ov.classList.toggle('modo-datos', datos);
+  const dash = document.getElementById('view-dashboard');
+  ov.classList.toggle('con-esq', datos && !!dash && dash.classList.contains('active'));
+  box.dataset.ic = _loadIcono(titulo);
+  if (datos) _ldEtapasIniciar(); else _ldEtapasParar();
+}
+
+function _ldEtapasPintar(i) {
+  const cont = document.getElementById('ld-chips');
+  if (!cont) return;
+  cont.innerHTML = LD_ETAPAS.map((l, k) => {
+    const cls = k < i ? 'ok' : (k === i ? 'on' : '');
+    return `<span class="ld-chip ${cls}"><i>${k < i ? '✓' : ''}</i>${l}</span>`;
+  }).join('');
+}
+
+function _ldEtapasIniciar() {
+  _ldEtapasParar();
+  let i = 0;
+  _ldEtapasPintar(i);
+  _ldEtapasTimer = setInterval(() => {
+    if (i < LD_ETAPAS.length - 1) _ldEtapasPintar(++i);
+    else { clearInterval(_ldEtapasTimer); _ldEtapasTimer = null; }
+  }, LD_ETAPA_MS);
+}
+
+function _ldEtapasParar() {
+  if (_ldEtapasTimer) { clearInterval(_ldEtapasTimer); _ldEtapasTimer = null; }
+}
+
+function _loadTildeCortar() {
+  clearTimeout(_loadTildeTimer); _loadTildeTimer = null;
+  const ov  = document.getElementById('load-overlay');
+  const box = document.getElementById('load-box');
+  if (ov && ov.classList.contains('tilde')) {
+    ov.classList.remove('tilde');
+    _loadResetPaso();
+  }
+  if (box) box.classList.remove('ok');
+}
+
+/* Lo llama _apiPostJson con cada respuesta del servidor: solo un guardado
+   confirmado (ok distinto de false) habilita la tilde. */
+function _loadMarcarPost(json) {
+  if (json && json.ok !== false) _loadPostOk = true;
+  return json;
 }
 
 /* Avance real de una operación de varios pasos. Llamar DESPUÉS de setLoading(true).
@@ -5324,6 +5667,7 @@ function setLoadingPaso(actual, total, mensaje) {
   paso.textContent = `${i} de ${n}`;
   const box = document.getElementById('load-box');
   if (box) box.classList.add('con-paso', 'con-barra');
+  if (box) box.dataset.ic = 'lote';   // #137
   if (fill) fill.style.width = Math.round(i / n * 100) + '%';
 }
 
@@ -5536,6 +5880,7 @@ async function cargarTodo(mensaje) {
   try {
     const data = await apiGet('ALL');
     _cargaMarcar(false);   // antes de aplicar: el re-render ya tiene que verlo en false
+    dashCuPedir();         // #137 — los números del dashboard suben al cerrar el cartel
     _aplicarDatosAll(data);
   } catch (err) {
     _cargaMarcar(true);
@@ -5543,6 +5888,7 @@ async function cargarTodo(mensaje) {
     console.error('ERROR cargarTodo:', err);
   } finally {
     setLoading(false);
+    _dashCuIntentar();     // #137 — con el cartel ya cerrado
   }
 }
 
@@ -12665,16 +13011,18 @@ function filtrarLineasPorMes(filtroMesId) {
 }
 
 /* ── KPI CARD HELPER ── */
-function kpiCard(tipo, label, value, sub, ref, pct, clickFn) {
+function kpiCard(tipo, label, value, sub, ref, pct, clickFn, cuNum) {
   const pctW = Math.min(100, Math.max(0, pct || 0));
   const cursor = clickFn ? 'cursor:pointer;' : '';
   const hover  = clickFn ? `onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 18px 48px rgba(100,110,140,0.22)'" onmouseout="this.style.transform='';this.style.boxShadow=''"` : '';
+  /* #137 — cuNum (opcional): el importe sin formato, para que suba al cargar. */
+  const cu = (cuNum !== undefined && isFinite(cuNum)) ? ` data-cu="${Number(cuNum)}"` : '';
   return `<div class="kpi-card kc-${tipo}" style="${cursor}" onclick="${clickFn||''}" ${hover}>
     <div class="kpi-label">${label}</div>
-    <div class="kpi-value">${value}</div>
+    <div class="kpi-value"${cu}>${value}</div>
     <div class="kpi-sub">${sub}</div>
     ${ref ? `<div class="kpi-ref">${ref}</div>` : ''}
-    <div class="kpi-bar-bg"><div class="kpi-bar-fill" style="width:${pctW}%"></div></div>
+    <div class="kpi-bar-bg"><div class="kpi-bar-fill" data-cu-w="${pctW}" style="width:${pctW}%"></div></div>
   </div>`;
 }
 
@@ -12716,16 +13064,17 @@ function kpiCardPEQ(totalFac, clickFn, mes) {
         <circle class="peq-ring-fill"  cx="80" cy="80" r="${R}" stroke-width="13"
           stroke="${colorSolido}"
           stroke-dasharray="${CIRC.toFixed(1)}"
-          stroke-dashoffset="${offset.toFixed(1)}"></circle>
+          stroke-dashoffset="${offset.toFixed(1)}"
+          data-cu-off="${offset.toFixed(1)}" data-cu-circ="${CIRC.toFixed(1)}"></circle>
       </svg>
       <div class="peq-ring-center">
-        <div class="peq-ring-pct" style="color:${colorSolido};">${pctRedondeado}%</div>
+        <div class="peq-ring-pct" style="color:${colorSolido};" data-cu="${pctRedondeado}" data-cu-fmt="p">${pctRedondeado}%</div>
         <div class="peq-ring-cap" title="Objetivo del mes: ${fmt(peq)}">del PEQ</div>
       </div>
     </div>
     <div style="text-align:center;">
       <div class="peq-monto-label">Facturado</div>
-      <div class="peq-monto-valor">${fmt(Math.round(totalFac))}</div>
+      <div class="peq-monto-valor" data-cu="${Math.round(totalFac)}" data-cu-pop>${fmt(Math.round(totalFac))}</div>
       <div class="kpi-ref" style="margin-top:8px;">${refTxt}</div>
     </div>
   </div>`;
@@ -13669,17 +14018,20 @@ function actualizarDashboard() {
     kpiCard('amber', 'Proyectados',
       fmt(totalTodo), 'Total del mes', `${lf.length} línea${lf.length!==1?'s':''}`,
       100,
-      `abrirDetalleKPI('Proyectados','Todas las líneas del mes',window._dash_lf)`
+      `abrirDetalleKPI('Proyectados','Todas las líneas del mes',window._dash_lf)`,
+      totalTodo
     ) +
     kpiCard('blue',  'Proyectados + Solicitados',
       fmt(totalProySol), 'Pendiente de facturar', `${proySol.length} línea${proySol.length!==1?'s':''}`,
       totalTodo > 0 ? Math.round(totalProySol/totalTodo*100) : 0,
-      `abrirDetalleKPI('Proyectados + Solicitados','Líneas pendientes de facturar',window._dash_proysol)`
+      `abrirDetalleKPI('Proyectados + Solicitados','Líneas pendientes de facturar',window._dash_proysol)`,
+      totalProySol
     ) +
     kpiCard('teal',  'Solicitados sin facturar',
       fmt(totalSol), `de ${fmt(totalTodo)} total`, `${solicitadas.length} línea${solicitadas.length!==1?'s':''}`,
       totalTodo > 0 ? Math.round(totalSol/totalTodo*100) : 0,
-      `abrirDetalleKPI('Solicitados sin facturar','Líneas en estado Solicitado',window._dash_solicitadas)`
+      `abrirDetalleKPI('Solicitados sin facturar','Líneas en estado Solicitado',window._dash_solicitadas)`,
+      totalSol
     );
 
   // Info por cliente (solo si hay datos)
@@ -13708,17 +14060,17 @@ function actualizarDashboard() {
           onmouseout="this.style.transform='';this.style.boxShadow=''">
           <div class="dash-cli-info">
             <div style="display:flex;align-items:center;justify-content:center;gap:8px;font-weight:600;font-size:13px;margin-bottom:4px;">${dot(c.color)}${c.id}</div>
-            <div style="text-align:center;font-size:17px;font-weight:700;color:${c.color};margin-bottom:11px;">${fmt(valFac)}</div>
+            <div style="text-align:center;font-size:17px;font-weight:700;color:${c.color};margin-bottom:11px;" data-cu="${valFac}">${fmt(valFac)}</div>
             <div style="height:5px;background:rgba(200,205,220,0.3);border-radius:20px;overflow:hidden;">
-              <div style="height:100%;width:${pct}%;background:${c.color};border-radius:20px;transition:.4s ease;"></div>
+              <div class="dash-cli-bar" data-cu-w="${pct}" style="height:100%;width:${pct}%;background:${c.color};border-radius:20px;transition:.4s ease;"></div>
             </div>
             <div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--text-light);margin-top:6px;">
-              <span>${pct}% facturado</span>
+              <span><span data-cu="${pct}" data-cu-fmt="p">${pct}%</span> facturado</span>
               <span>de ${fmt(valTodo)} total</span>
             </div>
           </div>
           <div class="dash-cli-chip-col">
-            <span class="dash-cli-chip" title="% del facturado total del mes">${chipTot}</span>
+            <span class="dash-cli-chip" title="% del facturado total del mes"${pctTot !== null ? ` data-cu="${pctTot}" data-cu-fmt="p"` : ''}>${chipTot}</span>
           </div>
         </div>`;
       }).join('');
@@ -13727,6 +14079,80 @@ function actualizarDashboard() {
 
   // GAP acumulado: sección oculta — no se renderiza.
   // (renderGapAcumulado se conserva por si se reactiva en el futuro)
+
+  _dashCuIntentar();   // #137 — si hay una animación pedida y el dashboard se ve
+}
+
+/* ═══ #137 · Números que suben en el dashboard ══════════════════════════
+   Al cargar los datos (login, F5, Sincronizar) y al cambiar de mes, los
+   importes y porcentajes arrancan en 0 y llegan al valor exacto en ~1 s,
+   frenando al final; las barras y el anillo se llenan igual. Al terminar,
+   el Facturado hace un pulso. NO corre con la resincronización en segundo
+   plano (autoSync no lo pide).
+
+   Se pide con dashCuPedir() y arranca en _dashCuIntentar() recién cuando el
+   dashboard está a la vista y el cartel de carga cerrado; si se sincronizó
+   desde otra vista, queda pendiente hasta entrar al dashboard.
+
+   Trabaja sobre lo ya pintado: data-cu (valor), data-cu-fmt="p" (porcentaje;
+   sin él, pesos), data-cu-w (ancho de barra en %), data-cu-off/-circ (anillo)
+   y data-cu-pop (pulso final). Va por tiempo y busca los elementos en cada
+   cuadro: si el dashboard se repinta en el medio, sigue desde donde iba. El
+   último cuadro deja exactamente el texto que pintó actualizarDashboard.
+   Con "reducir movimiento" no se anima. */
+const DASH_CU_MS = 1000;
+var _dashCuPend = false, _dashCuRaf = 0, _dashCuT0 = 0, _dashCuEspera = null;   // var: sin zona muerta si se llama antes
+
+function dashCuPedir() { _dashCuPend = true; }
+
+function _dashCuReducido() {
+  try { return !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches); }
+  catch (e) { return false; }
+}
+
+function _dashCuIntentar() {
+  clearTimeout(_dashCuEspera); _dashCuEspera = null;
+  if (!_dashCuPend || !_usuarioActual) return;
+  const v = document.getElementById('view-dashboard');
+  if (!v || !v.classList.contains('active')) return;      // queda pendiente
+  const ov = document.getElementById('load-overlay');
+  if (ov && ov.classList.contains('open')) return;        // cargarTodo reintenta al cerrar
+  const sl = document.getElementById('screen-login');     // el login todavía se está yendo
+  if (sl && getComputedStyle(sl).display !== 'none') { _dashCuEspera = setTimeout(_dashCuIntentar, 200); return; }
+  _dashCuPend = false;
+  if (_dashCuReducido()) return;
+  if (_dashCuRaf) cancelAnimationFrame(_dashCuRaf);
+  _dashCuT0 = performance.now();
+  v.classList.add('dash-cu-on');
+  _dashCuCuadro();   // primer cuadro sincrónico: en 0 antes de que se pinte nada
+}
+
+function _dashCuCuadro() {
+  _dashCuRaf = 0;
+  const v = document.getElementById('view-dashboard');
+  if (!v) return;
+  const a = Math.min(1, (performance.now() - _dashCuT0) / DASH_CU_MS);
+  const e = 1 - Math.pow(1 - a, 3);
+  v.querySelectorAll('[data-cu]').forEach(el => {
+    const n = Number(el.dataset.cu);
+    if (!isFinite(n)) return;
+    if (el.dataset.cuFmt === 'p') el.textContent = Math.round(a >= 1 ? n : n * e) + '%';
+    else el.textContent = a >= 1 ? fmt(n) : fmt(Math.round(n * e));
+  });
+  v.querySelectorAll('[data-cu-w]').forEach(el => {
+    const w = Number(el.dataset.cuW);
+    if (isFinite(w)) el.style.width = (a >= 1 ? w : w * e) + '%';
+  });
+  v.querySelectorAll('[data-cu-off]').forEach(el => {
+    const off = Number(el.dataset.cuOff), circ = Number(el.dataset.cuCirc);
+    if (!isFinite(off) || !isFinite(circ)) return;
+    el.style.strokeDashoffset = a >= 1 ? '' : String(circ - (circ - off) * e);
+  });
+  if (a < 1) { _dashCuRaf = requestAnimationFrame(_dashCuCuadro); return; }
+  v.classList.remove('dash-cu-on');
+  v.querySelectorAll('[data-cu-pop]').forEach(el => {
+    el.classList.remove('dash-pop'); void el.offsetWidth; el.classList.add('dash-pop');
+  });
 }
 
 /* ══ DETALLE CLIENTE ══ */
@@ -17006,27 +17432,28 @@ async function intentarLogin() {
   const errEl = document.getElementById('login-error');
   const btn   = document.getElementById('btn-login');
   if (!user) { errEl.textContent = 'Ingresá tu usuario.'; errEl.style.display = 'block'; return; }
-  btn.textContent = 'Verificando...';
+  _lgBtnEstado('espera');   // #137
   btn.disabled = true;
   errEl.style.display = 'none';
   _usuariosAdmin = await cargarUsuariosAdmin();
   if (!_usuariosAdmin.length) {
     errEl.textContent = 'No se pudo conectar con la lista de usuarios.';
     errEl.style.display = 'block';
-    btn.textContent = 'Ingresar'; btn.disabled = false; return;
+    _lgBtnEstado('idle'); btn.disabled = false; return;
   }
   const match = _usuariosAdmin.find(u => u.usuario.toLowerCase() === user.toLowerCase());
   if (!match) {
     errEl.textContent = 'Usuario no encontrado.';
     errEl.style.display = 'block';
-    btn.textContent = 'Ingresar'; btn.disabled = false;
+    _lgBtnEstado('idle'); btn.disabled = false;
     return;
   }
   if (!match.habilitado) {
     errEl.textContent = 'Tu usuario está deshabilitado.';
     errEl.style.display = 'block';
-    btn.textContent = 'Ingresar'; btn.disabled = false; return;
+    _lgBtnEstado('idle'); btn.disabled = false; return;
   }
+  _lgBtnEstado('ok', String(match.idUsuario || match.usuario).split(' ')[0]);   // #137
   _usuarioActual = match;
   try { sessionStorage.setItem('terabyte_user', match.usuario); } catch(e) {}
   mostrarBienvenida(match);
@@ -17075,7 +17502,7 @@ function cerrarSesion() {
   { const av = document.getElementById('carga-fallo'); if (av) av.style.display = 'none'; }
   document.getElementById('login-user').value = '';
   document.getElementById('login-error').style.display = 'none';
-  document.getElementById('btn-login').textContent = 'Ingresar';
+  _lgBtnEstado('idle');   // #137
   document.getElementById('btn-login').disabled = false;
   document.getElementById('screen-login').style.display = 'flex';
   _lgMostrar();   // #130
@@ -17225,6 +17652,42 @@ function _lgMostrar() {
 window.addEventListener('resize', () => { if (_lgVisible()) _lgUbicarLogo(); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden && _lgVisible()) _lgIniciar(); });
 
+/* ═══ #137 · Login: pasos de conexión y estados del botón ═══════════════ */
+let _lgcPaso = 0;
+/* paso: 0 Servidor · 1 Usuarios · 2 Listo · 3 = todo completo. err: el paso
+   en curso falló. Los anteriores quedan tildados. */
+function _lgcPintar(paso, err) {
+  _lgcPaso = Math.min(paso, 2);
+  for (let k = 0; k < 3; k++) {
+    const est = k < paso ? 'ok' : (k === paso ? (err ? 'err' : 'on') : '');
+    const n = document.getElementById('lgc-n' + k), e = document.getElementById('lgc-e' + k);
+    if (n) n.className = 'lgc-n' + (est ? ' ' + est : '');
+    if (e) e.className = est;
+    const l = document.getElementById('lgc-l' + k);
+    if (l) l.style.width = k < paso ? '100%' : '0';
+    const c = document.getElementById('lgc-c' + k);   // chispa que viaja mientras conecta
+    if (c) c.classList.toggle('flujo', est === 'on');
+  }
+}
+
+/* estado: 'idle' (Ingresar) · 'espera' (Verificando…) · 'ok' (Hola, nombre).
+   Solo cambia lo que se ve: disabled lo sigue manejando cada llamador. */
+function _lgBtnEstado(estado, nombre) {
+  const btn = document.getElementById('btn-login');
+  if (!btn) return;
+  btn.classList.toggle('lgb-ok', estado === 'ok');
+  if (estado === 'espera') {
+    btn.innerHTML = '<span class="lgb-brillo" aria-hidden="true"></span>Verificando<span class="load-dots" aria-hidden="true"><i></i><i></i><i></i></span>';
+  } else if (estado === 'ok') {
+    const s = document.createElement('span');
+    s.textContent = 'Hola, ' + (nombre || '');
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>';
+    btn.appendChild(s);
+  } else {
+    btn.textContent = 'Ingresar';
+  }
+}
+
 /* ── PING inicial ── */
 (async function pingServidor() {
   /* Versión del archivo (cambio #69) — se pinta siempre, haya sesión o no */
@@ -17233,20 +17696,12 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden && _l
   const verLogin = document.getElementById('login-version');   // #128
   if (verLogin) verLogin.textContent = APP_VERSION;
 
-  const bar  = document.getElementById('login-conn-bar');
-  const pct  = document.getElementById('login-conn-pct');
   const txt  = document.getElementById('login-conn-text');
   const btn  = document.getElementById('btn-login');
-  let val = 0;
-  const timer = setInterval(() => {
-    if (val < 30)      val += 6;
-    else if (val < 60) val += 3;
-    else if (val < 82) val += 1.2;
-    else if (val < 88) val += 0.3;
-    if (val >= 88) { val = 88; clearInterval(timer); }
-    bar.style.width = val + '%';
-    pct.textContent = Math.round(val) + '%';
-  }, 130);
+  /* #137 — Tres pasos en vez de barra con %. Es un solo pedido (ADMIN), así
+     que el paso a "Usuarios" es simulado: a los 600 ms, si no volvió. */
+  _lgcPintar(0);
+  const timer = setTimeout(() => _lgcPintar(1), 600);
   const t0 = Date.now();
   try {
     /* #124 — ADMIN en vez de CLIENTES: prueba la conexión igual y además deja
@@ -17255,23 +17710,16 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden && _l
     const ms   = Date.now() - t0;
     const lista = _parsearUsuariosAdmin(data);
     if (lista.length) _adminCache = { t: Date.now(), lista };
-    clearInterval(timer);
+    clearTimeout(timer);
     if (data.ok !== false) {
-      bar.style.transition = 'width 0.3s ease';
-      bar.style.width = '100%';
-      bar.style.background = 'linear-gradient(90deg,#22c55e,#4ade80)';
-      pct.textContent = '100%';
-      pct.style.color = '#16a34a';
+      _lgcPintar(3);   // #137 — los tres pasos completos
       txt.textContent = `Servidor listo (${ms < 1000 ? ms + 'ms' : (ms/1000).toFixed(1) + 's'})`;
       txt.style.color = '#16a34a';
       btn.disabled = false;
     } else { throw new Error(); }
   } catch(e) {
-    clearInterval(timer);
-    bar.style.width = '100%';
-    bar.style.background = 'linear-gradient(90deg,#f87171,#fca5a5)';
-    pct.textContent = '—';
-    pct.style.color = '#b91c1c';
+    clearTimeout(timer);
+    _lgcPintar(_lgcPaso, true);   // #137 — el paso en curso queda en rojo
     txt.textContent = 'Error de conexión — Contactar al administrador';
     txt.style.color = '#b91c1c';
     btn.disabled = false;
@@ -17302,96 +17750,6 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden && _l
   } catch(e) { /* sessionStorage bloqueado u otro error: queda en login */ }
 })();
 
-
-/* ═══ #132 · Estela del cursor durante "Cargando datos" ═════════════════
-   Mientras el overlay muestra la carga de datos (login o Sincronizar), el
-   cursor deja una estela azul que se desvanece en ~2 s. Solo apariencia: el
-   overlay sigue bloqueando la interfaz igual que antes. No corre en los
-   guardados ("Guardando…", "Eliminando…"), ni con animaciones reducidas, y se
-   detiene en cuanto el overlay se cierra: fuera de la carga no consume nada.
-   Se engancha observando la clase del overlay, sin tocar setLoading(). */
-const _estMs = 2000;
-let _estPts = [], _estRaf = 0, _estOn = false, _estW = 0, _estH = 0;
-
-function _estActiva() {
-  const ov = document.getElementById('load-overlay');
-  const tit = (document.getElementById('load-titulo') || {}).textContent || '';
-  return !!ov && ov.classList.contains('open') && !_lgReducir && /^(Cargando|Sincronizando) datos/.test(tit);
-}
-
-function _estMover(e) {
-  if (!_estOn) return;
-  /* Todos los puntos intermedios que registró el mouse (no solo uno por cuadro):
-     la estela sale continua aunque el movimiento sea rápido. */
-  const evs = (typeof e.getCoalescedEvents === 'function' && e.getCoalescedEvents().length) ? e.getCoalescedEvents() : [e];
-  const now = performance.now();
-  for (const ev of evs) {
-    const last = _estPts[_estPts.length - 1];
-    const x = ev.clientX, y = ev.clientY;
-    if (last && now - last.t < 120) {
-      const dist = Math.hypot(x - last.x, y - last.y);
-      const pasos = Math.min(20, Math.floor(dist / 8));   // relleno de saltos
-      for (let k = 1; k < pasos; k++)
-        _estPts.push({ x: last.x + (x - last.x) * k / pasos, y: last.y + (y - last.y) * k / pasos, t: now });
-    }
-    _estPts.push({ x, y, t: now });
-  }
-  if (_estPts.length > 700) _estPts.splice(0, _estPts.length - 700);
-}
-
-function _estCuadro() {
-  _estRaf = 0;
-  if (!_estOn) return;
-  const cv = document.getElementById('load-estela');
-  const d = window.devicePixelRatio || 1;
-  if (cv.width !== Math.round(innerWidth * d) || cv.height !== Math.round(innerHeight * d)) {
-    _estW = innerWidth; _estH = innerHeight;
-    cv.width = Math.round(_estW * d); cv.height = Math.round(_estH * d);
-    cv.getContext('2d').setTransform(d, 0, 0, d, 0, 0);
-  }
-  const cx = cv.getContext('2d'), now = performance.now();
-  _estPts = _estPts.filter(p => now - p.t < _estMs);
-  cx.clearRect(0, 0, _estW, _estH);
-  cx.lineCap = 'round'; cx.lineJoin = 'round';
-  /* Curva suave por los puntos medios; cada tramo con su grosor y opacidad
-     según la edad: la cola se afina y se apaga. Dos pasadas: halo y núcleo. */
-  const tramo = (i, ancho, color, blur) => {
-    const p0 = _estPts[i - 1], p1 = _estPts[i], p2 = _estPts[i + 1] || p1;
-    if (p1.t - p0.t > 140) return;
-    const vida = Math.max(0, 1 - (now - p1.t) / _estMs), e = vida * vida * (3 - 2 * vida);
-    const m0x = (p0.x + p1.x) / 2, m0y = (p0.y + p1.y) / 2, m1x = (p1.x + p2.x) / 2, m1y = (p1.y + p2.y) / 2;
-    cx.strokeStyle = color(e); cx.lineWidth = ancho(e);
-    cx.beginPath(); cx.moveTo(m0x, m0y); cx.quadraticCurveTo(p1.x, p1.y, m1x, m1y); cx.stroke();
-  };
-  for (let i = 1; i < _estPts.length; i++) tramo(i, e => 22 * e + 1, e => `rgba(79,128,255,${0.10 * e})`, 0);
-  for (let i = 1; i < _estPts.length; i++) tramo(i, e => 9 * e + 1, e => `rgba(100,150,255,${0.28 * e})`, 0);
-  for (let i = 1; i < _estPts.length; i++) tramo(i, e => 3.2 * e + 0.4, e => `rgba(190,215,255,${0.95 * e})`, 0);
-  _estRaf = requestAnimationFrame(_estCuadro);
-}
-
-function _estSync() {
-  const on = _estActiva();
-  if (on === _estOn) return;
-  _estOn = on;
-  const cv = document.getElementById('load-estela');
-  if (on) {
-    _estPts = [];
-    if (!_estRaf) _estRaf = requestAnimationFrame(_estCuadro);
-  } else {
-    if (_estRaf) cancelAnimationFrame(_estRaf);
-    _estRaf = 0; _estPts = [];
-    if (cv) cv.getContext('2d').clearRect(0, 0, cv.width, cv.height);
-  }
-}
-
-(function () {
-  const ov = document.getElementById('load-overlay');
-  if (!ov || typeof MutationObserver !== 'function') return;
-  new MutationObserver(_estSync).observe(ov, { attributes: true, attributeFilter: ['class'], subtree: false });
-  const tit = document.getElementById('load-titulo');
-  if (tit) new MutationObserver(_estSync).observe(tit, { childList: true, characterData: true, subtree: true });
-  ov.addEventListener('pointermove', _estMover, { passive: true });
-})();
 
 /* #130 — Arranque de la animación del login (si quedó a la vista). */
 (function () {
