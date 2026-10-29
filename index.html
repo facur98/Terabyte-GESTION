@@ -3264,7 +3264,7 @@
     .ld-chip.on i {
       display: inline-block; width: 10px; height: 10px; box-sizing: border-box; border-radius: 50%;
       border: 2px solid currentColor; border-right-color: transparent;
-      animation: ldGiro 1.2s linear infinite;   /* #139 */
+      animation: ldGiro .8s linear infinite;
     }
     .ld-chip.ok { background: rgba(13,148,136,0.12); color: #0f766e; }
     .ld-chip.ok i { display: inline-block; }
@@ -3278,35 +3278,32 @@
       position: relative; flex: 1; min-height: 0; box-sizing: border-box;
       border-radius: 18px; background: rgba(255,255,255,0.30);
       display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
-      padding: 18px; opacity: 0; animation: ldAparece .7s ease forwards;   /* #139 — más lento */
+      padding: 18px; opacity: 0; animation: ldAparece .5s ease forwards;
     }
     .ld-borde { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
     .ld-borde rect {
       fill: none; stroke: rgba(79,128,255,0.45); stroke-width: 1.5;
       stroke-dasharray: 100; stroke-dashoffset: 100;
-      animation: ldTrazo 1.6s cubic-bezier(.6,0,.2,1) forwards;   /* #139 */
+      animation: ldTrazo 1.1s cubic-bezier(.6,0,.2,1) forwards;
     }
-    /* #139 — brillo más lento y tenue: no compite con la estela */
     .ld-sk {
       display: block; border-radius: 8px; opacity: 0;
-      background: linear-gradient(90deg, rgba(200,206,222,.32) 0%, rgba(255,255,255,.62) 50%, rgba(200,206,222,.32) 100%);
+      background: linear-gradient(90deg, rgba(200,206,222,.35) 0%, rgba(255,255,255,.9) 45%, rgba(200,206,222,.35) 90%);
       background-size: 300% 100%;
-      animation: ldBrillo 2.8s ease-in-out infinite, ldAparece .6s ease 1s forwards;
+      animation: ldBrillo 1.4s linear infinite, ldAparece .4s ease .7s forwards;
     }
     .ld-fila {
       width: 100%; box-sizing: border-box; display: flex; align-items: center; gap: 14px;
       padding: 14px; border-radius: 14px; background: rgba(255,255,255,0.35);
     }
+    .ld-anillo { animation: ldGiro 1.1s linear infinite; transform-origin: 50% 50%; }
+    .ld-haz {
+      position: absolute; left: 0; right: 0; top: -60px; height: 60px; pointer-events: none; z-index: 1;
+      background: linear-gradient(180deg, rgba(79,128,255,0) 0%, rgba(79,128,255,.10) 70%, rgba(79,128,255,0) 100%);
+      border-bottom: 1.5px solid rgba(79,128,255,.35);
+      animation: ldHaz 2.2s ease-in-out infinite;
+    }
     @media (max-width: 1100px) { #load-overlay.modo-datos.con-esq .ld-esq { display: none; } }
-
-    /* #139 — Estela del cursor durante la carga de datos. Va por encima del
-       esqueleto y por debajo de la píldora y las etapas. */
-    #load-estela { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; display: none; }
-    #load-overlay.modo-datos #load-estela { display: block; }
-    #load-overlay .load-box { position: relative; z-index: 2; }
-    #load-overlay .ld-chips { position: relative; z-index: 2; }
-    #load-overlay .ld-esq { z-index: 0; }
-    #load-overlay.modo-datos .load-dots i { animation-duration: 1.6s; }
 
     /* — Dashboard: números que suben y popup del Facturado — */
     .dash-cu-on .kpi-bar-fill,
@@ -3396,6 +3393,7 @@
     @keyframes ldGiro   { to { transform: rotate(360deg); } }
     @keyframes ldAparece{ to { opacity: 1; } }
     @keyframes ldTrazo  { to { stroke-dashoffset: 0; } }
+    @keyframes ldHaz    { 0% { top: -60px; } 100% { top: 100%; } }
     @keyframes ldBrillo { 0% { background-position: 100% 0; } 100% { background-position: 0 0; } }
     @keyframes dashPop  { 0% { transform: scale(1); } 35% { transform: scale(1.17); } 70% { transform: scale(.98); } 100% { transform: scale(1); } }
     @keyframes lgcNucleo { 0%,100% { transform: scale(.8); opacity: .75; } 50% { transform: scale(1.15); opacity: 1; } }
@@ -3403,8 +3401,8 @@
     @keyframes lgbBrillo{ 0% { left: -50%; } 100% { left: 105%; } }
     @media (prefers-reduced-motion: reduce) {
       .load-halo, .li-guardar .li-flecha, .li-eliminar .li-tapa, .li-lote .li-hoja, .load-cometa span,
-      .load-box.ok .load-icono, .load-dots i, .ld-chip.on i, .ld-card, .ld-borde rect, .ld-sk,
-      .dash-pop, .lgc-n.on::before, .lgc-n.on::after, .lgc-l i, #btn-login .lgb-brillo, #load-overlay.tilde { animation: none; }
+      .load-box.ok .load-icono, .load-dots i, .ld-chip.on i, .ld-card, .ld-borde rect, .ld-sk, .ld-anillo,
+      .ld-haz, .dash-pop, .lgc-n.on::before, .lgc-n.on::after, .lgc-l i, #btn-login .lgb-brillo, #load-overlay.tilde { animation: none; }
       .load-box.ok .li-ok path, #btn-login.lgb-ok svg path { animation: none; stroke-dashoffset: 0; }
       .ld-card, .ld-sk { opacity: 1; }
       .ld-borde rect { stroke-dashoffset: 0; }
@@ -5242,7 +5240,6 @@
 
 <!-- OVERLAY DE CARGA (cambio #91) -->
 <div id="load-overlay">
-  <canvas id="load-estela" aria-hidden="true"></canvas>
   <div class="load-box" id="load-box" data-ic="guardar">
     <div class="load-icono" aria-hidden="true">
       <span class="load-halo"></span><span class="load-halo b"></span>
@@ -5261,8 +5258,8 @@
   <div class="ld-datos" aria-hidden="true">
     <div class="ld-chips" id="ld-chips"></div>
     <div class="ld-esq">
-      
-      <div class="ld-col"><div class="ld-card" style="justify-content:flex-start;gap:16px;padding:24px;"><svg class="ld-borde" aria-hidden="true"><rect x="0.75" y="0.75" width="99.4%" height="99.4%" rx="18" pathLength="100" style="animation-delay:0s"></rect></svg><span class="ld-sk" style="width:55%;height:14px;"></span><svg width="140" height="140" viewBox="0 0 160 160" aria-hidden="true" style="margin:auto 0;"><circle cx="80" cy="80" r="68" fill="none" stroke="rgba(200,206,222,.45)" stroke-width="13"></circle></svg><span class="ld-sk" style="width:30%;height:10px;"></span><span class="ld-sk" style="width:70%;height:28px;"></span><span class="ld-sk" style="width:45%;height:10px;"></span></div></div>
+      <div class="ld-haz"></div>
+      <div class="ld-col"><div class="ld-card" style="justify-content:flex-start;gap:16px;padding:24px;"><svg class="ld-borde" aria-hidden="true"><rect x="0.75" y="0.75" width="99.4%" height="99.4%" rx="18" pathLength="100" style="animation-delay:0s"></rect></svg><span class="ld-sk" style="width:55%;height:14px;"></span><svg width="140" height="140" viewBox="0 0 160 160" aria-hidden="true" style="margin:auto 0;"><circle cx="80" cy="80" r="68" fill="none" stroke="rgba(200,206,222,.45)" stroke-width="13"></circle><g class="ld-anillo"><circle cx="80" cy="80" r="68" fill="none" stroke="rgba(79,128,255,.55)" stroke-width="13" stroke-linecap="round" stroke-dasharray="70 360"></circle></g></svg><span class="ld-sk" style="width:30%;height:10px;"></span><span class="ld-sk" style="width:70%;height:28px;"></span><span class="ld-sk" style="width:45%;height:10px;"></span></div></div>
       <div class="ld-col"><div class="ld-card" style="animation-delay:.08s"><svg class="ld-borde" aria-hidden="true"><rect x="0.75" y="0.75" width="99.4%" height="99.4%" rx="18" pathLength="100" style="animation-delay:.08s"></rect></svg><span class="ld-sk" style="width:38%;height:11px;"></span><span class="ld-sk" style="width:62%;height:26px;"></span><span class="ld-sk" style="width:30%;height:9px;"></span><span class="ld-sk" style="width:88%;height:5px;margin-top:6px;"></span></div><div class="ld-card" style="animation-delay:.16s"><svg class="ld-borde" aria-hidden="true"><rect x="0.75" y="0.75" width="99.4%" height="99.4%" rx="18" pathLength="100" style="animation-delay:.16s"></rect></svg><span class="ld-sk" style="width:38%;height:11px;"></span><span class="ld-sk" style="width:62%;height:26px;"></span><span class="ld-sk" style="width:30%;height:9px;"></span><span class="ld-sk" style="width:88%;height:5px;margin-top:6px;"></span></div><div class="ld-card" style="animation-delay:.24s"><svg class="ld-borde" aria-hidden="true"><rect x="0.75" y="0.75" width="99.4%" height="99.4%" rx="18" pathLength="100" style="animation-delay:.24s"></rect></svg><span class="ld-sk" style="width:38%;height:11px;"></span><span class="ld-sk" style="width:62%;height:26px;"></span><span class="ld-sk" style="width:30%;height:9px;"></span><span class="ld-sk" style="width:88%;height:5px;margin-top:6px;"></span></div></div>
       <div class="ld-col"><div class="ld-card" style="justify-content:flex-start;gap:12px;padding:22px;animation-delay:.25s;"><svg class="ld-borde" aria-hidden="true"><rect x="0.75" y="0.75" width="99.4%" height="99.4%" rx="18" pathLength="100" style="animation-delay:.25s"></rect></svg><span class="ld-sk" style="width:40%;height:13px;"></span><span class="ld-sk" style="width:62%;height:9px;margin-bottom:6px;"></span><div class="ld-fila"><div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;"><span class="ld-sk" style="width:24%;height:10px;"></span><span class="ld-sk" style="width:46%;height:16px;"></span><span class="ld-sk" style="width:100%;height:5px;"></span></div><span class="ld-sk" style="width:62px;height:38px;border-radius:20px;"></span></div><div class="ld-fila"><div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;"><span class="ld-sk" style="width:24%;height:10px;"></span><span class="ld-sk" style="width:46%;height:16px;"></span><span class="ld-sk" style="width:100%;height:5px;"></span></div><span class="ld-sk" style="width:62px;height:38px;border-radius:20px;"></span></div><div class="ld-fila"><div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;"><span class="ld-sk" style="width:24%;height:10px;"></span><span class="ld-sk" style="width:46%;height:16px;"></span><span class="ld-sk" style="width:100%;height:5px;"></span></div><span class="ld-sk" style="width:62px;height:38px;border-radius:20px;"></span></div></div></div>
     </div>
@@ -5314,7 +5311,7 @@ function mesActualStr() {
    a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
    Se pinta en el pie del sidebar (#sidebar-version).
    ═══════════════════════════════════════════════════════ */
-const APP_VERSION = 'V 291026 1410';
+const APP_VERSION = 'V 291026 1425';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
@@ -5760,10 +5757,10 @@ function setLoading(on, mensaje) {
        dashboard está a la vista, el esqueleto de sus tarjetas.
      · Cualquier otro → caja con ícono según la acción y barra en movimiento.
    Las etapas son una SIMULACIÓN: el ALL es un solo pedido. Avanzan cada
-   1000 ms (#139; antes 700) y la última queda girando hasta que llegan los datos. */
+   700 ms y la última queda girando hasta que llegan los datos. */
 const LOAD_TILDE_MS = 450;
 const LD_ETAPAS = ['Clientes', 'Sitios', 'Facturación', 'Obras', 'Personal', 'Órdenes de compra'];
-const LD_ETAPA_MS = 1000;   // #139 — antes 700: más calmo
+const LD_ETAPA_MS = 700;
 var _loadPostOk = false, _loadHuboError = false, _loadTildeTimer = null;   // var: toast() y setLoading() pueden correr antes de esta línea
 var _ldEtapasTimer = null;
 
@@ -18298,131 +18295,6 @@ function _evoEnganchar() {
     _evoResizeT = setTimeout(() => { const v = $e('view-evolucion'); if (v && v.classList.contains('active')) renderEvolucion(false); }, 150);
   });
 }
-
-/* ═══ #139 · Estela del cursor durante la carga de datos ═══════════════
-   Vuelve la idea del #132 con otro dibujo: en vez de trazos sueltos (que se
-   veían escalonados), una CINTA continua. Los puntos del mouse se suavizan
-   (Chaikin), se arma el contorno con un ancho que crece de la cola a la punta
-   y se rellena de una vez, así no hay uniones visibles. Dos capas: un brillo
-   desenfocado y el núcleo, con degradé verde agua → azul → violeta.
-
-   Cada punto vive ESTELA_VIDA ms: alcanza para dibujar un poco. La cola no se
-   afina a cero (conserva un tercio del ancho), así el trazo se lee entero.
-
-   Solo en el modo "datos" del cartel (Cargando/Sincronizando datos), nunca en
-   los guardados ni con "reducir movimiento". Se engancha observando la clase
-   del overlay, sin tocar setLoading(). Fuera de la carga no consume nada. */
-const ESTELA_VIDA = 2400;
-let _esPts = [], _esRaf = 0, _esOn = false, _esW = 0, _esH = 0;
-
-function _esActiva() {
-  const ov = document.getElementById('load-overlay');
-  return !!ov && ov.classList.contains('open') && ov.classList.contains('modo-datos') && !_lgReducir;
-}
-
-function _esMover(e) {
-  if (!_esOn) return;
-  const evs = (typeof e.getCoalescedEvents === 'function' && e.getCoalescedEvents().length) ? e.getCoalescedEvents() : [e];
-  const t = performance.now();
-  for (const v of evs) {
-    const l = _esPts[_esPts.length - 1];
-    if (l && Math.hypot(v.clientX - l.x, v.clientY - l.y) < 2) continue;
-    _esPts.push({ x: v.clientX, y: v.clientY, t });
-  }
-  if (_esPts.length > 1500) _esPts.splice(0, _esPts.length - 1500);
-}
-
-/* Chaikin: redondea las esquinas sin alejarse del recorrido. */
-function _esSuavizar(p, it) {
-  for (let k = 0; k < it; k++) {
-    if (p.length < 3) return p;
-    const q = [p[0]];
-    for (let i = 0; i < p.length - 1; i++) {
-      const a = p[i], b = p[i + 1];
-      q.push({ x: a.x * .75 + b.x * .25, y: a.y * .75 + b.y * .25, t: a.t * .75 + b.t * .25 },
-             { x: a.x * .25 + b.x * .75, y: a.y * .25 + b.y * .75, t: a.t * .25 + b.t * .75 });
-    }
-    q.push(p[p.length - 1]);
-    p = q;
-  }
-  return p;
-}
-
-/* Contorno de la cinta como un solo Path2D. */
-function _esCinta(p, ancho, now) {
-  if (p.length < 2) return null;
-  const L = [], R = [];
-  for (let i = 0; i < p.length; i++) {
-    const a = p[Math.max(0, i - 1)], b = p[Math.min(p.length - 1, i + 1)];
-    let nx = -(b.y - a.y), ny = b.x - a.x;
-    const n = Math.hypot(nx, ny) || 1; nx /= n; ny /= n;
-    const v = Math.max(0, 1 - (now - p[i].t) / ESTELA_VIDA), e = v * v * (3 - 2 * v);
-    const w = ancho * (.35 + .65 * e) * Math.min(1, i / 6 + .15);
-    L.push([p[i].x + nx * w, p[i].y + ny * w]); R.push([p[i].x - nx * w, p[i].y - ny * w]);
-  }
-  const path = new Path2D();
-  path.moveTo(L[0][0], L[0][1]);
-  for (let i = 1; i < L.length; i++) path.quadraticCurveTo(L[i - 1][0], L[i - 1][1], (L[i - 1][0] + L[i][0]) / 2, (L[i - 1][1] + L[i][1]) / 2);
-  const h = p[p.length - 1];
-  path.arc(h.x, h.y, Math.hypot(L[L.length - 1][0] - h.x, L[L.length - 1][1] - h.y), 0, Math.PI * 2);
-  for (let i = R.length - 1; i > 0; i--) path.quadraticCurveTo(R[i][0], R[i][1], (R[i][0] + R[i - 1][0]) / 2, (R[i][1] + R[i - 1][1]) / 2);
-  path.closePath();
-  return path;
-}
-
-function _esCuadro() {
-  _esRaf = 0;
-  if (!_esOn) return;
-  const cv = document.getElementById('load-estela');
-  if (!cv) return;
-  const d = window.devicePixelRatio || 1;
-  if (cv.width !== Math.round(innerWidth * d) || cv.height !== Math.round(innerHeight * d)) {
-    _esW = innerWidth; _esH = innerHeight;
-    cv.width = Math.round(_esW * d); cv.height = Math.round(_esH * d);
-    cv.getContext('2d').setTransform(d, 0, 0, d, 0, 0);
-  }
-  const cx = cv.getContext('2d'), now = performance.now();
-  _esPts = _esPts.filter(p => now - p.t < ESTELA_VIDA);
-  cx.clearRect(0, 0, _esW, _esH);
-  if (_esPts.length > 1) {
-    const base = _esPts.length > 400 ? _esPts.filter((q, i) => i % 2 === 0 || i === _esPts.length - 1) : _esPts;
-    const p = _esSuavizar(base, 2), a = p[0], b = p[p.length - 1];
-    const g = cx.createLinearGradient(a.x, a.y, b.x, b.y);
-    g.addColorStop(0, 'rgba(45,212,191,0)'); g.addColorStop(.25, 'rgba(45,212,191,.35)');
-    g.addColorStop(.6, 'rgba(79,128,255,.6)'); g.addColorStop(1, 'rgba(124,92,255,.9)');
-    const halo = _esCinta(p, 13, now), nucleo = _esCinta(p, 3.4, now);
-    if (halo)   { cx.save(); cx.filter = 'blur(10px)'; cx.globalAlpha = .45; cx.fillStyle = g; cx.fill(halo); cx.restore(); }
-    if (nucleo) {
-      cx.save(); cx.filter = 'blur(.6px)'; cx.fillStyle = g; cx.fill(nucleo); cx.restore();
-      const r = cx.createRadialGradient(b.x, b.y, 0, b.x, b.y, 9);
-      r.addColorStop(0, 'rgba(255,255,255,.95)'); r.addColorStop(1, 'rgba(255,255,255,0)');
-      cx.fillStyle = r; cx.beginPath(); cx.arc(b.x, b.y, 9, 0, Math.PI * 2); cx.fill();
-    }
-  }
-  _esRaf = requestAnimationFrame(_esCuadro);
-}
-
-function _esSync() {
-  const on = _esActiva();
-  if (on === _esOn) return;
-  _esOn = on;
-  const cv = document.getElementById('load-estela');
-  if (on) {
-    _esPts = [];
-    if (!_esRaf) _esRaf = requestAnimationFrame(_esCuadro);
-  } else {
-    if (_esRaf) cancelAnimationFrame(_esRaf);
-    _esRaf = 0; _esPts = [];
-    if (cv) cv.getContext('2d').clearRect(0, 0, cv.width, cv.height);
-  }
-}
-
-(function () {
-  const ov = document.getElementById('load-overlay');
-  if (!ov || typeof MutationObserver !== 'function') return;
-  new MutationObserver(_esSync).observe(ov, { attributes: true, attributeFilter: ['class'] });
-  ov.addEventListener('pointermove', _esMover, { passive: true });
-})();
 
 /* #130 — Arranque de la animación del login (si quedó a la vista). */
 (function () {
