@@ -3426,8 +3426,28 @@
     .evo-chip.off { opacity: .5; }
     .evo-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; flex: none; }
     .evo-fila { display: flex; flex-wrap: wrap; gap: 16px; align-items: stretch; }
-    .evo-graf { flex: 999 1 620px; min-width: 0; padding: 18px 20px 14px; }
-    .evo-panel { flex: 1 1 340px; min-width: 0; padding: 18px 20px; display: flex; flex-direction: column; gap: 12px; text-align: center; }
+    .evo-graf { flex: 1 1 100%; min-width: 0; padding: 18px 20px 14px; }   /* #140 — a todo el ancho */
+    /* #140 — Cuadro numérico: mes por fila, cliente por columna */
+    .evo-cuadro { display: none; overflow-x: auto; }
+    .evo-graf.modo-cuadro .evo-cuadro { display: block; }
+    .evo-graf.modo-cuadro .evo-solo-graf { display: none; }
+    .evo-ctbl { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+    .evo-ctbl th { font-size: 11px; letter-spacing: .7px; text-transform: uppercase; color: #7a8099; font-weight: 600; padding: 10px 14px; text-align: right; border-bottom: 1px solid rgba(200,205,220,.55); white-space: nowrap; }
+    .evo-ctbl th:first-child, .evo-ctbl td:first-child { text-align: left; }
+    .evo-ctbl th .evo-dot { margin-right: 7px; vertical-align: 1px; }
+    .evo-ctbl td { padding: 2px 6px; text-align: right; font-size: 13px; white-space: nowrap; }
+    .evo-ctbl td:first-child { padding-left: 14px; font-weight: 600; }
+    .evo-ctbl tbody tr:nth-child(even) td { background: rgba(240,242,248,.55); }
+    .evo-ctbl tbody tr.en td { background: rgba(79,128,255,.09); }
+    .evo-ctbl tbody tr.en td:first-child { box-shadow: inset 3px 0 0 #4f80ff; color: #3a6bf0; }
+    .evo-ctbl .evo-lnk { width: 100%; text-align: right; padding: 9px 8px; font-size: 13px; }
+    .evo-ctbl .z { color: #c3c7d6; padding-right: 14px; }
+    .evo-ctbl .tot .evo-lnk { font-weight: 700; }
+    .evo-ctbl tfoot td { font-weight: 700; padding-top: 4px; }
+    .evo-ctbl tfoot tr:first-child td { border-top: 2px solid rgba(200,205,220,.6); }
+    .evo-ctbl tfoot .evo-lnk { font-weight: 700; }
+    .evo-ctbl tfoot tr.per td { background: rgba(79,128,255,.09); }
+    .evo-ctbl tfoot tr.per td:first-child { color: #3a6bf0; }
     .evo-ghead { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 12px; }
     .evo-gctl { display: flex; align-items: center; gap: 14px; }
     .evo-peq-leg { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--text-mid); }
@@ -3462,16 +3482,8 @@
     .evo-leg { display: flex; justify-content: center; flex-wrap: wrap; gap: 18px; margin-top: 12px; font-size: 12px; color: var(--text-mid); }
     .evo-leg span { display: flex; align-items: center; gap: 6px; }
     .evo-pill { font-size: 11.5px; font-weight: 700; padding: 3px 9px; border-radius: 20px; white-space: nowrap; display: inline-block; }
-    .evo-num { font: 700 30px 'DM Sans', sans-serif; letter-spacing: -.4px; border: 0; background: transparent; cursor: pointer; border-radius: 10px; padding: 4px 8px; color: var(--text-dark); font-variant-numeric: tabular-nums; }
-    .evo-num:hover, .evo-lnk:hover { background: rgba(79,128,255,.10); color: #3a6bf0; }
+    .evo-lnk:hover { background: rgba(79,128,255,.10); color: #3a6bf0; }
     .evo-lnk { border: 0; background: transparent; cursor: pointer; border-radius: 8px; padding: 2px 6px; font: inherit; color: inherit; }
-    .evo-bar { height: 7px; border-radius: 20px; background: rgba(200,205,220,.4); overflow: hidden; }
-    .evo-bar span { display: block; height: 100%; border-radius: 20px; transition: width .5s ease; }
-    .evo-cli { background: rgba(255,255,255,.35); border: 1px solid rgba(255,255,255,.7); border-radius: 14px; padding: 12px 14px; text-align: left; }
-    .evo-cli.dash-cli-card { grid-template-columns: minmax(0, 1fr) auto; }
-    .evo-cli .dash-cli-chip { font-size: 16px; padding: 7px 13px; min-width: 58px; }
-    .evo-cli-pie { display: flex; justify-content: space-between; gap: 8px; font-size: 10.5px; color: var(--text-light); margin-top: 6px; white-space: nowrap; }
-    .evo-chipcol { display: flex; flex-direction: column; align-items: center; gap: 6px; }
     .evo-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
     .evo-card { font-family: 'DM Sans', sans-serif; text-align: center; padding: 16px 18px 12px; cursor: pointer; color: var(--text-dark); display: flex; flex-direction: column; align-items: center; gap: 4px; }
     .evo-pie { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; margin-top: 16px; font-size: 11.5px; color: var(--text-light); }
@@ -3803,21 +3815,22 @@
         <div class="evo-ghead">
           <div>
             <div class="evo-ttl">Comparativo de clientes</div>
-            <div class="evo-sub2">Tocá un mes para verlo · el período elegido queda en el recuadro azul</div>
+            <div class="evo-sub2" id="evo-gsub"></div>
           </div>
           <div class="evo-gctl">
-            <span class="evo-peq-leg"><svg width="24" height="6" aria-hidden="true"><line x1="0" y1="3" x2="24" y2="3" stroke="#0d9488" stroke-width="2" stroke-dasharray="5 4"/></svg>PEQ</span>
-            <div class="evo-seg" id="evo-graf"><button type="button" data-v="cruzado">Cruzado</button><button type="button" data-v="apilado">Apilado</button></div>
+            <span class="evo-peq-leg evo-solo-graf"><svg width="24" height="6" aria-hidden="true"><line x1="0" y1="3" x2="24" y2="3" stroke="#0d9488" stroke-width="2" stroke-dasharray="5 4"/></svg>PEQ</span>
+            <!-- #140 — Cuadro (números) · Líneas (curvas) · Columnas (apiladas) -->
+            <div class="evo-seg" id="evo-graf"><button type="button" data-v="cuadro">Cuadro</button><button type="button" data-v="cruzado">Líneas</button><button type="button" data-v="apilado">Columnas</button></div>
           </div>
         </div>
-        <div class="evo-plot">
+        <div class="evo-cuadro" id="evo-cuadro"></div>
+        <div class="evo-plot evo-solo-graf">
           <div class="evo-yax" id="evo-yax"></div>
           <div class="evo-chart" id="evo-chart"></div>
         </div>
-        <div class="evo-xrow"><div class="evo-ysp"></div><div class="evo-xax" id="evo-xax"></div></div>
-        <div class="evo-leg" id="evo-leg"></div>
+        <div class="evo-xrow evo-solo-graf"><div class="evo-ysp"></div><div class="evo-xax" id="evo-xax"></div></div>
+        <div class="evo-leg evo-solo-graf" id="evo-leg"></div>
       </section>
-      <section class="card evo-panel" id="evo-panel" aria-label="Período seleccionado"></section>
     </div>
 
     <div class="evo-ttl" style="margin:18px 4px 10px;">Evolución de cada cliente</div>
@@ -5311,7 +5324,7 @@ function mesActualStr() {
    a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
    Se pinta en el pie del sidebar (#sidebar-version).
    ═══════════════════════════════════════════════════════ */
-const APP_VERSION = 'V 291026 1425';
+const APP_VERSION = 'V 291026 1430';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
@@ -17956,7 +17969,7 @@ function _lgBtnEstado(estado, nombre) {
 const EVO_GRAF_ALTO = 300;
 const EVO_AUD_MAX = 300;
 const EVO_MESES_LARGOS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-var _evo = { modo: 'mes', mes: '', desde: '', hasta: '', act: {}, graf: 'cruzado', aud: null, q: '', sort: 'monto' };
+var _evo = { modo: 'mes', mes: '', desde: '', hasta: '', act: {}, graf: 'cuadro', aud: null, q: '', sort: 'monto' };   // #140 — abre en Cuadro
 var _evoListo = false, _evoResizeT = 0;
 
 function evoPermitido() { return actEsDestinatario(); }
@@ -18066,8 +18079,14 @@ function renderEvolucion(animar) {
   document.getElementById('evo-sub').textContent = `${_evoPeriodoTxt(R)} · ${A.length === D.cls.length ? 'todos los clientes' : A.map(c => c.id).join(', ')}`;
   document.getElementById('evo-pie-peq').textContent = 'PEQ de cada mes según su vigencia: ' + [...new Set(D.ms.map(m => peqDe(m)))].map(_evoM).join(' → ');
   _evoPintarFiltros(D);
-  _evoPintarGrafico(D, R, A, animar !== false);
-  _evoPintarPanel(D, R, A);
+  /* #140 — Cuadro, Líneas o Columnas. El panel "Mes seleccionado" se sacó. */
+  const sec = document.querySelector('#view-evolucion .evo-graf');
+  sec.classList.toggle('modo-cuadro', _evo.graf === 'cuadro');
+  document.getElementById('evo-gsub').textContent = _evo.graf === 'cuadro'
+    ? 'Cada número abre sus líneas · el período elegido queda resaltado en azul'
+    : 'Tocá un mes para verlo · el período elegido queda en el recuadro azul';
+  if (_evo.graf === 'cuadro') _evoPintarCuadro(D, R, A);
+  else _evoPintarGrafico(D, R, A, animar !== false);
   _evoPintarTarjetas(D, R);
   if (_evo.aud) _evoPintarAud();
 }
@@ -18147,50 +18166,31 @@ function _evoPintarGrafico(D, R, A, animar) {
   });
 }
 
-function _evoPintarPanel(D, R, A) {
-  const n = R.length, prev = R.map(m => _evoMesSumar(m, -n));
-  const sum = (cs, mm) => cs.reduce((s, c) => s + mm.reduce((t, m) => t + D.f(c.id, m), 0), 0);
-  const tot = sum(A, R), totP = sum(A, prev);
-  const peq = R.reduce((s, m) => s + peqDe(m), 0), cu = tot / peq;
-  const vp = _evoVarPill(tot, totP);
-  const prevTxt = n === 1 ? 'vs. ' + _evoMesCorto(prev[0]) : 'vs. ' + _evoPeriodoTxt(prev);
-  const chip = totP ? `<span class="evo-pill" style="background:${vp.bg};color:${vp.c}">${vp.t} ${prevTxt}</span>`
-                    : `<span class="evo-pill" style="background:rgba(154,160,184,.15);color:#7a8099">Sin período anterior con datos</span>`;
-  /* Clientes con líneas en el período, más los que facturaron en el anterior:
-     así una caída a cero se ve ("Sin fact.") en vez de desaparecer. */
-  const conAct = A.filter(c => R.some(m => D.t(c.id, m)) || prev.some(m => D.f(c.id, m)));
-  const filas = conAct.map(c => {
-    const vf = R.reduce((s, m) => s + D.f(c.id, m), 0), vt = R.reduce((s, m) => s + D.t(c.id, m), 0);
-    const vprev = prev.reduce((s, m) => s + D.f(c.id, m), 0);
-    const pct = vt > 0 ? Math.round(vf / vt * 100) : 0;
-    const part = tot > 0 ? Math.round(vf / tot * 100) : 0;
-    const var1 = _evoVarPill(vf, vprev);
-    return `<div class="dash-cli-card evo-cli">
-      <div class="dash-cli-info">
-        <div style="display:flex;align-items:center;justify-content:center;gap:8px;font-weight:600;font-size:13px;margin-bottom:4px;">${dot(c.c)}${_evoEsc(c.id)}</div>
-        <div style="text-align:center;margin-bottom:9px;"><button type="button" class="evo-lnk" data-aud-c="${_evoEsc(c.id)}" style="font-size:17px;font-weight:700;color:${_evoEsc(c.c)};">${fmt(vf)}</button></div>
-        <div style="height:5px;background:rgba(200,205,220,0.3);border-radius:20px;overflow:hidden;"><div style="height:100%;width:${pct}%;background:${_evoEsc(c.c)};border-radius:20px;transition:width .5s ease;"></div></div>
-        <div class="evo-cli-pie"><span>${pct}% facturado</span><span>de ${fmt(vt)} total</span></div>
-      </div>
-      <div class="evo-chipcol">
-        <span class="dash-cli-chip" title="Participación en lo facturado del período">${part}%</span>
-        <span class="evo-pill" style="background:${var1.bg};color:${var1.c}" title="Contra el período anterior">${var1.t}</span>
-      </div>
-    </div>`;
-  }).join('');
-  const p = document.getElementById('evo-panel');
-  p.innerHTML = `
-    <div class="evo-kl">${n === 1 ? 'Mes seleccionado' : 'Rango seleccionado'}</div>
-    <div class="evo-ttl" style="font-size:19px;margin-top:-6px;">${_evoPeriodoTxt(R)}${n > 1 ? ` <span style="font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;color:var(--text-light)">· ${n} meses</span>` : ''}</div>
-    <div>${chip}</div>
-    <div><button type="button" class="evo-num" data-aud-c="*">${fmt(tot)}</button></div>
-    <div>
-      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-mid);margin-bottom:6px;"><span>Cumplimiento del PEQ${n > 1 ? ' acumulado' : ''} (${_evoM(peq)})</span><b style="color:${_evoOkC(cu)}">${_evoPc(cu)}</b></div>
-      <div class="evo-bar"><span style="width:${Math.min(100, cu * 100)}%;background:${_evoOkC(cu)}"></span></div>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px;">${filas || '<div class="evo-vacio">Sin líneas en el período</div>'}</div>
-    <div class="evo-sub2" style="margin-top:auto;border-top:1px dashed rgba(200,205,220,.6);padding-top:10px;font-size:11px;">Barra: cuánto de lo del cliente ya se facturó · chip: participación y variación contra el período anterior</div>`;
-  p.querySelectorAll('[data-aud-c]').forEach(b => b.onclick = () => evoAbrirAud(b.dataset.audC, R));
+/* #140 — Cuadro numérico: todos los meses del año, una columna por cliente
+   prendido y el total. Las filas del período quedan en azul. Abajo, el total
+   del período y el del año (uno solo si el período es el año). Cada número
+   abre la auditoría de sus líneas. */
+function _evoPintarCuadro(D, R, A) {
+  const ms = D.ms;
+  const celda = (v, c, mm, cls) => v
+    ? `<td class="${cls || ''}"><button type="button" class="evo-lnk" data-c="${_evoEsc(c)}" data-m="${mm.join(',')}">${fmt(v)}</button></td>`
+    : `<td class="z ${cls || ''}">—</td>`;
+  const fila = (lab, mm, trCls) => {
+    const vs = A.map(c => mm.reduce((s, m) => s + D.f(c.id, m), 0));
+    const t = vs.reduce((s, v) => s + v, 0);
+    return `<tr class="${trCls || ''}"><td>${lab}</td>${vs.map((v, k) => celda(v, A[k].id, mm)).join('')}${celda(t, '*', mm, 'tot')}</tr>`;
+  };
+  const todoAnio = R.length === ms.length;
+  const anioTxt = _evoPeriodoTxt(ms);
+  let h = `<table class="evo-ctbl"><thead><tr><th>Mes</th>${A.map(c => `<th><span class="evo-dot" style="background:${_evoEsc(c.c)}"></span>${_evoEsc(c.id)}</th>`).join('')}<th>Total</th></tr></thead><tbody>`;
+  h += ms.map(m => fila(EVO_MESES_LARGOS[parseInt(m.slice(5), 10) - 1], [m], R.includes(m) ? 'en' : '')).join('');
+  h += '</tbody><tfoot>';
+  if (!todoAnio) h += fila('Total ' + _evoPeriodoTxt(R), R, 'per');
+  h += fila(todoAnio ? 'Total' : 'Total ' + anioTxt, ms, '');
+  h += '</tfoot></table>';
+  const box = document.getElementById('evo-cuadro');
+  box.innerHTML = h;
+  box.querySelectorAll('button[data-c]').forEach(b => b.onclick = () => evoAbrirAud(b.dataset.c, b.dataset.m.split(',')));
 }
 
 function _evoPintarTarjetas(D, R) {
