@@ -3432,16 +3432,27 @@
     .evo-graf.modo-cuadro .evo-cuadro { display: block; }
     .evo-graf.modo-cuadro .evo-solo-graf { display: none; }
     .evo-ctbl { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
-    .evo-ctbl th { font-size: 11px; letter-spacing: .7px; text-transform: uppercase; color: #7a8099; font-weight: 600; padding: 10px 14px; text-align: right; border-bottom: 1px solid rgba(200,205,220,.55); white-space: nowrap; }
+    .evo-ctbl th { font-size: 11px; letter-spacing: .7px; text-transform: uppercase; color: #7a8099; font-weight: 600; padding: 10px 14px; text-align: center; border-bottom: 1px solid rgba(200,205,220,.55); white-space: nowrap; }   /* #141 — centrado */
     .evo-ctbl th:first-child, .evo-ctbl td:first-child { text-align: left; }
     .evo-ctbl th .evo-dot { margin-right: 7px; vertical-align: 1px; }
-    .evo-ctbl td { padding: 2px 6px; text-align: right; font-size: 13px; white-space: nowrap; }
+    .evo-ctbl td { padding: 2px 6px; text-align: center; vertical-align: middle; font-size: 13px; white-space: nowrap; }
     .evo-ctbl td:first-child { padding-left: 14px; font-weight: 600; }
     .evo-ctbl tbody tr:nth-child(even) td { background: rgba(240,242,248,.55); }
     .evo-ctbl tbody tr.en td { background: rgba(79,128,255,.09); }
     .evo-ctbl tbody tr.en td:first-child { box-shadow: inset 3px 0 0 #4f80ff; color: #3a6bf0; }
-    .evo-ctbl .evo-lnk { width: 100%; text-align: right; padding: 9px 8px; font-size: 13px; }
-    .evo-ctbl .z { color: #c3c7d6; padding-right: 14px; }
+    .evo-ctbl .evo-lnk { width: 100%; text-align: center; padding: 9px 8px; font-size: 13px; }
+    .evo-ctbl .z { color: #c3c7d6; }
+    /* #141 — Columna Total destacada */
+    .evo-ctbl th.tot { color: #0f766e; background: rgba(45,212,191,.12); border-radius: 10px 10px 0 0; }
+    .evo-ctbl td.tot { background: rgba(45,212,191,.09) !important; }
+    .evo-ctbl td.tot .evo-lnk { font-size: 14px; color: #0f5f58; }
+    .evo-ctbl tfoot tr:last-child td.tot { background: rgba(45,212,191,.20) !important; border-radius: 0 0 10px 0; }
+    .evo-ctbl tfoot tr:last-child td.tot .evo-lnk { font-size: 15px; color: #0f766e; }
+    /* #141 — Vista %: barrita de la participación debajo del número */
+    .evo-pct { vertical-align: middle; display: inline-flex; flex-direction: column; align-items: center; gap: 4px; min-width: 64px; }
+    .evo-pct i { display: block; height: 3px; width: 56px; border-radius: 3px; background: rgba(200,205,220,.45); overflow: hidden; }
+    .evo-pct i b { display: block; height: 100%; border-radius: 3px; }
+    .evo-pct small { font-size: 10.5px; color: var(--text-light); font-weight: 500; }
     .evo-ctbl .tot .evo-lnk { font-weight: 700; }
     .evo-ctbl tfoot td { font-weight: 700; padding-top: 4px; }
     .evo-ctbl tfoot tr:first-child td { border-top: 2px solid rgba(200,205,220,.6); }
@@ -3819,8 +3830,8 @@
           </div>
           <div class="evo-gctl">
             <span class="evo-peq-leg evo-solo-graf"><svg width="24" height="6" aria-hidden="true"><line x1="0" y1="3" x2="24" y2="3" stroke="#0d9488" stroke-width="2" stroke-dasharray="5 4"/></svg>PEQ</span>
-            <!-- #140 — Cuadro (números) · Líneas (curvas) · Columnas (apiladas) -->
-            <div class="evo-seg" id="evo-graf"><button type="button" data-v="cuadro">Cuadro</button><button type="button" data-v="cruzado">Líneas</button><button type="button" data-v="apilado">Columnas</button></div>
+            <!-- #140 — Cuadro (números) · #141 % (participación) · Líneas (curvas) · Columnas (apiladas) -->
+            <div class="evo-seg" id="evo-graf"><button type="button" data-v="cuadro">Cuadro</button><button type="button" data-v="pct" title="Participación de cada cliente en el total del mes">%</button><button type="button" data-v="cruzado">Líneas</button><button type="button" data-v="apilado">Columnas</button></div>
           </div>
         </div>
         <div class="evo-cuadro" id="evo-cuadro"></div>
@@ -5324,7 +5335,7 @@ function mesActualStr() {
    a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
    Se pinta en el pie del sidebar (#sidebar-version).
    ═══════════════════════════════════════════════════════ */
-const APP_VERSION = 'V 291026 1430';
+const APP_VERSION = 'V 291026 1450';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
@@ -18081,11 +18092,14 @@ function renderEvolucion(animar) {
   _evoPintarFiltros(D);
   /* #140 — Cuadro, Líneas o Columnas. El panel "Mes seleccionado" se sacó. */
   const sec = document.querySelector('#view-evolucion .evo-graf');
-  sec.classList.toggle('modo-cuadro', _evo.graf === 'cuadro');
-  document.getElementById('evo-gsub').textContent = _evo.graf === 'cuadro'
+  const esTabla = _evo.graf === 'cuadro' || _evo.graf === 'pct';   // #141
+  sec.classList.toggle('modo-cuadro', esTabla);
+  document.getElementById('evo-gsub').textContent = _evo.graf === 'pct'
+    ? 'Cuánto pesa cada cliente en lo facturado de cada mes · cada número abre sus líneas'
+    : esTabla
     ? 'Cada número abre sus líneas · el período elegido queda resaltado en azul'
     : 'Tocá un mes para verlo · el período elegido queda en el recuadro azul';
-  if (_evo.graf === 'cuadro') _evoPintarCuadro(D, R, A);
+  if (esTabla) _evoPintarCuadro(D, R, A, _evo.graf === 'pct');
   else _evoPintarGrafico(D, R, A, animar !== false);
   _evoPintarTarjetas(D, R);
   if (_evo.aud) _evoPintarAud();
@@ -18170,19 +18184,27 @@ function _evoPintarGrafico(D, R, A, animar) {
    prendido y el total. Las filas del período quedan en azul. Abajo, el total
    del período y el del año (uno solo si el período es el año). Cada número
    abre la auditoría de sus líneas. */
-function _evoPintarCuadro(D, R, A) {
+function _evoPintarCuadro(D, R, A, pct) {
+  /* #141 — pct: cada celda es la participación del cliente en el total de su
+     fila (mes o período); la columna Total muestra el monto, que es la base. */
   const ms = D.ms;
-  const celda = (v, c, mm, cls) => v
-    ? `<td class="${cls || ''}"><button type="button" class="evo-lnk" data-c="${_evoEsc(c)}" data-m="${mm.join(',')}">${fmt(v)}</button></td>`
-    : `<td class="z ${cls || ''}">—</td>`;
+  const celda = (v, c, mm, cls, base, color) => {
+    if (!v) return `<td class="z ${cls || ''}">—</td>`;
+    let txt = fmt(v);
+    if (pct && c !== '*') {
+      const x = base ? v / base : 0;
+      txt = `<span class="evo-pct">${_evoPc(x, 1)}<i><b style="width:${Math.min(100, x * 100)}%;background:${_evoEsc(color)}"></b></i></span>`;
+    }
+    return `<td class="${cls || ''}"><button type="button" class="evo-lnk" data-c="${_evoEsc(c)}" data-m="${mm.join(',')}" title="${pct && c !== '*' ? fmt(v) : ''}">${txt}</button></td>`;
+  };
   const fila = (lab, mm, trCls) => {
     const vs = A.map(c => mm.reduce((s, m) => s + D.f(c.id, m), 0));
     const t = vs.reduce((s, v) => s + v, 0);
-    return `<tr class="${trCls || ''}"><td>${lab}</td>${vs.map((v, k) => celda(v, A[k].id, mm)).join('')}${celda(t, '*', mm, 'tot')}</tr>`;
+    return `<tr class="${trCls || ''}"><td>${lab}</td>${vs.map((v, k) => celda(v, A[k].id, mm, '', t, A[k].c)).join('')}${celda(t, '*', mm, 'tot', t)}</tr>`;
   };
   const todoAnio = R.length === ms.length;
   const anioTxt = _evoPeriodoTxt(ms);
-  let h = `<table class="evo-ctbl"><thead><tr><th>Mes</th>${A.map(c => `<th><span class="evo-dot" style="background:${_evoEsc(c.c)}"></span>${_evoEsc(c.id)}</th>`).join('')}<th>Total</th></tr></thead><tbody>`;
+  let h = `<table class="evo-ctbl${pct ? ' es-pct' : ''}"><thead><tr><th>Mes</th>${A.map(c => `<th><span class="evo-dot" style="background:${_evoEsc(c.c)}"></span>${_evoEsc(c.id)}</th>`).join('')}<th class="tot">Total</th></tr></thead><tbody>`;
   h += ms.map(m => fila(EVO_MESES_LARGOS[parseInt(m.slice(5), 10) - 1], [m], R.includes(m) ? 'en' : '')).join('');
   h += '</tbody><tfoot>';
   if (!todoAnio) h += fila('Total ' + _evoPeriodoTxt(R), R, 'per');
