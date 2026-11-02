@@ -1870,58 +1870,97 @@
     .ocf-tot-margen-sin { color: var(--text-light); font-size: 12px; margin-left: 4px; }
     @media (max-width: 1100px) { .ocf-tot-grid { grid-template-columns: 1fr; } }
 
-    /* ═══ #146 · Cruce con AFIP (modal, solo lectura) ═══ */
-    #modal-afip .modal { width: 1140px; max-width: 96vw; max-height: 92vh; overflow-y: auto; padding: 24px 28px; background: rgba(247,248,251,0.97); }
-    .afx-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 18px; margin-bottom: 16px; }
-    .afx-tit { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; }
+    /* ═══ #147 · Aviso discreto de actualización en segundo plano ═══ */
+    #upd-pill {
+      position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%) translateY(20px);
+      z-index: 150; display: flex; align-items: center; gap: 9px; padding: 9px 16px; border-radius: 30px;
+      background: rgba(26,29,46,0.86); color: #fff; font-size: 12.5px; font-weight: 600;
+      box-shadow: 0 8px 26px rgba(20,25,50,0.25); opacity: 0; pointer-events: none;
+      transition: opacity .25s ease, transform .25s ease;
+    }
+    #upd-pill.on { opacity: 1; transform: translateX(-50%) translateY(0); }
+    #upd-pill .upd-spin { width: 12px; height: 12px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.35); border-top-color: #fff; animation: updGira .8s linear infinite; }
+    @keyframes updGira { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) { #upd-pill .upd-spin { animation: none; } #upd-pill { transition: none; } }
+
+    /* ═══ #146 · Cruce con AFIP (modal, solo lectura) ═══
+       Más aire y lectura rápida: tarjetas grandes, secciones en acordeón
+       (contraídas al abrir) y todo el contenido de las tablas centrado. */
+    #modal-afip .modal { width: 1180px; max-width: 96vw; max-height: 92vh; overflow-y: auto; padding: 34px 40px; background: rgba(247,248,251,0.98); }
+    .afx-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; margin-bottom: 26px; }
+    .afx-tit { font-family: 'Syne', sans-serif; font-size: 23px; font-weight: 700; }
     .afx-tit span { color: var(--accent-blue); }
-    .afx-sub { font-size: 12.5px; color: var(--text-mid); margin-top: 4px; }
-    .afx-acc { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+    .afx-sub { font-size: 13.5px; color: var(--text-mid); margin-top: 8px; line-height: 1.5; }
+    .afx-acc { display: flex; gap: 10px; align-items: center; flex-shrink: 0; }
     .afx-drop {
-      border: 2px dashed rgba(79,128,255,0.5); border-radius: 14px; background: rgba(79,128,255,0.05);
-      padding: 36px 20px; display: flex; flex-direction: column; align-items: center; gap: 9px; text-align: center;
+      border: 2px dashed rgba(79,128,255,0.5); border-radius: 16px; background: rgba(79,128,255,0.05);
+      padding: 48px 24px; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center;
       transition: var(--transition);
     }
     .afx-drop.sobre { background: rgba(79,128,255,0.12); border-color: var(--accent-blue); }
-    .afx-drop i { font-size: 30px; color: var(--accent-blue); }
-    .afx-drop-t { font-size: 15px; font-weight: 700; }
-    .afx-drop-s { font-size: 12.5px; color: var(--text-mid); }
-    .afx-info { display: flex; flex-direction: column; gap: 5px; font-size: 12.5px; color: var(--text-mid); margin-top: 16px; }
+    .afx-drop i { font-size: 34px; color: var(--accent-blue); }
+    .afx-drop-t { font-size: 16px; font-weight: 700; }
+    .afx-drop-s { font-size: 13px; color: var(--text-mid); }
+    .afx-info { display: flex; flex-direction: column; gap: 8px; font-size: 13px; color: var(--text-mid); margin-top: 22px; line-height: 1.5; }
     .afx-info b { color: var(--text-dark); }
-    .afx-err { margin-top: 14px; padding: 11px 14px; border-radius: 10px; background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.4); color: #b91c1c; font-size: 13px; font-weight: 600; }
-    .afx-tiles { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-bottom: 12px; }
-    .afx-tile { padding: 12px 14px; border-radius: 13px; background: #fff; border: 1px solid #e3e6ef; }
-    .afx-tile-l { font-size: 10px; font-weight: 700; letter-spacing: 0.7px; text-transform: uppercase; color: var(--text-mid); }
-    .afx-tile-v { font-size: 22px; font-weight: 700; margin-top: 4px; }
-    .afx-tile-s { font-size: 11px; color: var(--text-mid); margin-top: 2px; }
+    .afx-err { margin-top: 16px; padding: 12px 16px; border-radius: 10px; background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.4); color: #b91c1c; font-size: 13px; font-weight: 600; }
+
+    .afx-tiles { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; margin-bottom: 18px; }
+    .afx-tile { padding: 20px 18px; border-radius: 16px; background: #fff; border: 1px solid #e3e6ef; text-align: center; }
+    .afx-tile-l { font-size: 10.5px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text-mid); }
+    .afx-tile-v { font-size: 34px; font-weight: 700; margin: 10px 0 6px; line-height: 1; }
+    .afx-tile-s { font-size: 12px; color: var(--text-mid); line-height: 1.4; }
     .afx-tile.ok   { background: rgba(45,212,191,0.12); border-color: rgba(13,148,136,0.3); }
     .afx-tile.ok .afx-tile-l, .afx-tile.ok .afx-tile-v { color: #0f766e; }
     .afx-tile.mal  { background: rgba(248,113,113,0.10); border-color: rgba(185,28,28,0.3); }
     .afx-tile.mal .afx-tile-l, .afx-tile.mal .afx-tile-v { color: #b91c1c; }
     .afx-tile.dif  { background: rgba(251,146,60,0.12); border-color: rgba(194,65,12,0.3); }
     .afx-tile.dif .afx-tile-l, .afx-tile.dif .afx-tile-v { color: #9a3412; }
-    .afx-tot { display: flex; flex-wrap: wrap; gap: 8px 28px; padding: 10px 16px; border-radius: 11px; background: #fff; border: 1px solid #e3e6ef; font-size: 13px; color: var(--text-mid); margin-bottom: 12px; }
-    .afx-tot b { color: var(--text-dark); }
-    .afx-tot b.neg { color: #b91c1c; }
-    .afx-sec { background: #fff; border: 1px solid #e3e6ef; border-radius: 14px; overflow: hidden; margin-bottom: 12px; }
-    .afx-sec-h { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 11px 16px; border-bottom: 1px solid #e3e6ef; }
-    .afx-sec-t { font-size: 14px; font-weight: 700; }
-    .afx-sec-t .n { color: var(--text-mid); font-weight: 500; }
-    .afx-sec-d { font-size: 12px; color: var(--text-mid); text-align: right; }
-    .afx-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 8px; }
+
+    .afx-tot { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-bottom: 30px; }
+    .afx-tot > div { padding: 16px 18px; border-radius: 14px; background: #fff; border: 1px solid #e3e6ef; text-align: center; }
+    .afx-tot-l { font-size: 12px; color: var(--text-mid); }
+    .afx-tot-v { font-size: 19px; font-weight: 700; color: var(--text-dark); margin-top: 6px; }
+    .afx-tot-v.neg { color: #b91c1c; }
+
+    .afx-sec-tit { font-size: 11px; font-weight: 700; letter-spacing: 0.9px; text-transform: uppercase; color: var(--text-mid); margin: 0 4px 12px; }
+    .afx-sec { background: #fff; border: 1px solid #e3e6ef; border-radius: 16px; overflow: hidden; margin-bottom: 14px; transition: box-shadow .15s ease; }
+    .afx-sec:hover { box-shadow: 0 4px 18px rgba(60,80,140,0.08); }
+    .afx-sec-h {
+      width: 100%; display: flex; align-items: center; gap: 14px; padding: 20px 24px;
+      background: none; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; text-align: left; color: var(--text-dark);
+    }
+    .afx-sec-t { font-size: 15.5px; font-weight: 700; }
+    .afx-badge { min-width: 30px; padding: 3px 10px; border-radius: 20px; font-size: 13px; font-weight: 700; text-align: center; }
+    .afx-badge.rojo { background: rgba(248,113,113,0.16); color: #b91c1c; }
+    .afx-badge.nar  { background: rgba(251,146,60,0.18); color: #9a3412; }
+    .afx-sec-r { margin-left: auto; font-size: 13px; color: var(--text-mid); text-align: right; }
+    .afx-sec-r b { color: var(--text-dark); }
+    .afx-chev { font-size: 13px; color: var(--text-light); transition: transform .2s ease; width: 16px; text-align: center; }
+    .afx-sec.abierta .afx-chev { transform: rotate(180deg); }
+    .afx-sec-b { display: none; border-top: 1px solid #e3e6ef; }
+    .afx-sec.abierta .afx-sec-b { display: block; }
+    .afx-sec-d { font-size: 13px; color: var(--text-mid); padding: 14px 24px 4px; text-align: center; }
+    .afx-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
     .afx-dot.rojo { background: #dc2626; } .afx-dot.nar { background: #ea580c; }
-    .afx-tabla { width: 100%; border-collapse: collapse; font-size: 12.5px; }
-    .afx-tabla th { background: #eef1f8; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #3d4360; padding: 8px 10px; text-align: left; }
-    .afx-tabla td { padding: 8px 10px; border-top: 1px solid #eef0f5; vertical-align: top; }
-    .afx-tabla .num { text-align: right; white-space: nowrap; }
+
+    .afx-tabla { width: 100%; border-collapse: collapse; font-size: 13.5px; margin-top: 10px; }
+    .afx-tabla th { background: #f1f3f9; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: #3d4360; padding: 12px 14px; text-align: center; }
+    .afx-tabla td { padding: 14px; border-top: 1px solid #eef0f5; vertical-align: middle; text-align: center; line-height: 1.5; }
+    .afx-tabla .num { white-space: nowrap; }
     .afx-tabla .nro { font-weight: 700; white-space: nowrap; }
     .afx-tabla .dif { font-weight: 700; color: #9a3412; }
-    .afx-oks { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-bottom: 12px; }
-    .afx-okc { padding: 10px 14px; border-radius: 11px; background: #fff; border: 1px solid #e3e6ef; font-size: 13px; }
-    .afx-okc i { color: #0f766e; margin-right: 6px; }
-    .afx-pie { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 12.5px; color: var(--text-mid); padding-top: 4px; }
-    .afx-pie label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
-    @media (max-width: 900px) { .afx-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    .afx-tabla .pct { color: var(--text-light); }
+    .afx-nc { display: inline-block; padding: 4px 11px; border-radius: 20px; background: rgba(251,191,36,0.22); color: #92400e; font-size: 12px; font-weight: 700; white-space: nowrap; }
+    .afx-nc i { margin-right: 5px; }
+    .afx-sinobs { color: var(--text-light); }
+
+    .afx-oks { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; margin: 22px 0 6px; }
+    .afx-okc { padding: 14px 16px; border-radius: 13px; background: #fff; border: 1px solid #e3e6ef; font-size: 13.5px; text-align: center; color: var(--text-mid); }
+    .afx-okc i { color: #0f766e; margin-right: 7px; }
+    .afx-pie { display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap; font-size: 13px; color: var(--text-mid); padding-top: 20px; margin-top: 10px; border-top: 1px solid #e3e6ef; }
+    .afx-pie label { display: flex; align-items: center; gap: 9px; cursor: pointer; }
+    @media (max-width: 900px) { .afx-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } .afx-tot { grid-template-columns: 1fr; } }
 
     .ac-panel .ocf-op-cod { font-weight: 700; font-size: 11.5px; color: var(--accent-blue); }
     .ac-panel .ocf-op-desc { font-size: 12px; color: var(--text-mid); }
@@ -5485,7 +5524,7 @@ function mesActualStr() {
    a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
    Se pinta en el pie del sidebar (#sidebar-version).
    ═══════════════════════════════════════════════════════ */
-const APP_VERSION = 'V 021126 1250';
+const APP_VERSION = 'V 021126 1330';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
@@ -6231,6 +6270,200 @@ function _cargaMarcar(fallo) {
   }
 }
 
+/* ═══ #147 · SESIÓN PERSISTENTE Y DATOS AL INSTANTE ═══════════════════
+   Sesión: queda abierta hasta "Cerrar sesión" (localStorage). Al abrir o
+   refrescar se restaura AL INSTANTE, sin esperar a Google; la validación
+   contra ADMIN corre en segundo plano y solo saca al usuario si fue dado de
+   baja o deshabilitado. Una falla de Google ya NO cierra la sesión.
+   Datos: la última respuesta completa del ALL se guarda en IndexedDB (por
+   usuario). Al abrir se pinta esa copia y se trae la fresca en segundo plano,
+   con las mismas reglas que autoSync (R15): si hubo un guardado o una carga en
+   primer plano durante la descarga, se descarta y se reprograma.
+   Cerrar sesión borra la sesión y la copia. Sincronizar sigue siendo la
+   carga completa y bloqueante de siempre.
+   ⚠ Son controles de aplicación, igual que los perfiles: la sesión guardada es
+   el nombre de usuario y su rol, sin clave. */
+const SES_CLAVE   = 'terabyte_sesion';
+const CACHE_DB    = 'terabyte';
+const CACHE_STORE = 'cache';
+const CACHE_KEY   = 'ALL';
+const CACHE_V     = 1;
+
+function sesGuardar(u) {
+  if (!u || !u.usuario) return;
+  try {
+    localStorage.setItem(SES_CLAVE, JSON.stringify({ v: 1, usuario: u.usuario, idUsuario: u.idUsuario || '', rol: u.rol || '' }));
+  } catch (e) { /* sin localStorage: la sesión dura lo que la pestaña, como antes */ }
+  try { sessionStorage.setItem('terabyte_user', u.usuario); } catch (e) {}
+}
+
+/* Sesión guardada. La de la versión anterior (solo el nombre, en la pestaña)
+   se devuelve marcada: no trae el rol, así que esa vez se espera a ADMIN. */
+function sesLeer() {
+  try {
+    const o = JSON.parse(localStorage.getItem(SES_CLAVE) || 'null');
+    if (o && o.usuario) return o;
+  } catch (e) {}
+  try {
+    const u = sessionStorage.getItem('terabyte_user');
+    if (u) return { usuario: u, soloNombre: true };
+  } catch (e) {}
+  return null;
+}
+
+function sesBorrar() {
+  try { localStorage.removeItem(SES_CLAVE); } catch (e) {}
+  try { sessionStorage.removeItem('terabyte_user'); } catch (e) {}
+}
+
+function _sesPintarUsuario(u) {
+  const nombre = u.idUsuario || u.usuario;
+  document.getElementById('sidebar-avatar').textContent = String(nombre).split(' ')[0].charAt(0).toUpperCase();
+  document.getElementById('sidebar-nombre').textContent = nombre;
+  document.getElementById('sidebar-rol').textContent    = u.rol || 'Usuario';
+}
+
+function _cacheDb() {
+  return new Promise((ok, mal) => {
+    if (!window.indexedDB) { mal(new Error('sin IndexedDB')); return; }
+    const r = indexedDB.open(CACHE_DB, 1);
+    r.onupgradeneeded = () => { if (!r.result.objectStoreNames.contains(CACHE_STORE)) r.result.createObjectStore(CACHE_STORE); };
+    r.onsuccess = () => ok(r.result);
+    r.onerror = () => mal(r.error);
+  });
+}
+
+/* Guarda la última respuesta completa. Nunca bloquea ni falla hacia afuera. */
+async function cacheGuardar(data) {
+  if (!_usuarioActual || !data) return;
+  const usuario = _usuarioActual.usuario;
+  try {
+    const db = await _cacheDb();
+    await new Promise((ok, mal) => {
+      const tx = db.transaction(CACHE_STORE, 'readwrite');
+      tx.objectStore(CACHE_STORE).put({ v: CACHE_V, usuario, t: Date.now(), data }, CACHE_KEY);
+      tx.oncomplete = ok; tx.onerror = () => mal(tx.error); tx.onabort = () => mal(tx.error);
+    });
+    db.close();
+  } catch (e) { console.warn('No se pudo guardar la copia local:', e && e.message); }
+}
+
+/* Copia de ESTE usuario y de este formato, o null. */
+async function cacheLeer(usuario) {
+  try {
+    const db = await _cacheDb();
+    const rec = await new Promise((ok, mal) => {
+      const tx = db.transaction(CACHE_STORE, 'readonly');
+      const rq = tx.objectStore(CACHE_STORE).get(CACHE_KEY);
+      rq.onsuccess = () => ok(rq.result || null); rq.onerror = () => mal(rq.error);
+    });
+    db.close();
+    if (!rec || rec.v !== CACHE_V || !rec.data) return null;
+    if (String(rec.usuario || '').toLowerCase() !== String(usuario || '').toLowerCase()) return null;
+    return rec;
+  } catch (e) { return null; }
+}
+
+async function cacheBorrar() {
+  try {
+    const db = await _cacheDb();
+    await new Promise(ok => {
+      const tx = db.transaction(CACHE_STORE, 'readwrite');
+      tx.objectStore(CACHE_STORE).delete(CACHE_KEY);
+      tx.oncomplete = ok; tx.onerror = ok; tx.onabort = ok;
+    });
+    db.close();
+  } catch (e) {}
+}
+
+function _updPill(on) {
+  let el = document.getElementById('upd-pill');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'upd-pill';
+    el.setAttribute('role', 'status');
+    el.innerHTML = '<span class="upd-spin" aria-hidden="true"></span><span>Actualizando datos…</span>';
+    document.body.appendChild(el);
+  }
+  el.classList.toggle('on', !!on);
+}
+
+/* Restauración al abrir: usuario y perfil al instante; datos de la copia local
+   si hay; si no, la carga normal con el cartel de siempre. */
+async function _sesRestaurar(ses) {
+  _usuarioActual = { usuario: ses.usuario, idUsuario: ses.idUsuario || '', rol: ses.rol || '', habilitado: true };
+  _sesPintarUsuario(_usuarioActual);
+  aplicarPerfil();
+  actAplicarVisibilidad();
+  document.getElementById('screen-login').style.display = 'none';
+  _lgOcultar();
+  const rec = await cacheLeer(ses.usuario);
+  if (!_usuarioActual) return;                       // la validación lo sacó mientras tanto
+  let pintado = false;
+  if (rec) {
+    try {
+      dashCuPedir();
+      _aplicarDatosAll(rec.data);
+      _cargaHuboDatos = true;
+      pintado = true;
+      _dashCuIntentar();
+    } catch (e) { console.warn('Copia local inválida, se carga del servidor:', e && e.message); }
+  }
+  if (!pintado) { await cargarTodo(); return; }
+  await _refrescoEnFondo();
+}
+
+/* Trae el ALL sin bloquear. Mismas reglas que autoSync (R15). */
+async function _refrescoEnFondo() {
+  const seqEsc = _apiSeqEscritura, seqCarga = _cargaSeq;
+  _updPill(true);
+  try {
+    const data = await apiGet('ALL');
+    if (!_usuarioActual) return;
+    if (seqEsc !== _apiSeqEscritura || seqCarga !== _cargaSeq) { autoSync(); return; }
+    _cargaMarcar(false);
+    _aplicarDatosAll(data);
+    const vistaActiva = document.querySelector('.view.active');
+    if (vistaActiva) {
+      const id = vistaActiva.id.replace('view-', '');
+      if (id === 'sitios')      renderSitios();
+      if (id === 'clientes')    renderClientes();
+      if (id === 'seguimiento') renderSeguimiento();
+    }
+    cacheGuardar(data);
+  } catch (err) {
+    if (_usuarioActual) _cargaMarcar(true);   // "Estás viendo los datos de la última carga…" + Reintentar
+    console.warn('Actualización inicial sin éxito:', err && err.message);
+  } finally {
+    _updPill(false);
+  }
+}
+
+/* Validación en segundo plano contra ADMIN. Solo con una lista real: una
+   falla de Google no es motivo para cerrar la sesión. */
+function _sesValidar(lista) {
+  if (!_usuarioActual || !lista || !lista.length) return;
+  const m = lista.find(u => u.usuario.toLowerCase() === String(_usuarioActual.usuario).toLowerCase());
+  if (!m || !m.habilitado) {
+    _cerrarSesionAhora();
+    const errEl = document.getElementById('login-error');
+    if (errEl) {
+      errEl.textContent = m ? 'Tu usuario está deshabilitado.' : 'Tu usuario ya no existe en el sistema.';
+      errEl.style.display = 'block';
+    }
+    return;
+  }
+  _usuariosAdmin = lista;
+  const cambioRol = (m.rol || '') !== (_usuarioActual.rol || '') || (m.idUsuario || '') !== (_usuarioActual.idUsuario || '');
+  _usuarioActual = m;
+  sesGuardar(m);
+  if (cambioRol) {
+    _sesPintarUsuario(m);
+    aplicarPerfil();
+    actAplicarVisibilidad();
+  }
+}
+
 async function cargarTodo(mensaje) {
   _cargaSeq++;
   setLoading(true, mensaje || 'Cargando datos');
@@ -6239,6 +6472,7 @@ async function cargarTodo(mensaje) {
     _cargaMarcar(false);   // antes de aplicar: el re-render ya tiene que verlo en false
     dashCuPedir();         // #137 — los números del dashboard suben al cerrar el cartel
     _aplicarDatosAll(data);
+    cacheGuardar(data);    // #147 — copia local para abrir al instante
   } catch (err) {
     _cargaMarcar(true);
     toast('Error al cargar: ' + err.message, 'err');
@@ -14798,6 +15032,7 @@ async function autoSync() {
     } else if (seqCarga === _cargaSeq) {          // Regla 3
       _cargaMarcar(false);   // #127 — llegaron datos buenos: se va el aviso de carga fallida
       _aplicarDatosAll(data);
+      cacheGuardar(data);    // #147
       /* Mismo re-render de la vista activa que hacía sincronizar() después de
          cargarTodo(). */
       const vistaActiva = document.querySelector('.view.active');
@@ -18086,7 +18321,7 @@ async function intentarLogin() {
   }
   _lgBtnEstado('ok', String(match.idUsuario || match.usuario).split(' ')[0]);   // #137
   _usuarioActual = match;
-  try { sessionStorage.setItem('terabyte_user', match.usuario); } catch(e) {}
+  sesGuardar(match);   // #147 — queda abierta hasta "Cerrar sesión"
   mostrarBienvenida(match);
 }
 
@@ -18116,6 +18351,12 @@ function mostrarBienvenida(user) {
 
 function cerrarSesion() {
   if (!confirm('¿Cerrar sesión?')) return;
+  _cerrarSesionAhora();
+}
+
+/* #147 — El cierre en sí, sin confirmación: lo usa también la validación en
+   segundo plano cuando el usuario fue dado de baja. */
+function _cerrarSesionAhora() {
   _usuarioActual = null; _usuariosAdmin = [];
   evoAplicarVisibilidad();      // #138 — sin sesión no hay Evolución
   desactivarModoViewer();       // cambio #68 — limpiar el modo solo lectura
@@ -18128,7 +18369,9 @@ function cerrarSesion() {
   actAplicarVisibilidad();
   actCerrarPanel();
   _actLineasRemotas = null;
-  try { sessionStorage.removeItem('terabyte_user'); } catch(e) {}
+  sesBorrar();     // #147 — sesión persistente
+  cacheBorrar();   // #147 — y la copia local de los datos
+  _updPill(false);
   /* #127 — el aviso de carga fallida es de la sesión que se cierra. */
   _cargaFallo = false;
   { const av = document.getElementById('carga-fallo'); if (av) av.style.display = 'none'; }
@@ -18330,6 +18573,20 @@ function _lgBtnEstado(estado, nombre) {
 
   const txt  = document.getElementById('login-conn-text');
   const btn  = document.getElementById('btn-login');
+
+  /* #147 — Sesión guardada: se restaura YA, en paralelo con el ping. */
+  const ses = sesLeer();
+  const restauradaYa = !!(ses && !ses.soloNombre);
+  /* Se difiere al DOMContentLoaded: este bloque corre antes de que termine de
+     evaluarse el resto del script, y aplicarPerfil/_aplicarDatosAll tocan
+     constantes declaradas más abajo (zona muerta de let/const). */
+  if (restauradaYa) {
+    const correr = () => _sesRestaurar(ses).catch(e => console.error('ERROR restaurando la sesión:', e));
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', correr, { once: true });
+    else setTimeout(correr, 0);
+  }
+  let listaPing = null;
+
   /* #137 — Tres pasos en vez de barra con %. Es un solo pedido (ADMIN), así
      que el paso a "Usuarios" es simulado: a los 600 ms, si no volvió. */
   _lgcPintar(0);
@@ -18342,6 +18599,7 @@ function _lgBtnEstado(estado, nombre) {
     const ms   = Date.now() - t0;
     const lista = _parsearUsuariosAdmin(data);
     if (lista.length) _adminCache = { t: Date.now(), lista };
+    listaPing = lista;   // #147 — para validar la sesión restaurada
     clearTimeout(timer);
     if (data.ok !== false) {
       _lgcPintar(3);   // #137 — los tres pasos completos
@@ -18357,17 +18615,24 @@ function _lgBtnEstado(estado, nombre) {
     btn.disabled = false;
   }
 
-  /* ── Restauración de sesión (sessionStorage) ── */
+  /* #147 — Sesión ya restaurada: solo falta validarla contra ADMIN. */
+  if (restauradaYa) { _sesValidar(listaPing); return; }
+
+  /* ── Restauración de una sesión de la versión anterior (solo el nombre) ── */
   try {
-    const userGuardado = sessionStorage.getItem('terabyte_user');
+    const userGuardado = ses && ses.soloNombre ? ses.usuario : '';
     if (!userGuardado) return;
     if (btn.disabled) return; // ping falló, no restaurar
     _usuariosAdmin = await cargarUsuariosAdmin();
+    /* #147 — Sin lista (Google falló) NO se borra la sesión: antes eso
+       deslogueaba al usuario cada vez que el servicio andaba mal. */
+    if (!_usuariosAdmin.length) return;
     const match = _usuariosAdmin.find(u => u.usuario.toLowerCase() === userGuardado.toLowerCase());
     if (!match || !match.habilitado) {
-      sessionStorage.removeItem('terabyte_user');
+      sesBorrar();
       return;
     }
+    sesGuardar(match);   // #147 — pasa a la sesión persistente
     _usuarioActual = match;
     const nombre       = match.idUsuario || match.usuario;
     const primerNombre = nombre.split(' ')[0];
@@ -18483,8 +18748,9 @@ async function _afxProcesar(file) {
     }
     const leido = _afxLeerFacturas(filas);
     if (leido.error) { _afxMostrarCarga(leido.error); return; }
-    _afx = { archivo: nombre, facturas: leido.facturas, excluidas: leido.excluidas };
+    _afx = { archivo: nombre, facturas: leido.facturas, excluidas: leido.excluidas, abiertas: new Set() };
     _afx.res = _afxCruzar(leido.facturas);
+    _afxMarcarAnuladas(_afx.res.faltan, leido.notasCredito || []);
     _afxPintarResultado();
   } catch (err) {
     console.error('ERROR cruce AFIP:', err);
@@ -18582,15 +18848,25 @@ function _afxLeerFacturas(filas) {
   if (iCab === -1) {
     return { error: 'El archivo no tiene el formato de "Mis Comprobantes Emitidos" de AFIP (no se encontraron las columnas Fecha, Tipo y Número Desde).' };
   }
-  const facturas = []; const excluidas = {};
+  const facturas = []; const excluidas = {}; const notasCredito = [];
   for (let i = iCab + 1; i < filas.length; i++) {
     const f = filas[i] || [];
     const tipo = String(f[c.tipo] == null ? '' : f[c.tipo]).trim();
     const desde = _afxNro(f[c.desde]);
     if (!tipo || !desde) continue;
     const tN = _afxNorm(tipo);
-    if (!/FACTURA/.test(tN) || /NOTA/.test(tN)) { excluidas[tipo] = (excluidas[tipo] || 0) + 1; continue; }
     const fecha = _afxFecha(f[c.fecha]);
+    if (!/FACTURA/.test(tN) || /NOTA/.test(tN)) {
+      excluidas[tipo] = (excluidas[tipo] || 0) + 1;
+      /* Las NC no entran al cruce, pero se guardan para avisar cuándo una
+         factura faltante quedó anulada por una (mismo receptor e importe). */
+      if (/NOTA/.test(tN) && /CREDITO/.test(tN) && fecha) {
+        notasCredito.push({ nro: desde, fecha, tipoCorto: _afxTipoCorto(tipo),
+          receptor: c.receptor !== -1 ? String(f[c.receptor] || '').trim() : '',
+          total: c.total !== -1 ? _afxImporte(f[c.total]) : null });
+      }
+      continue;
+    }
     if (!fecha) continue;
     const hasta = c.hasta !== -1 ? (_afxNro(f[c.hasta]) || desde) : desde;
     const neto = (c.gravado !== -1 ? _afxImporte(f[c.gravado]) : 0) +
@@ -18599,7 +18875,8 @@ function _afxLeerFacturas(filas) {
     const base = {
       fecha, mes: fecha.slice(0, 7), tipo, tipoCorto: _afxTipoCorto(tipo),
       receptor: c.receptor !== -1 ? String(f[c.receptor] || '').trim() : '',
-      neto: Math.round(neto * 100) / 100
+      neto: Math.round(neto * 100) / 100,
+      total: c.total !== -1 ? _afxImporte(f[c.total]) : null
     };
     /* Un rango (Desde < Hasta) se expande por número; el neto es del rango
        entero, así que ahí no se compara monto. */
@@ -18611,7 +18888,28 @@ function _afxLeerFacturas(filas) {
     }
   }
   if (!facturas.length) return { error: 'El archivo no tiene facturas (solo notas de crédito o débito, o está vacío).' };
-  return { facturas, excluidas };
+  return { facturas, excluidas, notasCredito };
+}
+
+/* Una factura faltante "anulada" por una NC: mismo receptor, mismo importe
+   total (±1 peso) y NC de la misma fecha o posterior. Cada NC se usa una vez;
+   gana la más cercana en fecha. Solo es un aviso: la factura sigue en
+   faltantes (decisión del usuario). */
+function _afxMarcarAnuladas(faltan, notas) {
+  const usadas = new Set();
+  faltan.forEach(item => {
+    const f = item.f;
+    if (f.total == null) return;
+    let mejor = -1;
+    notas.forEach((nc, i) => {
+      if (usadas.has(i) || nc.total == null) return;
+      if (Math.abs(nc.total - f.total) > 1) return;
+      if (_afxNorm(nc.receptor) !== _afxNorm(f.receptor)) return;
+      if (nc.fecha < f.fecha) return;
+      if (mejor === -1 || nc.fecha < notas[mejor].fecha) mejor = i;
+    });
+    if (mejor !== -1) { usadas.add(mejor); item.nc = notas[mejor]; }
+  });
 }
 
 function _afxTipoCorto(tipo) {
@@ -18700,8 +18998,22 @@ function _afxExcluidasTxt() {
   return n ? ` (${n === 1 ? '1 nota de crédito/débito no se considera' : n + ' notas de crédito/débito no se consideran'})` : '';
 }
 
+/* Abre o cierra una sección. El estado vive en _afx.abiertas (todas cerradas
+   al cargar un archivo) y se conserva al cerrar y reabrir el modal. */
+function afxToggle(clave) {
+  if (!_afx) return;
+  if (_afx.abiertas.has(clave)) _afx.abiertas.delete(clave); else _afx.abiertas.add(clave);
+  const el = document.querySelector(`#afx-res .afx-sec[data-sec="${clave}"]`);
+  if (el) {
+    el.classList.toggle('abierta', _afx.abiertas.has(clave));
+    const b = el.querySelector('.afx-sec-h');
+    if (b) b.setAttribute('aria-expanded', _afx.abiertas.has(clave) ? 'true' : 'false');
+  }
+}
+
 function _afxPintarResultado() {
   const R = _afx.res;
+  if (!_afx.abiertas) _afx.abiertas = new Set();
   document.getElementById('afx-carga').style.display = 'none';
   document.getElementById('afx-btn-otro').style.display = '';
   document.getElementById('afx-btn-pdf').style.display = '';
@@ -18715,59 +19027,82 @@ function _afxPintarResultado() {
   const dTot = R.sistemaPeriodo - R.netoAfip;   // mismo signo que las diferencias por factura: sistema − AFIP
   let h = `<div class="afx-tiles">
     ${tile('', 'Facturas en AFIP', _afx.facturas.length, _escHtml(tiposTxt))}
-    ${tile(R.coinciden.length ? 'ok' : '', 'Coinciden', R.coinciden.length, 'Número, mes, monto, cliente y estado')}
-    ${tile(R.faltan.length ? 'mal' : '', 'En AFIP, no en el sistema', R.faltan.length, 'Faltan cargar')}
-    ${tile(R.sobran.length ? 'mal' : '', 'En el sistema, no en AFIP', R.sobran.length, 'Mal cargadas en el período')}
+    ${tile(R.coinciden.length ? 'ok' : '', 'Coinciden', R.coinciden.length, 'Todo igual')}
+    ${tile(R.faltan.length ? 'mal' : '', 'Faltan en el sistema', R.faltan.length, 'Están en AFIP')}
+    ${tile(R.sobran.length ? 'mal' : '', 'Sobran en el sistema', R.sobran.length, 'No están en AFIP')}
     ${tile(R.conDif ? 'dif' : '', 'Con diferencias', R.conDif, 'Mes, monto, cliente o estado')}
   </div>
   <div class="afx-tot">
-    <span>Neto facturado en AFIP <b>${prFmtMonto(R.netoAfip)}</b></span>
-    <span>Facturado en el sistema (${_escHtml(_afxPeriodoTxt(R).toLowerCase())}) <b>${prFmtMonto(R.sistemaPeriodo)}</b></span>
-    <span>Diferencia (sistema − AFIP) <b class="${Math.abs(dTot) > 2 ? 'neg' : ''}">${_afxSigno(dTot)}</b></span>
+    <div><div class="afx-tot-l">Neto facturado en AFIP</div><div class="afx-tot-v">${prFmtMonto(R.netoAfip)}</div></div>
+    <div><div class="afx-tot-l">Facturado en el sistema · ${_escHtml(_afxPeriodoTxt(R).toLowerCase())}</div><div class="afx-tot-v">${prFmtMonto(R.sistemaPeriodo)}</div></div>
+    <div><div class="afx-tot-l">Diferencia (sistema − AFIP)</div><div class="afx-tot-v ${Math.abs(dTot) > 2 ? 'neg' : ''}">${_afxSigno(dTot)}</div></div>
   </div>`;
 
-  const sec = (color, titulo, n, desc, cab, filas) => `<div class="afx-sec">
-    <div class="afx-sec-h"><div class="afx-sec-t"><span class="afx-dot ${color}"></span>${titulo} <span class="n">· ${n}</span></div><div class="afx-sec-d">${desc}</div></div>
-    <table class="afx-tabla"><thead><tr>${cab}</tr></thead><tbody>${filas}</tbody></table></div>`;
+  const sec = (clave, color, titulo, n, resumen, desc, cab, filas) => {
+    const ab = _afx.abiertas.has(clave);
+    return `<div class="afx-sec ${ab ? 'abierta' : ''}" data-sec="${clave}">
+      <button type="button" class="afx-sec-h" onclick="afxToggle('${clave}')" aria-expanded="${ab ? 'true' : 'false'}">
+        <span class="afx-dot ${color}"></span><span class="afx-sec-t">${titulo}</span><span class="afx-badge ${color}">${n}</span>
+        <span class="afx-sec-r">${resumen}</span><i class="fa-solid fa-chevron-down afx-chev"></i>
+      </button>
+      <div class="afx-sec-b"><div class="afx-sec-d">${desc}</div>
+        <table class="afx-tabla"><thead><tr>${cab}</tr></thead><tbody>${filas}</tbody></table></div>
+    </div>`;
+  };
   const oks = [];
-  const lineasTxt = ls => ls.map(l => _escHtml(_afxSitioPo(l)) + (l.pct ? ` <span style="color:var(--text-light)">${l.pct}%</span>` : '')).join('<br>');
+  const lineasTxt = ls => ls.map(l => _escHtml(_afxSitioPo(l)) + (l.pct ? ` <span class="pct">${l.pct}%</span>` : '')).join('<br>');
+  const suma = (arr, fn) => arr.reduce((a, x) => a + (fn(x) || 0), 0);
+  let secs = '';
 
   if (R.faltan.length) {
-    h += sec('rojo', 'En AFIP, no en el sistema', R.faltan.length, 'Facturas emitidas que ninguna línea tiene cargadas',
-      '<th>N° factura</th><th>Fecha</th><th>Tipo</th><th>Cliente (AFIP)</th><th class="num">Neto AFIP</th>',
-      R.faltan.map(({ f }) => `<tr><td class="nro">${_escHtml(f.nro)}</td><td>${_afxFechaTxt(f.fecha)}</td><td>${_escHtml(f.tipoCorto)}</td><td>${_escHtml(f.receptor)}</td><td class="num">${f.neto == null ? '—' : prFmtMonto(f.neto)}</td></tr>`).join(''));
+    const nAnul = R.faltan.filter(x => x.nc).length;
+    secs += sec('faltan', 'rojo', 'En AFIP, no en el sistema', R.faltan.length,
+      `Neto <b>${prFmtMonto(suma(R.faltan, x => x.f.neto))}</b>${nAnul ? ` · <b>${nAnul}</b> anulada${nAnul !== 1 ? 's' : ''} con NC` : ''}`,
+      'Facturas emitidas que ninguna línea tiene cargadas',
+      '<th>N° factura</th><th>Fecha</th><th>Tipo</th><th>Cliente (AFIP)</th><th>Neto AFIP</th><th>Observación</th>',
+      R.faltan.map(({ f, nc }) => `<tr><td class="nro">${_escHtml(f.nro)}</td><td>${_afxFechaTxt(f.fecha)}</td><td>${_escHtml(f.tipoCorto)}</td><td>${_escHtml(f.receptor)}</td><td class="num">${f.neto == null ? '—' : prFmtMonto(f.neto)}</td><td>${nc
+        ? `<span class="afx-nc" title="Mismo cliente e importe total"><i class="fa-solid fa-triangle-exclamation"></i>Anulada por NC ${_escHtml(nc.nro)} del ${_afxFechaTxt(nc.fecha)}</span>`
+        : '<span class="afx-sinobs">—</span>'}</td></tr>`).join(''));
   } else oks.push('En AFIP, no en el sistema');
 
   if (R.sobran.length) {
-    h += sec('rojo', 'En el sistema, no en AFIP', R.sobran.length, 'Líneas del período con un número que AFIP no tiene, o facturadas sin número',
-      '<th>N° factura</th><th>Sitio · PO</th><th>%</th><th>Cliente</th><th>Mes</th><th>Estado</th><th class="num">Monto</th>',
+    secs += sec('sobran', 'rojo', 'En el sistema, no en AFIP', R.sobran.length,
+      `Monto <b>${prFmtMonto(suma(R.sobran, l => l.monto))}</b>`,
+      'Líneas del período con un número que AFIP no tiene, o facturadas sin número',
+      '<th>N° factura</th><th>Sitio · PO</th><th>%</th><th>Cliente</th><th>Mes</th><th>Estado</th><th>Monto</th>',
       R.sobran.map(l => `<tr><td class="nro">${_escHtml(_afxNro(l.nroFactura) || 'sin número')}</td><td>${_escHtml(_afxSitioPo(l))}</td><td>${l.pct || '—'}%</td><td>${_escHtml(l.clienteId)}</td><td>${_afxMesCorto(l.mes)}</td><td>${_escHtml(l.estado)}</td><td class="num">${prFmtMonto(l.monto)}</td></tr>`).join(''));
   } else oks.push('En el sistema, no en AFIP');
 
   if (R.otroMes.length) {
-    h += sec('nar', 'Imputada en otro mes', R.otroMes.length, 'La factura es de un mes y la línea está en otro',
+    secs += sec('otroMes', 'nar', 'Imputada en otro mes', R.otroMes.length, 'La factura es de un mes y la línea está en otro',
+      'La fecha de la factura en AFIP define el mes que le corresponde',
       '<th>N° factura</th><th>Fecha AFIP</th><th>Mes AFIP</th><th>Sitio · PO</th><th>Mes en el sistema</th>',
       R.otroMes.map(({ f, ls }) => `<tr><td class="nro">${_escHtml(f.nro)}</td><td>${_afxFechaTxt(f.fecha)}</td><td>${_afxMesCorto(f.mes)}</td><td>${lineasTxt(ls)}</td><td class="dif">${ls.map(l => _afxMesCorto(l.mes)).join('<br>')}</td></tr>`).join(''));
   } else oks.push('Imputada en otro mes');
 
   if (R.monto.length) {
-    h += sec('nar', 'Monto distinto', R.monto.length, 'El neto de AFIP no coincide con la suma de las líneas de esa factura',
-      '<th>N° factura</th><th>Fecha AFIP</th><th>Sitio · PO</th><th>Mes</th><th class="num">Sistema</th><th class="num">Neto AFIP</th><th class="num">Diferencia</th>',
-      R.monto.map(({ f, ls, suma, dif }) => `<tr><td class="nro">${_escHtml(f.nro)}</td><td>${_afxFechaTxt(f.fecha)}</td><td>${lineasTxt(ls)}</td><td>${[...new Set(ls.map(l => _afxMesCorto(l.mes)))].join(', ')}</td><td class="num">${prFmtMonto(suma)}</td><td class="num">${prFmtMonto(f.neto)}</td><td class="num dif">${_afxSigno(dif)}</td></tr>`).join(''));
+    secs += sec('monto', 'nar', 'Monto distinto', R.monto.length,
+      `Diferencia <b>${_afxSigno(suma(R.monto, x => x.dif))}</b>`,
+      'El neto de AFIP no coincide con la suma de las líneas de esa factura · Diferencia = sistema − AFIP',
+      '<th>N° factura</th><th>Fecha AFIP</th><th>Sitio · PO</th><th>Mes</th><th>Sistema</th><th>Neto AFIP</th><th>Diferencia</th>',
+      R.monto.map(({ f, ls, suma: sm, dif }) => `<tr><td class="nro">${_escHtml(f.nro)}</td><td>${_afxFechaTxt(f.fecha)}</td><td>${lineasTxt(ls)}</td><td>${[...new Set(ls.map(l => _afxMesCorto(l.mes)))].join(', ')}</td><td class="num">${prFmtMonto(sm)}</td><td class="num">${prFmtMonto(f.neto)}</td><td class="num dif">${_afxSigno(dif)}</td></tr>`).join(''));
   } else oks.push('Monto distinto');
 
   if (R.cliente.length) {
-    h += sec('nar', 'Cliente distinto', R.cliente.length, 'El receptor de AFIP no es el cliente de la línea',
+    secs += sec('cliente', 'nar', 'Cliente distinto', R.cliente.length, 'El receptor de AFIP no es el cliente de la línea',
+      'Puede ser un número de factura cargado en la línea equivocada',
       '<th>N° factura</th><th>Fecha AFIP</th><th>Receptor (AFIP)</th><th>Sitio · PO</th><th>Cliente en el sistema</th>',
       R.cliente.map(({ f, ls, clientes }) => `<tr><td class="nro">${_escHtml(f.nro)}</td><td>${_afxFechaTxt(f.fecha)}</td><td>${_escHtml(f.receptor)}</td><td>${lineasTxt(ls)}</td><td class="dif">${_escHtml(clientes.join(', '))}</td></tr>`).join(''));
   } else oks.push('Cliente distinto');
 
   if (R.estado.length) {
-    h += sec('nar', 'No figura como Facturado', R.estado.length, 'La factura está en AFIP pero la línea tiene otro estado',
+    secs += sec('estado', 'nar', 'No figura como Facturado', R.estado.length, 'Está en AFIP pero la línea tiene otro estado',
+      'La factura se emitió pero la línea quedó Proyectado o Solicitado',
       '<th>N° factura</th><th>Fecha AFIP</th><th>Sitio · PO</th><th>Estado en el sistema</th>',
       R.estado.map(({ f, ls }) => `<tr><td class="nro">${_escHtml(f.nro)}</td><td>${_afxFechaTxt(f.fecha)}</td><td>${lineasTxt(ls)}</td><td class="dif">${ls.map(l => _escHtml(l.estado)).join('<br>')}</td></tr>`).join(''));
   } else oks.push('No figura como Facturado');
 
+  if (secs) h += `<div class="afx-sec-tit">Para revisar · tocá una sección para ver el detalle</div>${secs}`;
   if (oks.length) h += `<div class="afx-oks">${oks.map(t => `<div class="afx-okc"><i class="fa-solid fa-check"></i>${t} · <b>0</b></div>`).join('')}</div>`;
 
   h += `<div class="afx-pie">
@@ -18843,8 +19178,8 @@ function afxDescargarPdf() {
       const ok = _pdfAutoTable(doc, Object.assign({
         startY: y + 2, head: [head.concat(['Rev.'])], body: body.map(r => r.concat([''])),
         theme: 'grid', margin: { left: M, right: M },
-        styles: { font: 'helvetica', fontSize: 8, cellPadding: 1.6, lineColor: [200, 205, 220], lineWidth: 0.2, textColor: [30, 32, 46], overflow: 'linebreak' },
-        headStyles: { fillColor: [220, 225, 240], textColor: [26, 29, 46], fontStyle: 'bold', fontSize: 8 },
+        styles: { font: 'helvetica', fontSize: 8, cellPadding: 2, lineColor: [200, 205, 220], lineWidth: 0.2, textColor: [30, 32, 46], overflow: 'linebreak', halign: 'center', valign: 'middle' },
+        headStyles: { fillColor: [220, 225, 240], textColor: [26, 29, 46], fontStyle: 'bold', fontSize: 8, halign: 'center' },
         showHead: 'everyPage',
         didDrawCell: d => {
           if (d.section === 'body' && d.column.index === colRev) {
@@ -18857,12 +19192,13 @@ function afxDescargarPdf() {
       if (!ok) throw new Error('No se pudo cargar el generador de tablas del PDF. Refrescá la página.');
       y = (doc.lastAutoTable && doc.lastAutoTable.finalY ? doc.lastAutoTable.finalY : y) + 7;
     };
-    const num = { halign: 'right' };
+    const num = { halign: 'center' };   // todo centrado, como la pantalla
     const rev = { cellWidth: 10, halign: 'center' };
 
-    seccion('En AFIP, no en el sistema', ['N°', 'Fecha', 'Tipo', 'Cliente (AFIP)', 'Neto AFIP'],
-      R.faltan.map(({ f }) => [f.nro, _afxFechaTxt(f.fecha), f.tipoCorto, f.receptor, f.neto == null ? '-' : prFmtMonto(f.neto)]),
-      { columnStyles: { 4: num, 5: rev } });
+    seccion('En AFIP, no en el sistema', ['N°', 'Fecha', 'Tipo', 'Cliente (AFIP)', 'Neto AFIP', 'Observación'],
+      R.faltan.map(({ f, nc }) => [f.nro, _afxFechaTxt(f.fecha), f.tipoCorto, f.receptor, f.neto == null ? '-' : prFmtMonto(f.neto),
+        nc ? `Anulada por NC ${nc.nro} del ${_afxFechaTxt(nc.fecha)}` : '-']),
+      { columnStyles: { 6: rev } });
     seccion('En el sistema, no en AFIP', ['N°', 'Sitio · PO', '%', 'Cliente', 'Mes', 'Estado', 'Monto'],
       R.sobran.map(l => [_afxNro(l.nroFactura) || 'sin número', sp(l), (l.pct || '-') + '%', l.clienteId, _afxMesCorto(l.mes), l.estado, prFmtMonto(l.monto)]),
       { columnStyles: { 6: num, 7: rev } });
