@@ -1811,6 +1811,65 @@
     }
     .ocf-total-valor { font-size: 19px; font-weight: 700; color: var(--text-dark); }
 
+    /* ═══ #142 · Descuento de la OC ═══
+       Bloque de dos columnas dentro de .ocf-totales: a la izquierda el
+       descuento (botón o panel), a la derecha los totales en filas. */
+    .ocf-tot-grid {
+      flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) 420px;
+      gap: 28px; align-items: center;
+    }
+    .ocf-desc-add {
+      font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600;
+      padding: 10px 16px; border-radius: var(--radius-sm); cursor: pointer;
+      border: 1px dashed rgba(79,128,255,0.6); background: rgba(79,128,255,0.05); color: #2f5fd6;
+      transition: var(--transition);
+    }
+    .ocf-desc-add:hover { background: rgba(79,128,255,0.10); }
+    .ocf-desc-add:disabled { opacity: .5; cursor: not-allowed; }
+    .ocf-desc-hint { font-size: 12px; color: var(--text-light); margin-left: 12px; }
+    .ocf-desc {
+      border: 1px solid rgba(79,128,255,0.35); background: rgba(79,128,255,0.06);
+      border-radius: 14px; padding: 16px 18px; display: flex; flex-direction: column; gap: 12px;
+    }
+    .ocf-desc-top { display: flex; justify-content: space-between; align-items: center; }
+    .ocf-desc-tit { font-size: 10.5px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: #2f5fd6; }
+    .ocf-desc-quitar {
+      font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600;
+      border: none; background: none; color: #b91c1c; cursor: pointer; padding: 2px 0;
+    }
+    .ocf-desc-quitar:hover { text-decoration: underline; }
+    .ocf-desc-fila { display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap; }
+    .ocf-desc .form-group { margin-bottom: 0; }
+    .ocf-desc-seg { display: flex; padding: 3px; border-radius: 10px; background: rgba(200,205,225,0.45); }
+    .ocf-desc-seg button {
+      font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600;
+      padding: 7px 14px; border-radius: 8px; border: none; background: transparent;
+      color: var(--text-mid); cursor: pointer;
+    }
+    .ocf-desc-seg button.on { background: #fff; color: var(--text-dark); font-weight: 700; box-shadow: 0 1px 4px rgba(100,110,140,0.2); }
+    .ocf-desc-valor { width: 150px; text-align: center; font-weight: 700; }
+    .ocf-desc-valor.err { border-color: rgba(248,113,113,0.8); }
+    .ocf-desc-eq { font-size: 12.5px; color: var(--text-mid); padding-bottom: 11px; }
+    .ocf-desc-opc { font-weight: 400; color: var(--text-light); }
+    .ocf-desc-nota { font-size: 11.5px; color: var(--text-light); }
+    .ocf-desc-nota.err { color: #b91c1c; font-weight: 600; }
+    .ocf-tot-col { display: flex; flex-direction: column; gap: 9px; }
+    .ocf-tot-fila { display: flex; justify-content: space-between; align-items: baseline; font-size: 13.5px; color: var(--text-mid); }
+    .ocf-tot-fila b { color: var(--text-dark); font-weight: 600; }
+    .ocf-tot-fila.venta { font-size: 13px; color: var(--text-light); }
+    .ocf-tot-fila.venta b { color: var(--text-mid); }
+    .ocf-tot-fila.desc, .ocf-tot-fila.desc b { color: #2f5fd6; font-weight: 700; }
+    .ocf-tot-sep { height: 1px; background: rgba(200,205,225,0.6); }
+    .ocf-tot-chip { font-size: 11.5px; font-weight: 700; padding: 1px 7px; border-radius: 6px; background: rgba(79,128,255,0.14); margin-left: 4px; }
+    .ocf-tot-final {
+      display: flex; justify-content: space-between; align-items: baseline;
+      padding: 11px 16px; border-radius: 12px; background: rgba(220,225,240,0.85);
+    }
+    .ocf-tot-final .ocf-total-label { margin: 0; color: var(--text-dark); }
+    .ocf-tot-final .ocf-total-valor { font-size: 22px; }
+    .ocf-tot-margen-sin { color: var(--text-light); font-size: 12px; margin-left: 4px; }
+    @media (max-width: 1100px) { .ocf-tot-grid { grid-template-columns: 1fr; } }
+
     .ac-panel .ocf-op-cod { font-weight: 700; font-size: 11.5px; color: var(--accent-blue); }
     .ac-panel .ocf-op-desc { font-size: 12px; color: var(--text-mid); }
     .ac-panel .ocf-op-monto { font-size: 11.5px; color: var(--text-light); }
@@ -5335,7 +5394,7 @@ function mesActualStr() {
    a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
    Se pinta en el pie del sidebar (#sidebar-version).
    ═══════════════════════════════════════════════════════ */
-const APP_VERSION = 'V 291026 1450';
+const APP_VERSION = 'V 021126 1105';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
@@ -5949,6 +6008,11 @@ let oc = [], ocLineas = [];
    redesplegar queda en false y la columna se muestra como "no disponible". */
 let ocLiberaciones = [];
 let _olbDisponible = false;
+/* #142 — Descuento de la OC. `_ocDescDisponible` dice si el backend ya guarda
+   las columnas DESC_*: lo sabe porque el ALL trae `ocDescuento: true`. Con un
+   backend sin redesplegar queda en false y el formulario no deja cargarlo
+   (el backend viejo descartaría las columnas y dejaría el total sin respaldo). */
+let _ocDescDisponible = false;
 /* ── PANEL DE OBRAS (fase 2 del rediseño) ──
    `obras` = 1 fila por obra, clave de negocio SITIO_ID (ID corto, único: una
    obra por sitio). `obraEventos` = historial de pausas, retomos y reaperturas.
@@ -6257,6 +6321,9 @@ function _aplicarDatosAll(data) {
       totalVenta:    Math.round(prParseMonto(get(r, 'TOTAL_VENTA')) || 0),
       totalCosto:    Math.round(prParseMonto(get(r, 'TOTAL_COSTO')) || 0),
       pctGlobal:     parseInt(get(r, 'PCT_GLOBAL'), 10) || 0,
+      /* #142 — Descuento. TOTAL_COSTO ya es el total CON descuento; acá queda
+         cómo se calculó. Celda vacía = sin descuento (las OC anteriores). */
+      ...ocDescLeer(get(r, 'DESC_TIPO'), get(r, 'DESC_VALOR'), get(r, 'DESC_MONTO'), get(r, 'DESC_MOTIVO')),
       usuarioCarga:  get(r, 'USUARIO_CARGA'),
       creadoAt:      get(r, 'CREADO_AT'),
       modificadoAt:  get(r, 'MODIFICADO_AT')
@@ -6278,6 +6345,7 @@ function _aplicarDatosAll(data) {
     /* #133 — Liberaciones. MONTO entero y PCT con punto, como texto (igual que
        OC). ESTADO vacío se lee como Vigente: es el valor con que se crean. */
     _olbDisponible = Array.isArray(data.ocLiberaciones);
+    _ocDescDisponible = data.ocDescuento === true;   // #142
     ocLiberaciones = (data.ocLiberaciones || []).map(r => ({
       id:           String(get(r, 'ID') || '').trim(),
       ocId:         String(get(r, 'OC_ID') || '').trim(),
@@ -15008,6 +15076,41 @@ const OC_ESTADO_ANULADA  = 'Anulada';
 const OC_ESTADOS = [OC_ESTADO_BORRADOR, OC_ESTADO_EMITIDA, OC_ESTADO_ANULADA];
 const OC_PCT_DEFAULT = 65;
 
+/* ── #142 · DESCUENTO DE LA OC ──────────────────────────────
+   Se aplica sobre el SUBTOTAL COSTO (Σ COSTO_LINEA) y deja el total que se le
+   paga al contratista. Columnas al final de la hoja OC:
+     DESC_TIPO   : 'PCT' | 'MONTO' | ''   (vacío = sin descuento)
+     DESC_VALOR  : PCT → "10.5" (punto, hasta 2 decimales) · MONTO → entero
+     DESC_MONTO  : entero en pesos, el descuento ya calculado
+     DESC_MOTIVO : texto libre, opcional. Si está, sale en el PDF
+   ⚠ TOTAL_COSTO guarda el total CON descuento. Por eso liberaciones, saldo,
+   margen, tiles y las reglas del backend lo toman sin cambios (decisión del
+   usuario). El subtotal se rearma con las líneas (Σ COSTO_LINEA).
+   En PCT el monto se recalcula si cambian los ítems; en MONTO queda fijo. */
+const OC_DESC_PCT   = 'PCT';
+const OC_DESC_MONTO = 'MONTO';
+
+/* Fila de la hoja → campos del objeto OC. Cualquier tipo desconocido se lee
+   como "sin descuento", y entonces valor y monto quedan en cero. */
+function ocDescLeer(tipo, valor, monto, motivo) {
+  const t = String(tipo || '').trim().toUpperCase();
+  if (t !== OC_DESC_PCT && t !== OC_DESC_MONTO) {
+    return { descTipo: '', descValor: 0, descMonto: 0, descMotivo: '' };
+  }
+  const v = prParseMonto(valor) || 0;
+  return {
+    descTipo:   t,
+    descValor:  t === OC_DESC_PCT ? Math.round(v * 100) / 100 : Math.round(v),
+    descMonto:  Math.round(prParseMonto(monto) || 0),
+    descMotivo: String(motivo || '').trim()
+  };
+}
+
+/* 10 → "10%", 12.5 → "12,5%". */
+function ocDescPctTexto(v) {
+  return olbFmtNum(v, 2) + '%';
+}
+
 /* Redondeo de IMPORTES a peso entero (cambio #84 — reemplaza a D20).
    Todo importe de una OC —precio unitario, importe de línea, costo y totales—
    se redondea acá y se guarda así en el Sheet.
@@ -15404,7 +15507,13 @@ async function abrirFormOC(ocId) {
     lineas:    existente ? ocLineasDe(existente.id).map(l => ({
       codServ: l.codServ, descripcion: l.descripcion, cantidad: l.cantidad,
       puVenta: l.puVenta, costoLinea: l.costoLinea, manual: l.manual
-    })) : []
+    })) : [],
+    /* #142 — tipo '' = sin descuento (se muestra el botón "+ Agregar"). */
+    desc: {
+      tipo:   existente ? existente.descTipo   : '',
+      valor:  existente ? existente.descValor  : 0,
+      motivo: existente ? existente.descMotivo : ''
+    }
   };
   _ocfAcIdx = -1;
 
@@ -15659,11 +15768,144 @@ function ocfAplicarPct() {
   }
 }
 
+/* #142 — `costo` es el total CON descuento (lo que se guarda en TOTAL_COSTO y
+   lo que validan las liberaciones). `subtotal` es Σ COSTO_LINEA. Sin descuento
+   los dos son iguales, que es exactamente lo que devolvía antes. */
 function ocfTotales() {
   const lin = (_ocfCtx?.lineas) || [];
   const venta = ocRound2(lin.reduce((a, l) => a + ocRound2(l.cantidad * l.puVenta), 0));
-  const costo = ocRound2(lin.reduce((a, l) => a + (l.costoLinea || 0), 0));
-  return { venta, costo };
+  const subtotal = ocRound2(lin.reduce((a, l) => a + (l.costoLinea || 0), 0));
+  const d = ocfDescuento(subtotal);
+  return { venta, costo: d.total, subtotal, descMonto: d.monto, descError: d.error };
+}
+
+/* Descuento del formulario sobre un subtotal dado. Nunca deja un total
+   negativo: si el descuento no es válido, `error` lo dice y el total que se
+   muestra es el subtotal (guardarOC no deja grabar con error). */
+function ocfDescuento(subtotal) {
+  const d = (_ocfCtx && _ocfCtx.desc) || { tipo: '', valor: 0, motivo: '' };
+  const out = { tipo: d.tipo, monto: 0, total: subtotal, error: '' };
+  if (d.tipo !== OC_DESC_PCT && d.tipo !== OC_DESC_MONTO) { out.tipo = ''; return out; }
+  const v = Number(d.valor) || 0;
+  if (!(v > 0)) {
+    out.error = 'Completá el valor del descuento o quitalo.';
+    return out;
+  }
+  if (d.tipo === OC_DESC_PCT && v >= 100) {
+    out.error = 'El porcentaje de descuento tiene que ser menor a 100%.';
+    return out;
+  }
+  const monto = d.tipo === OC_DESC_PCT ? ocRoundImporte(subtotal * v / 100) : ocRoundImporte(v);
+  if (d.tipo === OC_DESC_MONTO && monto >= subtotal) {
+    out.error = subtotal > 0
+      ? `El descuento no puede igualar ni superar el subtotal costo (${prFmtMonto(subtotal)}).`
+      : 'Agregá ítems antes de cargar un descuento en monto.';
+    return out;
+  }
+  out.monto = monto;
+  out.total = subtotal - monto;
+  return out;
+}
+
+/* ── Acciones del panel de descuento ── */
+function ocfDescAbrir() {
+  if (bloqueoViewer()) return;
+  if (!_ocfCtx) return;
+  if (!_ocDescDisponible) { toast('Para usar descuentos falta actualizar el backend (Code.gs).', 'err'); return; }
+  _ocfCtx.desc = { tipo: OC_DESC_PCT, valor: 0, motivo: '' };
+  ocfRender();
+  const inp = document.getElementById('ocf-desc-valor');
+  if (inp) setTimeout(() => inp.focus(), 30);
+}
+
+function ocfDescQuitar() {
+  if (bloqueoViewer()) return;
+  if (!_ocfCtx) return;
+  _ocfCtx.desc = { tipo: '', valor: 0, motivo: '' };
+  ocfRender();
+}
+
+/* Cambiar de % a monto (o al revés) conserva el descuento ya calculado. */
+function ocfDescTipo(tipo) {
+  if (bloqueoViewer()) return;
+  if (!_ocfCtx || !_ocfCtx.desc || _ocfCtx.desc.tipo === tipo) return;
+  if (tipo !== OC_DESC_PCT && tipo !== OC_DESC_MONTO) return;
+  const t = ocfTotales();
+  const monto = t.descError ? 0 : t.descMonto;
+  _ocfCtx.desc.valor = (tipo === OC_DESC_MONTO)
+    ? monto
+    : (t.subtotal > 0 && monto > 0 ? Math.round(monto / t.subtotal * 10000) / 100 : 0);
+  _ocfCtx.desc.tipo = tipo;
+  ocfRender();
+}
+
+function ocfDescValor(valor) {
+  if (bloqueoViewer()) return;
+  if (!_ocfCtx || !_ocfCtx.desc || !_ocfCtx.desc.tipo) return;
+  const n = (_ocfCtx.desc.tipo === OC_DESC_PCT) ? olbParsePct(valor) : olbParseMonto(valor);
+  _ocfCtx.desc.valor = (isFinite(n) && n > 0)
+    ? (_ocfCtx.desc.tipo === OC_DESC_PCT ? Math.round(n * 100) / 100 : Math.round(n))
+    : 0;
+  ocfRender();
+}
+
+/* El motivo solo se guarda en el contexto: repintar en cada tecla movería el
+   cursor. No cambia ningún número. */
+function ocfDescMotivo(valor) {
+  if (!_ocfCtx || !_ocfCtx.desc) return;
+  _ocfCtx.desc.motivo = String(valor || '');
+}
+
+/* HTML de la columna izquierda del bloque de totales. */
+function _ocfDescHtml(t) {
+  const d = _ocfCtx.desc || { tipo: '' };
+  if (!d.tipo) {
+    if (!_ocDescDisponible) {
+      return `<button type="button" class="ocf-desc-add" disabled>+ Agregar descuento</button>` +
+        `<span class="ocf-desc-hint">Falta actualizar el backend (Code.gs) para usar descuentos</span>`;
+    }
+    return `<button type="button" class="ocf-desc-add" onclick="ocfDescAbrir()">+ Agregar descuento</button>` +
+      `<span class="ocf-desc-hint">Monto o %, con motivo opcional</span>`;
+  }
+  const pct = d.tipo === OC_DESC_PCT;
+  const valorTxt = d.valor > 0 ? (pct ? ocDescPctTexto(d.valor) : prFmtMonto(d.valor)) : '';
+  let eq = '';
+  if (!t.descError) {
+    eq = pct ? `= ${prFmtMonto(t.descMonto)}`
+             : (t.subtotal > 0 ? `= ${olbFmtNum(t.descMonto / t.subtotal * 100, 1)}% del subtotal` : '');
+  }
+  const nota = t.descError
+    ? `<div class="ocf-desc-nota err" role="alert">${_escHtml(t.descError)}</div>`
+    : `<div class="ocf-desc-nota">Se aplica sobre el subtotal costo. En %, se recalcula si cambian los ítems; en monto, queda fijo. Sale en el PDF.</div>`;
+  return `<div class="ocf-desc">
+    <div class="ocf-desc-top">
+      <span class="ocf-desc-tit">Descuento al contratista</span>
+      <button type="button" class="ocf-desc-quitar" onclick="ocfDescQuitar()">Quitar descuento</button>
+    </div>
+    <div class="ocf-desc-fila">
+      <div class="form-group">
+        <span class="form-label">Tipo</span>
+        <div class="ocf-desc-seg">
+          <button type="button" class="${pct ? 'on' : ''}" onclick="ocfDescTipo('${OC_DESC_PCT}')">%</button>
+          <button type="button" class="${pct ? '' : 'on'}" onclick="ocfDescTipo('${OC_DESC_MONTO}')">$ Monto</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="ocf-desc-valor">${pct ? 'Porcentaje' : 'Monto'}</label>
+        <input type="text" class="form-input ocf-desc-valor ${t.descError ? 'err' : ''}" id="ocf-desc-valor"
+               value="${_escAttr(valorTxt)}" placeholder="${pct ? 'Ej.: 10%' : 'Ej.: $ 200.000'}" autocomplete="off"
+               onchange="ocfDescValor(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">
+      </div>
+      <div class="ocf-desc-eq">${eq}</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="ocf-desc-motivo">Motivo <span class="ocf-desc-opc">(opcional)</span></label>
+      <input type="text" class="form-input" id="ocf-desc-motivo" maxlength="200" autocomplete="off"
+             value="${_escAttr(d.motivo || '')}" placeholder="Ej.: retraso en la entrega"
+             oninput="ocfDescMotivo(this.value)">
+    </div>
+    ${nota}
+  </div>`;
 }
 
 function ocfRender() {
@@ -15750,15 +15992,34 @@ function ocfRender() {
     }).join('');
   }
 
-  const { venta, costo } = ocfTotales();
+  /* #142 — Totales en dos columnas: descuento a la izquierda; a la derecha
+     venta, subtotal, descuento, total OC y margen (sobre el total CON
+     descuento, decisión del usuario). Sin descuento no hay filas de subtotal
+     ni descuento: el total OC es Σ costos, como siempre. */
+  const t = ocfTotales();
   const tot = document.getElementById('ocf-totales');
-  if (tot) tot.innerHTML = `
-    <div class="ocf-total-item"><div class="ocf-total-label">Total venta</div>
-      <div class="ocf-total-valor">${prFmtMonto(venta)}</div></div>
-    <div class="ocf-total-item"><div class="ocf-total-label">Total costo</div>
-      <div class="ocf-total-valor">${prFmtMonto(costo)}</div></div>
-    <div class="ocf-total-item"><div class="ocf-total-label">Margen global</div>
-      <div class="ocf-total-valor">${(() => { const m = ocMargen(venta, costo); return m == null ? '—' : m.toFixed(1) + '%'; })()}</div></div>`;
+  if (tot) {
+    const conDesc = !t.descError && t.descMonto > 0;
+    const m = ocMargen(t.venta, t.costo);
+    const mSin = ocMargen(t.venta, t.subtotal);
+    const mTxt = v => (v == null ? '—' : v.toFixed(1) + '%');
+    const d = _ocfCtx.desc || {};
+    tot.innerHTML = `<div class="ocf-tot-grid">
+      <div>${_ocfDescHtml(t)}</div>
+      <div class="ocf-tot-col">
+        <div class="ocf-tot-fila venta"><span>Total venta</span><b>${prFmtMonto(t.venta)}</b></div>
+        <div class="ocf-tot-sep"></div>
+        ${conDesc ? `
+        <div class="ocf-tot-fila"><span>Subtotal costo</span><b>${prFmtMonto(t.subtotal)}</b></div>
+        <div class="ocf-tot-fila desc"><span>Descuento${d.tipo === OC_DESC_PCT
+          ? `<span class="ocf-tot-chip">${ocDescPctTexto(d.valor)}</span>` : ''}</span><b>− ${prFmtMonto(t.descMonto)}</b></div>` : ''}
+        <div class="ocf-tot-final"><span class="ocf-total-label">Total OC</span>
+          <span class="ocf-total-valor">${prFmtMonto(t.costo)}</span></div>
+        <div class="ocf-tot-fila"><span>Margen global</span><span><b>${mTxt(m)}</b>${conDesc
+          ? `<span class="ocf-tot-margen-sin">(sin descuento ${mTxt(mSin)})</span>` : ''}</span></div>
+      </div>
+    </div>`;
+  }
 
   const btnEmitir = document.getElementById('ocf-btn-emitir');
   if (btnEmitir) btnEmitir.textContent = (_ocfCtx.estado === OC_ESTADO_EMITIDA) ? 'Guardar cambios' : 'Emitir OC';
@@ -15776,6 +16037,10 @@ function _ocfValidar(destino) {
   if (!fecha)        return 'Poné una fecha.';
   if (destino === OC_ESTADO_EMITIDA && !c.lineas.length) return 'Una OC emitida necesita al menos un ítem.';
   if (c.lineas.some(l => l.cantidad <= 0)) return 'Hay líneas con cantidad en cero.';
+  /* #142 — Un descuento inválido no se graba (antes de cualquier POST). */
+  const descErr = ocfTotales().descError;
+  if (descErr) return descErr;
+  if (c.desc && c.desc.tipo && !_ocDescDisponible) return 'Para guardar el descuento falta actualizar el backend (Code.gs).';
   /* #133 — Una OC con liberaciones vigentes sigue emitida y su total costo no
      puede quedar por debajo de lo ya liberado. Se valida ANTES de cualquier
      POST: la edición borra y reinserta las líneas antes de tocar la cabecera. */
@@ -15805,7 +16070,15 @@ async function guardarOC(destino) {
   const fecha = document.getElementById('ocf-fecha').value;
   const notas = document.getElementById('ocf-notas').value || '';
   const pct   = ocfPctActual();
-  const { venta, costo } = ocfTotales();
+  const { venta, costo, descMonto } = ocfTotales();
+  /* #142 — Descuento. Sin descuento las cuatro columnas van VACÍAS: así quitar
+     el descuento de una OC que lo tenía también lo borra en la hoja. */
+  const dsc = _ocfCtx.desc || { tipo: '' };
+  /* Con PCT y sin ítems (borrador) el monto da 0 y el % se conserva igual. */
+  const hayDesc = (dsc.tipo === OC_DESC_PCT || dsc.tipo === OC_DESC_MONTO) && Number(dsc.valor) > 0;
+  const descLocal = hayDesc
+    ? { descTipo: dsc.tipo, descValor: dsc.valor, descMonto: descMonto, descMotivo: String(dsc.motivo || '').trim() }
+    : { descTipo: '', descValor: 0, descMonto: 0, descMotivo: '' };
   let esNueva = !_ocfCtx.ocId;
   const ahora = new Date().toISOString();
 
@@ -15828,6 +16101,10 @@ async function guardarOC(destino) {
     PRECIARIO: _ocfCtx.preciario, NOTAS: notas, ESTADO: destino,
     TOTAL_VENTA: String(ocRoundImporte(venta)), TOTAL_COSTO: String(ocRoundImporte(costo)),
     PCT_GLOBAL: String(pct),
+    DESC_TIPO:   descLocal.descTipo,
+    DESC_VALOR:  hayDesc ? String(descLocal.descValor) : '',
+    DESC_MONTO:  hayDesc ? String(ocRoundImporte(descLocal.descMonto)) : '',
+    DESC_MOTIVO: descLocal.descMotivo,
     USUARIO_CARGA: (_usuarioActual && (_usuarioActual.idUsuario || _usuarioActual.usuario)) || '',
     CREADO_AT: _ocfCtx.creadoAt || ahora,
     MODIFICADO_AT: esNueva ? '' : ahora
@@ -15875,6 +16152,7 @@ async function guardarOC(destino) {
       id: ocId, nroOc, fecha, sitioId: _ocfCtx.sitioId, contratistaId: conId,
       clienteId: cab.CLIENTE_ID, preciario: _ocfCtx.preciario, notas, estado: destino,
       totalVenta: ocRoundImporte(venta), totalCosto: ocRoundImporte(costo), pctGlobal: pct,
+      ...descLocal,
       usuarioCarga: cab.USUARIO_CARGA, creadoAt: cab.CREADO_AT, modificadoAt: cab.MODIFICADO_AT
     };
     /* #134 — por id: un reintento que siguió por edición todavía no está en `oc` */
@@ -15908,6 +16186,10 @@ async function guardarOC(destino) {
    PCT_GLOBAL ni COD_SERV. La columna "Monto" es COSTO_LINEA y el TOTAL es
    TOTAL_COSTO — o sea, lo que se le paga, nunca lo que Terabyte le cobra al
    cliente. Si mañana se agrega una columna a este PDF, verificar esto primero.
+
+   #142 — El descuento SÍ va en el papel (pedido del usuario): Subtotal (Σ de los
+   montos de la tabla, que son COSTO_LINEA), Descuento y su motivo si se cargó.
+   Son montos de costo: no exponen venta ni margen.
 
    Solo se emite el PDF de una OC en estado "Emitida" (D26): un borrador no
    tiene número asignado, y un papel sin número no sirve como orden de compra.
@@ -16063,10 +16345,37 @@ function descargarPdfOC(ocId) {
     let y = (doc.lastAutoTable && doc.lastAutoTable.finalY) ? doc.lastAutoTable.finalY + 6 : 120;
     const altoPag = doc.internal.pageSize.getHeight();
     const totAlto = 13;
-    if (y + totAlto > altoPag - 22) { doc.addPage(); y = 25; }   // que no quede huérfano
-
     const totAncho = 92;
     const totX = derecha - totAncho;
+
+    /* #142 — Con descuento, arriba del TOTAL van Subtotal (Σ de los montos de
+       la tabla) y Descuento; debajo, el motivo si se cargó. TOTAL sigue siendo
+       TOTAL_COSTO, que ya es el total con descuento. */
+    const conDesc = (o.descTipo === OC_DESC_PCT || o.descTipo === OC_DESC_MONTO) && o.descMonto > 0;
+    const filaAlto = 8;
+    const motivoDesc = conDesc ? String(o.descMotivo || '').trim() : '';
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    const motivoPartes = motivoDesc ? doc.splitTextToSize('Motivo del descuento: ' + motivoDesc, totAncho + 40) : [];
+    const altoBloque = (conDesc ? filaAlto * 2 : 0) + totAlto + (motivoPartes.length ? 3 + motivoPartes.length * 4.2 : 0);
+    if (y + altoBloque > altoPag - 22) { doc.addPage(); y = 25; }   // que no quede huérfano
+
+    if (conDesc) {
+      const subtotal = lineas.reduce((a, l) => a + (l.costoLinea || 0), 0);
+      const etiqueta = o.descTipo === OC_DESC_PCT ? `Descuento (${ocDescPctTexto(o.descValor)})` : 'Descuento';
+      doc.setDrawColor(212, 217, 230);
+      doc.setLineWidth(0.3);
+      doc.setTextColor(30, 32, 46);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      [['Subtotal', prFmtMonto(subtotal)], [etiqueta, '- ' + prFmtMonto(o.descMonto)]].forEach(([lbl, val]) => {
+        doc.rect(totX, y, totAncho, filaAlto, 'S');
+        doc.text(lbl, totX + 6, y + 5.4);
+        doc.text(val, derecha - 6, y + 5.4, { align: 'right' });
+        y += filaAlto;
+      });
+    }
+
     doc.setFillColor(232, 236, 248);
     doc.setDrawColor(180, 190, 215);
     doc.setLineWidth(0.4);
@@ -16080,6 +16389,15 @@ function descargarPdfOC(ocId) {
     doc.text(prFmtMonto(o.totalCosto), derecha - 6, y + 8.8, { align: 'right' });
 
     y += totAlto;
+
+    /* #142 — Motivo del descuento, alineado a la derecha bajo el total. */
+    if (motivoPartes.length) {
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.setTextColor(74, 80, 104);
+      motivoPartes.forEach((linea, i) => doc.text(linea, derecha, y + 5 + i * 4.2, { align: 'right' }));
+      y += 3 + motivoPartes.length * 4.2;
+    }
 
     /* ── Notas (solo si existen) ── */
     const notas = String(o.notas || '').trim();
