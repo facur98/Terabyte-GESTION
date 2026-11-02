@@ -5524,7 +5524,7 @@ function mesActualStr() {
    a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
    Se pinta en el pie del sidebar (#sidebar-version).
    ═══════════════════════════════════════════════════════ */
-const APP_VERSION = 'V 021126 1330';
+const APP_VERSION = 'V 021126 1340';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
@@ -17576,9 +17576,16 @@ function _actMarcarVistas() {
 /* Líneas facturadas, de la más reciente a la más vieja.
    Se exige N° de factura además del estado: una línea marcada como facturada
    sin número está a medio cargar y avisar por ella sería un falso positivo. */
+/* #148 — Solo avisan las facturas de estos clientes (pedido del usuario): las de
+   Nokia y Huawei no. Se compara el CLIENTE_ID normalizado (sin acentos ni
+   mayúsculas). Como todo el feed sale de actFacturadas(), el badge, el panel,
+   el toast y el registro de vistas quedan filtrados igual. */
+const ACT_CLIENTES = ['amx', 'telmex'];
+
 function actFacturadas() {
   return _actFuente()
-    .filter(l => String(l.estado || '').trim().toLowerCase() === 'facturado' &&
+    .filter(l => ACT_CLIENTES.includes(_actNormRol(l.clienteId)) &&
+                 String(l.estado || '').trim().toLowerCase() === 'facturado' &&
                  String(l.nroFactura || '').trim() !== '' &&
                  String(l.fechaFactura || '').trim() !== '')
     .sort((a, b) => String(b.fechaFactura).localeCompare(String(a.fechaFactura)) ||
@@ -17749,7 +17756,7 @@ function actRender(nuevasIds) {
   if (!items.length) {
     cont.innerHTML = htmlObras + `<div class="act-vacio">
       <i class="fa-solid fa-inbox"></i>
-      Sin facturación en los últimos ${ACT_DIAS_VISIBLE + 1} días.
+      Sin facturación de AMX ni Telmex en los últimos ${ACT_DIAS_VISIBLE + 1} días.
       <div style="font-size:12px;margin-top:8px;">El histórico completo está en Seguimiento.</div>
     </div>`;
     if (sub) {
