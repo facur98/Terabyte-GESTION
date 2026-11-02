@@ -5394,7 +5394,7 @@ function mesActualStr() {
    a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
    Se pinta en el pie del sidebar (#sidebar-version).
    ═══════════════════════════════════════════════════════ */
-const APP_VERSION = 'V 021126 1105';
+const APP_VERSION = 'V 021126 1200';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
@@ -7494,7 +7494,15 @@ function confirmarTanda() {
 
   let agregadas = 0;
   let omitidas  = 0;
+  let yaProyectadas = 0;   // #144
   const sitiosUids = [..._sitSeleccionados];
+
+  /* #144 — PO + % que ya tienen línea en FACTURACION (cualquier mes y estado).
+     El importador de POs ahora proyecta 80/20 al cargar: sin esto, proyectar a
+     mano encima dejaría la línea doble (y el importador de facturación la
+     vería AMBIGUA). Se compara por SITIO||PO, igual que el importador. */
+  const conLinea = new Set();
+  lineas.forEach(l => { if (l.poNroLinea) conLinea.add(`${l.sitioId}||${l.poNroLinea}||${l.pct}`); });
 
   sitiosUids.forEach(uid => {
     const s = getSit(uid);
@@ -7502,6 +7510,7 @@ function confirmarTanda() {
     _tandas.forEach(t => {
       const mes = t.mes;
       const pct = parseInt(t.pct);
+      if (conLinea.has(`${s.uid}||${pct}`)) { yaProyectadas++; return; }   // #144
       // E1: omitir duplicado exacto (sitio + pct + mes) — usar UID para distinguir POs del mismo ID corto
       const dup = _proyPendientes.find(p => p.sitioId === s.uid && p.pct === pct && p.mes === mes);
       if (dup) { omitidas++; return; }
@@ -7519,10 +7528,14 @@ function confirmarTanda() {
   limpiarSelSitios();
   actualizarBannerProyecciones();
   renderSitios();
+  /* #144 — Las que ya tenían línea se informan aparte: no son un error de
+     carga, la PO ya estaba proyectada (por el importador o a mano). */
+  const extra = yaProyectadas > 0
+    ? ` ${yaProyectadas} omitida${yaProyectadas !== 1 ? 's' : ''}: la PO ya tiene línea de ese %.` : '';
   if (omitidas > 0) {
-    toast(`${agregadas} líneas agregadas. ${omitidas} duplicadas omitidas.`, 'ok');
+    toast(`${agregadas} líneas agregadas. ${omitidas} duplicadas omitidas.${extra}`, 'ok');
   } else {
-    toast(`${agregadas} líneas agregadas a la cola.`, 'ok');
+    toast(`${agregadas} líneas agregadas a la cola.${extra}`, 'ok');
   }
 }
 
