@@ -1870,6 +1870,59 @@
     .ocf-tot-margen-sin { color: var(--text-light); font-size: 12px; margin-left: 4px; }
     @media (max-width: 1100px) { .ocf-tot-grid { grid-template-columns: 1fr; } }
 
+    /* ═══ #146 · Cruce con AFIP (modal, solo lectura) ═══ */
+    #modal-afip .modal { width: 1140px; max-width: 96vw; max-height: 92vh; overflow-y: auto; padding: 24px 28px; background: rgba(247,248,251,0.97); }
+    .afx-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 18px; margin-bottom: 16px; }
+    .afx-tit { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; }
+    .afx-tit span { color: var(--accent-blue); }
+    .afx-sub { font-size: 12.5px; color: var(--text-mid); margin-top: 4px; }
+    .afx-acc { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+    .afx-drop {
+      border: 2px dashed rgba(79,128,255,0.5); border-radius: 14px; background: rgba(79,128,255,0.05);
+      padding: 36px 20px; display: flex; flex-direction: column; align-items: center; gap: 9px; text-align: center;
+      transition: var(--transition);
+    }
+    .afx-drop.sobre { background: rgba(79,128,255,0.12); border-color: var(--accent-blue); }
+    .afx-drop i { font-size: 30px; color: var(--accent-blue); }
+    .afx-drop-t { font-size: 15px; font-weight: 700; }
+    .afx-drop-s { font-size: 12.5px; color: var(--text-mid); }
+    .afx-info { display: flex; flex-direction: column; gap: 5px; font-size: 12.5px; color: var(--text-mid); margin-top: 16px; }
+    .afx-info b { color: var(--text-dark); }
+    .afx-err { margin-top: 14px; padding: 11px 14px; border-radius: 10px; background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.4); color: #b91c1c; font-size: 13px; font-weight: 600; }
+    .afx-tiles { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-bottom: 12px; }
+    .afx-tile { padding: 12px 14px; border-radius: 13px; background: #fff; border: 1px solid #e3e6ef; }
+    .afx-tile-l { font-size: 10px; font-weight: 700; letter-spacing: 0.7px; text-transform: uppercase; color: var(--text-mid); }
+    .afx-tile-v { font-size: 22px; font-weight: 700; margin-top: 4px; }
+    .afx-tile-s { font-size: 11px; color: var(--text-mid); margin-top: 2px; }
+    .afx-tile.ok   { background: rgba(45,212,191,0.12); border-color: rgba(13,148,136,0.3); }
+    .afx-tile.ok .afx-tile-l, .afx-tile.ok .afx-tile-v { color: #0f766e; }
+    .afx-tile.mal  { background: rgba(248,113,113,0.10); border-color: rgba(185,28,28,0.3); }
+    .afx-tile.mal .afx-tile-l, .afx-tile.mal .afx-tile-v { color: #b91c1c; }
+    .afx-tile.dif  { background: rgba(251,146,60,0.12); border-color: rgba(194,65,12,0.3); }
+    .afx-tile.dif .afx-tile-l, .afx-tile.dif .afx-tile-v { color: #9a3412; }
+    .afx-tot { display: flex; flex-wrap: wrap; gap: 8px 28px; padding: 10px 16px; border-radius: 11px; background: #fff; border: 1px solid #e3e6ef; font-size: 13px; color: var(--text-mid); margin-bottom: 12px; }
+    .afx-tot b { color: var(--text-dark); }
+    .afx-tot b.neg { color: #b91c1c; }
+    .afx-sec { background: #fff; border: 1px solid #e3e6ef; border-radius: 14px; overflow: hidden; margin-bottom: 12px; }
+    .afx-sec-h { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 11px 16px; border-bottom: 1px solid #e3e6ef; }
+    .afx-sec-t { font-size: 14px; font-weight: 700; }
+    .afx-sec-t .n { color: var(--text-mid); font-weight: 500; }
+    .afx-sec-d { font-size: 12px; color: var(--text-mid); text-align: right; }
+    .afx-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 8px; }
+    .afx-dot.rojo { background: #dc2626; } .afx-dot.nar { background: #ea580c; }
+    .afx-tabla { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+    .afx-tabla th { background: #eef1f8; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #3d4360; padding: 8px 10px; text-align: left; }
+    .afx-tabla td { padding: 8px 10px; border-top: 1px solid #eef0f5; vertical-align: top; }
+    .afx-tabla .num { text-align: right; white-space: nowrap; }
+    .afx-tabla .nro { font-weight: 700; white-space: nowrap; }
+    .afx-tabla .dif { font-weight: 700; color: #9a3412; }
+    .afx-oks { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-bottom: 12px; }
+    .afx-okc { padding: 10px 14px; border-radius: 11px; background: #fff; border: 1px solid #e3e6ef; font-size: 13px; }
+    .afx-okc i { color: #0f766e; margin-right: 6px; }
+    .afx-pie { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 12.5px; color: var(--text-mid); padding-top: 4px; }
+    .afx-pie label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+    @media (max-width: 900px) { .afx-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
     .ac-panel .ocf-op-cod { font-weight: 700; font-size: 11.5px; color: var(--accent-blue); }
     .ac-panel .ocf-op-desc { font-size: 12px; color: var(--text-mid); }
     .ac-panel .ocf-op-monto { font-size: 11.5px; color: var(--text-light); }
@@ -4132,6 +4185,8 @@
       </div>
       <div class="topbar-actions">
         <button class="btn btn-glass" onclick="sincronizar()" style="font-size:12px;"><i class="fa-solid fa-rotate"></i> Sincronizar</button>
+        <!-- #146 — Cruce con AFIP: solo lectura, no escribe nada -->
+        <button class="btn btn-glass" onclick="abrirCruceAfip()" style="font-size:12.5px;font-weight:700;color:#2f5fd6;border-color:rgba(79,128,255,0.6);"><i class="fa-solid fa-scale-balanced"></i> Cruce AFIP</button>
         <button class="btn btn-primary" onclick="abrirModalNuevaLinea()">+ Nueva línea</button>
       </div>
     </div>
@@ -4951,6 +5006,42 @@
 
 <!-- #133 · Liberaciones de una OC. Se abre desde la columna "Liberado / saldo"
      de Emisión OC. El formulario no se muestra a los perfiles de solo lectura. -->
+<!-- ═══════════ #146 · CRUCE CON AFIP ═══════════
+     Solo lectura: compara el archivo "Mis Comprobantes Emitidos" de AFIP con
+     las líneas de FACTURACION que ya están en memoria. No escribe nada. -->
+<div class="modal-overlay" id="modal-afip">
+  <div class="modal">
+    <div class="afx-top">
+      <div>
+        <div class="afx-tit">Cruce con <span>AFIP</span></div>
+        <div class="afx-sub" id="afx-sub">Compará las facturas emitidas en AFIP con las líneas facturadas del sistema</div>
+      </div>
+      <div class="afx-acc">
+        <button class="btn btn-glass btn-sm" id="afx-btn-otro" onclick="afxOtroArchivo()" style="display:none;">Cargar otro archivo</button>
+        <button class="btn btn-primary btn-sm" id="afx-btn-pdf" onclick="afxDescargarPdf()" style="display:none;">Descargar PDF</button>
+        <button class="olb-x" onclick="cerrarCruceAfip()" aria-label="Cerrar">✕</button>
+      </div>
+    </div>
+    <div id="afx-carga">
+      <div class="afx-drop" id="afx-drop">
+        <i class="fa-solid fa-file-arrow-up"></i>
+        <div class="afx-drop-t">Arrastrá acá el archivo de "Mis Comprobantes Emitidos"</div>
+        <div class="afx-drop-s">Excel (.xlsx) o CSV, tal cual lo descarga AFIP</div>
+        <button class="btn btn-primary btn-sm" style="margin-top:6px;" onclick="document.getElementById('afx-file').click()">Elegir archivo</button>
+        <input type="file" id="afx-file" accept=".xlsx,.xls,.csv,.txt" style="display:none;">
+      </div>
+      <div id="afx-err"></div>
+      <div class="afx-info">
+        <div><b>Qué compara:</b> número de factura, mes asignado, monto (neto contra la suma de las líneas), cliente y estado.</div>
+        <div><b>Qué toma de AFIP:</b> solo facturas (Factura A, FCE, etc.). Las notas de crédito y débito no se consideran.</div>
+        <div><b>Período:</b> el mes (o los meses) que traiga el archivo, según la fecha de cada factura.</div>
+        <div>Solo informativo: no se guarda nada ni se modifica ninguna línea.</div>
+      </div>
+    </div>
+    <div id="afx-res" style="display:none;"></div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modal-olb">
   <div class="modal">
     <div class="olb-top">
@@ -5394,7 +5485,7 @@ function mesActualStr() {
    a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
    Se pinta en el pie del sidebar (#sidebar-version).
    ═══════════════════════════════════════════════════════ */
-const APP_VERSION = 'V 021126 1200';
+const APP_VERSION = 'V 021126 1250';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
@@ -18291,6 +18382,525 @@ function _lgBtnEstado(estado, nombre) {
   } catch(e) { /* sessionStorage bloqueado u otro error: queda en login */ }
 })();
 
+
+/* ═══ #146 · CRUCE DE FACTURACIÓN CON AFIP ═══════════════════════════════
+   Compara el archivo "Mis Comprobantes Emitidos" de AFIP (xlsx o csv) con las
+   líneas de FACTURACION que ya están en memoria (`lineas`). SOLO LECTURA: no
+   escribe nada, no pide nada al servidor y no guarda el resultado.
+
+   Qué se toma de AFIP: los comprobantes cuyo tipo dice "Factura" (Factura A,
+   FCE A, B, C…). Notas de crédito y débito se excluyen (decisión del usuario:
+   una factura anulada con NC aparece como faltante).
+
+   Por cada factura de AFIP se buscan las líneas con el mismo número:
+     · ninguna            → "En AFIP, no en el sistema"
+     · mes ≠ mes de AFIP  → "Imputada en otro mes"   (mes de la fecha AFIP)
+     · Σ monto ≠ neto     → "Monto distinto"         (neto = gravado + no gravado + exento)
+     · cliente ≠ receptor → "Cliente distinto"       (el receptor contiene el ID del cliente)
+     · estado ≠ Facturado → "No figura como Facturado"
+   Y al revés: líneas con número (o Facturado sin número) cuyo MES está en el
+   período del archivo y no figuran en AFIP → "En el sistema, no en AFIP".
+
+   El número se compara por su último grupo de dígitos sin ceros a la izquierda
+   ("0002-00015994" = "15994"). */
+
+const AFX_XLSX_URL = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+const AFX_ESTADO_OK = 'Facturado';
+let _afx = null;          // { archivo, facturas, excluidas, periodo, res } del último cruce
+let _afxXlsxProm = null;  // carga diferida de SheetJS (solo si se usa un .xlsx)
+let _afxEnlazado = false;
+
+function abrirCruceAfip() {
+  const m = document.getElementById('modal-afip');
+  if (!m) return;
+  if (!_afxEnlazado) _afxEnlazar();
+  if (_afx && _afx.res) _afxPintarResultado();
+  else _afxMostrarCarga('');
+  m.classList.add('open');
+}
+
+function cerrarCruceAfip() {
+  const m = document.getElementById('modal-afip');
+  if (m) m.classList.remove('open');
+}
+
+function afxOtroArchivo() {
+  _afx = null;
+  _afxMostrarCarga('');
+}
+
+function _afxMostrarCarga(error) {
+  document.getElementById('afx-carga').style.display = '';
+  document.getElementById('afx-res').style.display = 'none';
+  document.getElementById('afx-btn-otro').style.display = 'none';
+  document.getElementById('afx-btn-pdf').style.display = 'none';
+  document.getElementById('afx-sub').textContent = 'Compará las facturas emitidas en AFIP con las líneas facturadas del sistema';
+  document.getElementById('afx-err').innerHTML = error ? `<div class="afx-err" role="alert">${_escHtml(error)}</div>` : '';
+  const inp = document.getElementById('afx-file');
+  if (inp) inp.value = '';
+}
+
+/* Arrastrar y soltar + selector. Con addEventListener: el barrido del viewer
+   no los toca (y el viewer no llega a Seguimiento). Escape y clic afuera
+   cierran, como en la auditoría de Evolución. */
+function _afxEnlazar() {
+  _afxEnlazado = true;
+  const drop = document.getElementById('afx-drop');
+  const inp  = document.getElementById('afx-file');
+  const modal = document.getElementById('modal-afip');
+  inp.addEventListener('change', () => { if (inp.files && inp.files[0]) _afxProcesar(inp.files[0]); });
+  ['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('sobre'); }));
+  ['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('sobre'); }));
+  drop.addEventListener('drop', e => { const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]; if (f) _afxProcesar(f); });
+  modal.addEventListener('click', e => { if (e.target === modal) cerrarCruceAfip(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && modal.classList.contains('open')) cerrarCruceAfip(); });
+}
+
+function _afxCargarXlsx() {
+  if (window.XLSX) return Promise.resolve(window.XLSX);
+  if (_afxXlsxProm) return _afxXlsxProm;
+  _afxXlsxProm = new Promise((ok, mal) => {
+    const sc = document.createElement('script');
+    sc.src = AFX_XLSX_URL;
+    sc.onload = () => window.XLSX ? ok(window.XLSX) : mal(new Error('sin XLSX'));
+    sc.onerror = () => { _afxXlsxProm = null; mal(new Error('No se pudo cargar el lector de Excel. Revisá la conexión o usá el CSV.')); };
+    document.head.appendChild(sc);
+  });
+  return _afxXlsxProm;
+}
+
+async function _afxProcesar(file) {
+  try {
+    const nombre = file.name || 'archivo';
+    let filas;
+    if (/\.(csv|txt)$/i.test(nombre)) {
+      filas = _afxParseCsv(await file.text());
+    } else {
+      const X = await _afxCargarXlsx();
+      const wb = X.read(await file.arrayBuffer(), { type: 'array', cellDates: true });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      filas = X.utils.sheet_to_json(ws, { header: 1, raw: true, defval: '' });
+    }
+    const leido = _afxLeerFacturas(filas);
+    if (leido.error) { _afxMostrarCarga(leido.error); return; }
+    _afx = { archivo: nombre, facturas: leido.facturas, excluidas: leido.excluidas };
+    _afx.res = _afxCruzar(leido.facturas);
+    _afxPintarResultado();
+  } catch (err) {
+    console.error('ERROR cruce AFIP:', err);
+    _afxMostrarCarga('No se pudo leer el archivo: ' + (err && err.message ? err.message : err));
+  }
+}
+
+/* CSV de AFIP: separado por ";" (o ","), con comillas. Devuelve filas de celdas. */
+function _afxParseCsv(txt) {
+  const texto = String(txt || '').replace(/^﻿/, '');
+  const primera = texto.split(/\r?\n/).find(l => l.trim()) || '';
+  const sep = (primera.split(';').length >= primera.split(',').length) ? ';' : ',';
+  const filas = []; let fila = [], celda = '', comillas = false;
+  for (let i = 0; i < texto.length; i++) {
+    const ch = texto[i];
+    if (comillas) {
+      if (ch === '"') { if (texto[i + 1] === '"') { celda += '"'; i++; } else comillas = false; }
+      else celda += ch;
+    } else if (ch === '"') comillas = true;
+    else if (ch === sep) { fila.push(celda); celda = ''; }
+    else if (ch === '\n' || ch === '\r') {
+      if (ch === '\r' && texto[i + 1] === '\n') i++;
+      fila.push(celda); filas.push(fila); fila = []; celda = '';
+    } else celda += ch;
+  }
+  if (celda !== '' || fila.length) { fila.push(celda); filas.push(fila); }
+  return filas;
+}
+
+function _afxNorm(v) {
+  return String(v == null ? '' : v).normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .toUpperCase().replace(/[^A-Z0-9%]+/g, ' ').trim();
+}
+
+/* "0002-00015994" → "15994"; 15994 → "15994"; "" → "". */
+function _afxNro(v) {
+  if (typeof v === 'number') return isFinite(v) ? String(Math.round(v)) : '';
+  const grupos = String(v == null ? '' : v).match(/\d+/g);
+  if (!grupos) return '';
+  return grupos[grupos.length - 1].replace(/^0+(?=\d)/, '');
+}
+
+/* Importe de AFIP: número, o texto "273555,76" / "273.555,76" / "273555.76". */
+function _afxImporte(v) {
+  if (typeof v === 'number') return isFinite(v) ? v : 0;
+  let s = String(v == null ? '' : v).replace(/[^\d,.\-]/g, '');
+  if (!s) return 0;
+  if (s.includes(',') && s.includes('.')) {
+    s = s.lastIndexOf(',') > s.lastIndexOf('.') ? s.replace(/\./g, '').replace(',', '.') : s.replace(/,/g, '');
+  } else if (s.includes(',')) s = s.replace(',', '.');
+  const n = Number(s);
+  return isFinite(n) ? n : 0;
+}
+
+/* Fecha de AFIP → 'YYYY-MM-DD'. Acepta Date, número serial de Excel y "dd/mm/aaaa".
+   Sin construir Date desde 'YYYY-MM-DD' (R10). */
+function _afxFecha(v) {
+  if (v instanceof Date && !isNaN(v)) {
+    return `${v.getFullYear()}-${String(v.getMonth() + 1).padStart(2, '0')}-${String(v.getDate()).padStart(2, '0')}`;
+  }
+  if (typeof v === 'number' && isFinite(v) && v > 20000) {
+    const d = new Date(Math.round((v - 25569) * 86400000));
+    return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
+  }
+  const s = String(v == null ? '' : v).trim();
+  let m = s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/);
+  if (m) return `${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`;
+  m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return m ? `${m[1]}-${m[2]}-${m[3]}` : '';
+}
+
+/* Ubica la fila de títulos y devuelve las facturas. */
+function _afxLeerFacturas(filas) {
+  let iCab = -1, c = null;
+  for (let i = 0; i < Math.min(filas.length, 15); i++) {
+    const n = (filas[i] || []).map(_afxNorm);
+    const pos = t => n.findIndex(x => x === t);
+    if (pos('FECHA') !== -1 && pos('TIPO') !== -1 && n.some(x => x.startsWith('NUMERO DESDE'))) {
+      iCab = i;
+      const busca = (...ts) => { for (const t of ts) { const k = n.findIndex(x => x === t); if (k !== -1) return k; } return -1; };
+      c = {
+        fecha: pos('FECHA'), tipo: pos('TIPO'),
+        desde: n.findIndex(x => x.startsWith('NUMERO DESDE')),
+        hasta: n.findIndex(x => x.startsWith('NUMERO HASTA')),
+        pv: busca('PUNTO DE VENTA'),
+        receptor: busca('DENOMINACION RECEPTOR'),
+        gravado: busca('NETO GRAVADO TOTAL', 'IMP NETO GRAVADO'),
+        noGravado: busca('NETO NO GRAVADO', 'IMP NETO NO GRAVADO'),
+        exento: busca('OP EXENTAS', 'IMP OP EXENTAS'),
+        total: busca('IMP TOTAL')
+      };
+      break;
+    }
+  }
+  if (iCab === -1) {
+    return { error: 'El archivo no tiene el formato de "Mis Comprobantes Emitidos" de AFIP (no se encontraron las columnas Fecha, Tipo y Número Desde).' };
+  }
+  const facturas = []; const excluidas = {};
+  for (let i = iCab + 1; i < filas.length; i++) {
+    const f = filas[i] || [];
+    const tipo = String(f[c.tipo] == null ? '' : f[c.tipo]).trim();
+    const desde = _afxNro(f[c.desde]);
+    if (!tipo || !desde) continue;
+    const tN = _afxNorm(tipo);
+    if (!/FACTURA/.test(tN) || /NOTA/.test(tN)) { excluidas[tipo] = (excluidas[tipo] || 0) + 1; continue; }
+    const fecha = _afxFecha(f[c.fecha]);
+    if (!fecha) continue;
+    const hasta = c.hasta !== -1 ? (_afxNro(f[c.hasta]) || desde) : desde;
+    const neto = (c.gravado !== -1 ? _afxImporte(f[c.gravado]) : 0) +
+                 (c.noGravado !== -1 ? _afxImporte(f[c.noGravado]) : 0) +
+                 (c.exento !== -1 ? _afxImporte(f[c.exento]) : 0);
+    const base = {
+      fecha, mes: fecha.slice(0, 7), tipo, tipoCorto: _afxTipoCorto(tipo),
+      receptor: c.receptor !== -1 ? String(f[c.receptor] || '').trim() : '',
+      neto: Math.round(neto * 100) / 100
+    };
+    /* Un rango (Desde < Hasta) se expande por número; el neto es del rango
+       entero, así que ahí no se compara monto. */
+    const d = parseInt(desde, 10), h = parseInt(hasta, 10);
+    if (isFinite(d) && isFinite(h) && h > d && h - d < 1000) {
+      for (let k = d; k <= h; k++) facturas.push({ ...base, nro: String(k), neto: null });
+    } else {
+      facturas.push({ ...base, nro: desde });
+    }
+  }
+  if (!facturas.length) return { error: 'El archivo no tiene facturas (solo notas de crédito o débito, o está vacío).' };
+  return { facturas, excluidas };
+}
+
+function _afxTipoCorto(tipo) {
+  const t = String(tipo).replace(/^\d+\s*-\s*/, '');
+  const m = t.match(/\(FCE\)\s*([A-Z])\s*$/i);
+  if (m) return 'FCE ' + m[1].toUpperCase();
+  return t.replace(/electr[oó]nica/i, '').replace(/\s+/g, ' ').trim();
+}
+
+/* ¿El receptor de AFIP es el cliente de la línea? El nombre de AFIP contiene el
+   ID del cliente ("AMX ARGENTINA…" ⊃ AMX, "NOKIA SOLUTIONS…" ⊃ NOKIA). */
+function _afxMismoCliente(receptor, clienteId) {
+  const r = ' ' + _afxNorm(receptor) + ' ';
+  const c = _afxNorm(clienteId);
+  if (!c || !_afxNorm(receptor)) return true;   // sin dato no se puede afirmar una diferencia
+  return r.includes(' ' + c + ' ') || r.replace(/ /g, '').includes(c.replace(/ /g, ''));
+}
+
+/* EL CRUCE. Puro: lee `lineas` y las facturas, devuelve el resultado. */
+function _afxCruzar(facturas) {
+  const porNro = {};
+  lineas.forEach(l => {
+    const n = _afxNro(l.nroFactura);
+    if (!n) return;
+    (porNro[n] = porNro[n] || []).push(l);
+  });
+  const meses = [...new Set(facturas.map(f => f.mes))].sort();
+  const nrosAfip = new Set(facturas.map(f => f.nro));
+  const R = { meses, coinciden: [], faltan: [], sobran: [], otroMes: [], monto: [], cliente: [], estado: [],
+              conDif: 0, netoAfip: 0, sistemaPeriodo: 0, desde: '', hasta: '' };
+  const fechas = facturas.map(f => f.fecha).sort();
+  R.desde = fechas[0]; R.hasta = fechas[fechas.length - 1];
+
+  facturas.slice().sort((a, b) => a.fecha.localeCompare(b.fecha) || (parseInt(a.nro, 10) - parseInt(b.nro, 10)))
+    .forEach(f => {
+      R.netoAfip += f.neto || 0;
+      const ls = porNro[f.nro] || [];
+      if (!ls.length) { R.faltan.push({ f }); return; }
+      let dif = false;
+      const otrosMeses = [...new Set(ls.map(l => l.mes).filter(m => m !== f.mes))];
+      if (otrosMeses.length) { R.otroMes.push({ f, ls, meses: otrosMeses }); dif = true; }
+      if (f.neto != null) {
+        const suma = ls.reduce((a, l) => a + (l.monto || 0), 0);
+        const tolerancia = Math.max(2, ls.length);   // cada línea se redondea a peso entero
+        if (Math.abs(suma - f.neto) > tolerancia) { R.monto.push({ f, ls, suma, dif: suma - f.neto }); dif = true; }
+      }
+      const otrosCli = [...new Set(ls.map(l => l.clienteId).filter(cl => !_afxMismoCliente(f.receptor, cl)))];
+      if (otrosCli.length) { R.cliente.push({ f, ls, clientes: otrosCli }); dif = true; }
+      const otrosEst = [...new Set(ls.map(l => l.estado).filter(e => e !== AFX_ESTADO_OK))];
+      if (otrosEst.length) { R.estado.push({ f, ls, estados: otrosEst }); dif = true; }
+      if (dif) R.conDif++; else R.coinciden.push({ f, ls });
+    });
+
+  /* Del lado del sistema: líneas del período con número que AFIP no tiene, y
+     líneas en Facturado sin número (no se pueden cruzar). */
+  const enPeriodo = l => meses.includes(l.mes);
+  lineas.forEach(l => {
+    if (!enPeriodo(l)) return;
+    if (l.estado === AFX_ESTADO_OK) R.sistemaPeriodo += l.monto || 0;
+    const n = _afxNro(l.nroFactura);
+    if (n && !nrosAfip.has(n)) R.sobran.push(l);
+    else if (!n && l.estado === AFX_ESTADO_OK) R.sobran.push(l);
+  });
+  R.sobran.sort((a, b) => (a.mes || '').localeCompare(b.mes || '') ||
+    (parseInt(_afxNro(a.nroFactura) || '0', 10) - parseInt(_afxNro(b.nroFactura) || '0', 10)));
+  return R;
+}
+
+/* ── Pantalla ─────────────────────────────────────────────── */
+
+function _afxMesTxt(m) {
+  const n = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const p = String(m || '').split('-');
+  return p.length === 2 ? `${n[parseInt(p[1], 10) - 1] || p[1]} ${p[0]}` : String(m || '—');
+}
+function _afxMesCorto(m) { const p = String(m || '').split('-'); return p.length === 2 ? `${p[1]}/${p[0]}` : '—'; }
+function _afxFechaTxt(f) { const p = String(f || '').split('-'); return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : '—'; }
+function _afxPeriodoTxt(R) {
+  return R.meses.length === 1 ? _afxMesTxt(R.meses[0])
+    : `${_afxMesTxt(R.meses[0])} a ${_afxMesTxt(R.meses[R.meses.length - 1])}`;
+}
+function _afxSitioPo(l) { return l.poNroLinea ? `${l.sitioId} · ${l.poNroLinea}` : (l.sitioId || '—'); }
+function _afxSigno(n) { return (n > 0 ? '+' : n < 0 ? '−' : '') + prFmtMonto(Math.abs(n)); }
+function _afxExcluidasTxt() {
+  const n = Object.values(_afx.excluidas || {}).reduce((a, b) => a + b, 0);
+  return n ? ` (${n === 1 ? '1 nota de crédito/débito no se considera' : n + ' notas de crédito/débito no se consideran'})` : '';
+}
+
+function _afxPintarResultado() {
+  const R = _afx.res;
+  document.getElementById('afx-carga').style.display = 'none';
+  document.getElementById('afx-btn-otro').style.display = '';
+  document.getElementById('afx-btn-pdf').style.display = '';
+  const cuenta = {};
+  _afx.facturas.forEach(f => { cuenta[f.tipoCorto] = (cuenta[f.tipoCorto] || 0) + 1; });
+  const tiposTxt = Object.keys(cuenta).map(k => `${cuenta[k]} ${k}`).join(' · ');
+  document.getElementById('afx-sub').textContent =
+    `${_afxPeriodoTxt(R)} · ${_afx.archivo} · ${_afx.facturas.length} facturas${_afxExcluidasTxt()}`;
+
+  const tile = (cls, l, v, s) => `<div class="afx-tile ${cls}"><div class="afx-tile-l">${l}</div><div class="afx-tile-v">${v}</div><div class="afx-tile-s">${s}</div></div>`;
+  const dTot = R.sistemaPeriodo - R.netoAfip;   // mismo signo que las diferencias por factura: sistema − AFIP
+  let h = `<div class="afx-tiles">
+    ${tile('', 'Facturas en AFIP', _afx.facturas.length, _escHtml(tiposTxt))}
+    ${tile(R.coinciden.length ? 'ok' : '', 'Coinciden', R.coinciden.length, 'Número, mes, monto, cliente y estado')}
+    ${tile(R.faltan.length ? 'mal' : '', 'En AFIP, no en el sistema', R.faltan.length, 'Faltan cargar')}
+    ${tile(R.sobran.length ? 'mal' : '', 'En el sistema, no en AFIP', R.sobran.length, 'Mal cargadas en el período')}
+    ${tile(R.conDif ? 'dif' : '', 'Con diferencias', R.conDif, 'Mes, monto, cliente o estado')}
+  </div>
+  <div class="afx-tot">
+    <span>Neto facturado en AFIP <b>${prFmtMonto(R.netoAfip)}</b></span>
+    <span>Facturado en el sistema (${_escHtml(_afxPeriodoTxt(R).toLowerCase())}) <b>${prFmtMonto(R.sistemaPeriodo)}</b></span>
+    <span>Diferencia (sistema − AFIP) <b class="${Math.abs(dTot) > 2 ? 'neg' : ''}">${_afxSigno(dTot)}</b></span>
+  </div>`;
+
+  const sec = (color, titulo, n, desc, cab, filas) => `<div class="afx-sec">
+    <div class="afx-sec-h"><div class="afx-sec-t"><span class="afx-dot ${color}"></span>${titulo} <span class="n">· ${n}</span></div><div class="afx-sec-d">${desc}</div></div>
+    <table class="afx-tabla"><thead><tr>${cab}</tr></thead><tbody>${filas}</tbody></table></div>`;
+  const oks = [];
+  const lineasTxt = ls => ls.map(l => _escHtml(_afxSitioPo(l)) + (l.pct ? ` <span style="color:var(--text-light)">${l.pct}%</span>` : '')).join('<br>');
+
+  if (R.faltan.length) {
+    h += sec('rojo', 'En AFIP, no en el sistema', R.faltan.length, 'Facturas emitidas que ninguna línea tiene cargadas',
+      '<th>N° factura</th><th>Fecha</th><th>Tipo</th><th>Cliente (AFIP)</th><th class="num">Neto AFIP</th>',
+      R.faltan.map(({ f }) => `<tr><td class="nro">${_escHtml(f.nro)}</td><td>${_afxFechaTxt(f.fecha)}</td><td>${_escHtml(f.tipoCorto)}</td><td>${_escHtml(f.receptor)}</td><td class="num">${f.neto == null ? '—' : prFmtMonto(f.neto)}</td></tr>`).join(''));
+  } else oks.push('En AFIP, no en el sistema');
+
+  if (R.sobran.length) {
+    h += sec('rojo', 'En el sistema, no en AFIP', R.sobran.length, 'Líneas del período con un número que AFIP no tiene, o facturadas sin número',
+      '<th>N° factura</th><th>Sitio · PO</th><th>%</th><th>Cliente</th><th>Mes</th><th>Estado</th><th class="num">Monto</th>',
+      R.sobran.map(l => `<tr><td class="nro">${_escHtml(_afxNro(l.nroFactura) || 'sin número')}</td><td>${_escHtml(_afxSitioPo(l))}</td><td>${l.pct || '—'}%</td><td>${_escHtml(l.clienteId)}</td><td>${_afxMesCorto(l.mes)}</td><td>${_escHtml(l.estado)}</td><td class="num">${prFmtMonto(l.monto)}</td></tr>`).join(''));
+  } else oks.push('En el sistema, no en AFIP');
+
+  if (R.otroMes.length) {
+    h += sec('nar', 'Imputada en otro mes', R.otroMes.length, 'La factura es de un mes y la línea está en otro',
+      '<th>N° factura</th><th>Fecha AFIP</th><th>Mes AFIP</th><th>Sitio · PO</th><th>Mes en el sistema</th>',
+      R.otroMes.map(({ f, ls }) => `<tr><td class="nro">${_escHtml(f.nro)}</td><td>${_afxFechaTxt(f.fecha)}</td><td>${_afxMesCorto(f.mes)}</td><td>${lineasTxt(ls)}</td><td class="dif">${ls.map(l => _afxMesCorto(l.mes)).join('<br>')}</td></tr>`).join(''));
+  } else oks.push('Imputada en otro mes');
+
+  if (R.monto.length) {
+    h += sec('nar', 'Monto distinto', R.monto.length, 'El neto de AFIP no coincide con la suma de las líneas de esa factura',
+      '<th>N° factura</th><th>Fecha AFIP</th><th>Sitio · PO</th><th>Mes</th><th class="num">Sistema</th><th class="num">Neto AFIP</th><th class="num">Diferencia</th>',
+      R.monto.map(({ f, ls, suma, dif }) => `<tr><td class="nro">${_escHtml(f.nro)}</td><td>${_afxFechaTxt(f.fecha)}</td><td>${lineasTxt(ls)}</td><td>${[...new Set(ls.map(l => _afxMesCorto(l.mes)))].join(', ')}</td><td class="num">${prFmtMonto(suma)}</td><td class="num">${prFmtMonto(f.neto)}</td><td class="num dif">${_afxSigno(dif)}</td></tr>`).join(''));
+  } else oks.push('Monto distinto');
+
+  if (R.cliente.length) {
+    h += sec('nar', 'Cliente distinto', R.cliente.length, 'El receptor de AFIP no es el cliente de la línea',
+      '<th>N° factura</th><th>Fecha AFIP</th><th>Receptor (AFIP)</th><th>Sitio · PO</th><th>Cliente en el sistema</th>',
+      R.cliente.map(({ f, ls, clientes }) => `<tr><td class="nro">${_escHtml(f.nro)}</td><td>${_afxFechaTxt(f.fecha)}</td><td>${_escHtml(f.receptor)}</td><td>${lineasTxt(ls)}</td><td class="dif">${_escHtml(clientes.join(', '))}</td></tr>`).join(''));
+  } else oks.push('Cliente distinto');
+
+  if (R.estado.length) {
+    h += sec('nar', 'No figura como Facturado', R.estado.length, 'La factura está en AFIP pero la línea tiene otro estado',
+      '<th>N° factura</th><th>Fecha AFIP</th><th>Sitio · PO</th><th>Estado en el sistema</th>',
+      R.estado.map(({ f, ls }) => `<tr><td class="nro">${_escHtml(f.nro)}</td><td>${_afxFechaTxt(f.fecha)}</td><td>${lineasTxt(ls)}</td><td class="dif">${ls.map(l => _escHtml(l.estado)).join('<br>')}</td></tr>`).join(''));
+  } else oks.push('No figura como Facturado');
+
+  if (oks.length) h += `<div class="afx-oks">${oks.map(t => `<div class="afx-okc"><i class="fa-solid fa-check"></i>${t} · <b>0</b></div>`).join('')}</div>`;
+
+  h += `<div class="afx-pie">
+    <label><input type="checkbox" id="afx-incluir-ok"> Incluir en el PDF el listado de las ${R.coinciden.length} que coinciden</label>
+    <span>Solo informativo: no se guarda nada ni se modifica ninguna línea</span>
+  </div>`;
+  const res = document.getElementById('afx-res');
+  res.innerHTML = h;
+  res.style.display = '';
+}
+
+/* ── PDF ──────────────────────────────────────────────────── */
+
+function afxDescargarPdf() {
+  if (!_afx || !_afx.res) return;
+  const JsPDF = _pdfJsPDF();
+  if (!JsPDF) { toast('No se pudo cargar el generador de PDF. Revisá la conexión y refrescá la página.', 'err'); return; }
+  const R = _afx.res;
+  const incluirOk = !!(document.getElementById('afx-incluir-ok') || {}).checked;
+  try {
+    const doc = new JsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+    const M = 14, ancho = doc.internal.pageSize.getWidth(), derecha = ancho - M;
+    const altoPag = doc.internal.pageSize.getHeight();
+    const ahora = new Date();
+    const gen = `${String(ahora.getDate()).padStart(2, '0')}/${String(ahora.getMonth() + 1).padStart(2, '0')}/${ahora.getFullYear()} ` +
+                `${String(ahora.getHours()).padStart(2, '0')}:${String(ahora.getMinutes()).padStart(2, '0')}`;
+    const usuario = (_usuarioActual && (_usuarioActual.idUsuario || _usuarioActual.usuario)) || '';
+
+    _pdfLogo(doc, M, 20);
+    doc.setTextColor(26, 29, 46);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(13);
+    doc.text('CRUCE DE FACTURACIÓN CON AFIP', derecha, 18, { align: 'right' });
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
+    doc.text(`Período: ${_afxPeriodoTxt(R)}`, derecha, 24, { align: 'right' });
+    doc.setFontSize(8.5); doc.setTextColor(74, 80, 104);
+    doc.text(`Generado el ${gen}${usuario ? ' · ' + usuario : ''}`, derecha, 29, { align: 'right' });
+    doc.setDrawColor(190, 195, 210); doc.setLineWidth(0.4); doc.line(M, 34, derecha, 34);
+
+    doc.setFontSize(8.5);
+    const lineaArch = doc.splitTextToSize(`Archivo: ${_afx.archivo} · Facturas del ${_afxFechaTxt(R.desde)} al ${_afxFechaTxt(R.hasta)}${_afxExcluidasTxt()}.`, derecha - M);
+    doc.text(lineaArch, M, 39);
+    let y = 39 + lineaArch.length * 4 + 2;
+
+    // Resumen en cinco celdas
+    const celdas = [['FACTURAS AFIP', _afx.facturas.length], ['COINCIDEN', R.coinciden.length],
+      ['NO EN EL SISTEMA', R.faltan.length], ['NO EN AFIP', R.sobran.length], ['CON DIFERENCIAS', R.conDif]];
+    const cw = (derecha - M) / celdas.length;
+    celdas.forEach(([l, v], i) => {
+      const x = M + i * cw;
+      doc.setFillColor(238, 241, 250); doc.setDrawColor(200, 205, 220); doc.setLineWidth(0.2);
+      doc.rect(x, y, cw, 14, 'FD');
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.setTextColor(74, 80, 104);
+      doc.text(l, x + 2.5, y + 4.5);
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(13); doc.setTextColor(26, 29, 46);
+      doc.text(String(v), x + 2.5, y + 11.5);
+    });
+    y += 19;
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(30, 32, 46);
+    const dT = R.sistemaPeriodo - R.netoAfip;
+    doc.text(`Neto AFIP ${prFmtMonto(R.netoAfip)}  ·  Facturado en el sistema ${prFmtMonto(R.sistemaPeriodo)}  ·  Diferencia ${(dT > 0 ? '+' : dT < 0 ? '-' : '') + prFmtMonto(Math.abs(dT))}`, M, y);
+    y += 6;
+
+    let nSec = 0;
+    const sp = l => _afxSitioPo(l).replace(' · ', ' / ');   // el "·" sale tenue en Helvetica
+    const lineasTxt = ls => ls.map(l => sp(l) + (l.pct ? ` ${l.pct}%` : '')).join('\n');
+    const seccion = (titulo, head, body, opciones) => {
+      nSec++;
+      if (y > altoPag - 30) { doc.addPage(); y = 18; }
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(10.5); doc.setTextColor(26, 29, 46);
+      if (!body.length) { doc.text(`${nSec}. ${titulo} (0) - sin casos`, M, y); y += 6; return; }
+      doc.text(`${nSec}. ${titulo} (${body.length})`, M, y);
+      const colRev = head.length;   // última columna: "Revisado", con un casillero
+      const ok = _pdfAutoTable(doc, Object.assign({
+        startY: y + 2, head: [head.concat(['Rev.'])], body: body.map(r => r.concat([''])),
+        theme: 'grid', margin: { left: M, right: M },
+        styles: { font: 'helvetica', fontSize: 8, cellPadding: 1.6, lineColor: [200, 205, 220], lineWidth: 0.2, textColor: [30, 32, 46], overflow: 'linebreak' },
+        headStyles: { fillColor: [220, 225, 240], textColor: [26, 29, 46], fontStyle: 'bold', fontSize: 8 },
+        showHead: 'everyPage',
+        didDrawCell: d => {
+          if (d.section === 'body' && d.column.index === colRev) {
+            const s = 3.2;
+            d.doc.setDrawColor(90, 96, 117); d.doc.setLineWidth(0.25);
+            d.doc.rect(d.cell.x + (d.cell.width - s) / 2, d.cell.y + 1.6, s, s);
+          }
+        }
+      }, opciones || {}));
+      if (!ok) throw new Error('No se pudo cargar el generador de tablas del PDF. Refrescá la página.');
+      y = (doc.lastAutoTable && doc.lastAutoTable.finalY ? doc.lastAutoTable.finalY : y) + 7;
+    };
+    const num = { halign: 'right' };
+    const rev = { cellWidth: 10, halign: 'center' };
+
+    seccion('En AFIP, no en el sistema', ['N°', 'Fecha', 'Tipo', 'Cliente (AFIP)', 'Neto AFIP'],
+      R.faltan.map(({ f }) => [f.nro, _afxFechaTxt(f.fecha), f.tipoCorto, f.receptor, f.neto == null ? '-' : prFmtMonto(f.neto)]),
+      { columnStyles: { 4: num, 5: rev } });
+    seccion('En el sistema, no en AFIP', ['N°', 'Sitio · PO', '%', 'Cliente', 'Mes', 'Estado', 'Monto'],
+      R.sobran.map(l => [_afxNro(l.nroFactura) || 'sin número', sp(l), (l.pct || '-') + '%', l.clienteId, _afxMesCorto(l.mes), l.estado, prFmtMonto(l.monto)]),
+      { columnStyles: { 6: num, 7: rev } });
+    seccion('Imputada en otro mes', ['N°', 'Fecha AFIP', 'Mes AFIP', 'Sitio · PO', 'Mes en el sistema'],
+      R.otroMes.map(({ f, ls }) => [f.nro, _afxFechaTxt(f.fecha), _afxMesCorto(f.mes), lineasTxt(ls), ls.map(l => _afxMesCorto(l.mes)).join('\n')]),
+      { columnStyles: { 5: rev } });
+    seccion('Monto distinto', ['N°', 'Fecha AFIP', 'Sitio · PO', 'Mes', 'Sistema', 'AFIP', 'Dif.'],
+      R.monto.map(({ f, ls, suma, dif }) => [f.nro, _afxFechaTxt(f.fecha), lineasTxt(ls), [...new Set(ls.map(l => _afxMesCorto(l.mes)))].join(', '),
+        prFmtMonto(suma), prFmtMonto(f.neto), (dif > 0 ? '+' : dif < 0 ? '-' : '') + prFmtMonto(Math.abs(dif))]),
+      { columnStyles: { 4: num, 5: num, 6: num, 7: rev } });
+    seccion('Cliente distinto', ['N°', 'Fecha AFIP', 'Receptor (AFIP)', 'Sitio · PO', 'Cliente en el sistema'],
+      R.cliente.map(({ f, ls, clientes }) => [f.nro, _afxFechaTxt(f.fecha), f.receptor, lineasTxt(ls), clientes.join(', ')]),
+      { columnStyles: { 5: rev } });
+    seccion('No figura como Facturado', ['N°', 'Fecha AFIP', 'Sitio · PO', 'Estado en el sistema'],
+      R.estado.map(({ f, ls }) => [f.nro, _afxFechaTxt(f.fecha), lineasTxt(ls), ls.map(l => l.estado).join('\n')]),
+      { columnStyles: { 4: rev } });
+    if (incluirOk) {
+      seccion('Coinciden', ['N°', 'Fecha', 'Cliente (AFIP)', 'Sitio · PO', 'Neto AFIP'],
+        R.coinciden.map(({ f, ls }) => [f.nro, _afxFechaTxt(f.fecha), f.receptor, lineasTxt(ls), f.neto == null ? '-' : prFmtMonto(f.neto)]),
+        { columnStyles: { 4: num, 5: rev } });
+    }
+
+    // Pie en todas las páginas
+    const n = doc.internal.getNumberOfPages();
+    for (let p = 1; p <= n; p++) {
+      doc.setPage(p);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(74, 80, 104);
+      doc.text('Informe informativo: no modifica datos del sistema. Diferencia = sistema - AFIP.', M, altoPag - 8);
+      doc.text(`Página ${p} de ${n}`, derecha, altoPag - 8, { align: 'right' });
+    }
+    const per = R.meses.length === 1 ? R.meses[0] : `${R.meses[0]}_a_${R.meses[R.meses.length - 1]}`;
+    doc.save(`Cruce AFIP ${per}.pdf`);
+    toast('PDF del cruce generado', 'ok');
+  } catch (err) {
+    console.error('ERROR PDF cruce AFIP:', err);
+    toast('No se pudo generar el PDF: ' + err.message, 'err');
+  }
+}
 
 /* ═══ #138 · VISTA EVOLUCIÓN ═══════════════════════════════════════════
    Facturado por cliente y mes, para Admin / Gerencia (mismo criterio que la
