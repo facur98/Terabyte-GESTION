@@ -5524,7 +5524,7 @@ function mesActualStr() {
    a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
    Se pinta en el pie del sidebar (#sidebar-version).
    ═══════════════════════════════════════════════════════ */
-const APP_VERSION = 'V 021126 1340';
+const APP_VERSION = 'V 021126 1400';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
@@ -18758,6 +18758,18 @@ async function _afxProcesar(file) {
     _afx = { archivo: nombre, facturas: leido.facturas, excluidas: leido.excluidas, abiertas: new Set() };
     _afx.res = _afxCruzar(leido.facturas);
     _afxMarcarAnuladas(_afx.res.faltan, leido.notasCredito || []);
+    /* Las anuladas con NC está bien que no estén cargadas: no cuentan como
+       faltantes ni suman al neto de AFIP (pedido del usuario). Siguen listadas,
+       con su aviso, en la sección de faltantes. */
+    const R0 = _afx.res;
+    R0.anuladas = R0.faltan.filter(x => x.nc);
+    R0.faltanReal = R0.faltan.length - R0.anuladas.length;
+    R0.netoAnuladas = R0.anuladas.reduce((a, x) => a + (x.f.neto || 0), 0);
+    R0.netoAfipValido = R0.netoAfip - R0.netoAnuladas;
+    /* Tolerancia del TOTAL: el sistema guarda cada línea en pesos enteros y AFIP
+       tiene centavos, así que la suma puede correrse hasta medio peso por línea
+       facturada sin que haya ningún error real. */
+    R0.tolTotal = Math.max(2, lineas.filter(l => R0.meses.includes(l.mes) && l.estado === AFX_ESTADO_OK).length * 0.5);
     _afxPintarResultado();
   } catch (err) {
     console.error('ERROR cruce AFIP:', err);
@@ -19031,18 +19043,30 @@ function _afxPintarResultado() {
     `${_afxPeriodoTxt(R)} · ${_afx.archivo} · ${_afx.facturas.length} facturas${_afxExcluidasTxt()}`;
 
   const tile = (cls, l, v, s) => `<div class="afx-tile ${cls}"><div class="afx-tile-l">${l}</div><div class="afx-tile-v">${v}</div><div class="afx-tile-s">${s}</div></div>`;
-  const dTot = R.sistemaPeriodo - R.netoAfip;   // mismo signo que las diferencias por factura: sistema − AFIP
+  const nAnul = (R.anuladas || []).length;
+  const faltanReal = R.faltanReal != null ? R.faltanReal : R.faltan.length;
+  const netoValido = R.netoAfipValido != null ? R.netoAfipValido : R.netoAfip;
+  const dTot = R.sistemaPeriodo - netoValido;   // mismo signo que las diferencias por factura: sistema − AFIP
   let h = `<div class="afx-tiles">
     ${tile('', 'Facturas en AFIP', _afx.facturas.length, _escHtml(tiposTxt))}
     ${tile(R.coinciden.length ? 'ok' : '', 'Coinciden', R.coinciden.length, 'Todo igual')}
-    ${tile(R.faltan.length ? 'mal' : '', 'Faltan en el sistema', R.faltan.length, 'Están en AFIP')}
+    ${tile(faltanReal ? 'mal' : '', 'Faltan en el sistema', faltanReal,
+      nAnul ? `${nAnul} anulada${nAnul !== 1 ? 's' : ''} con NC no cuenta${nAnul !== 1 ? 'n' : ''}` : 'Están en AFIP')}
     ${tile(R.sobran.length ? 'mal' : '', 'Sobran en el sistema', R.sobran.length, 'No están en AFIP')}
     ${tile(R.conDif ? 'dif' : '', 'Con diferencias', R.conDif, 'Mes, monto, cliente o estado')}
   </div>
   <div class="afx-tot">
-    <div><div class="afx-tot-l">Neto facturado en AFIP</div><div class="afx-tot-v">${prFmtMonto(R.netoAfip)}</div></div>
+    <div><div class="afx-tot-l">Neto facturado en AFIP${nAnul ? ' · sin anuladas con NC' : ''}</div><div class="afx-tot-v">${prFmtMonto(netoValido)}</div>${nAnul
+      ? `<div class="afx-tile-s" style="margin-top:4px;">Se excluyen ${prFmtMonto(R.netoAnuladas)} de ${nAnul} factura${nAnul !== 1 ? 's' : ''} anulada${nAnul !== 1 ? 's' : ''}</div>` : ''}</div>
     <div><div class="afx-tot-l">Facturado en el sistema · ${_escHtml(_afxPeriodoTxt(R).toLowerCase())}</div><div class="afx-tot-v">${prFmtMonto(R.sistemaPeriodo)}</div></div>
-    <div><div class="afx-tot-l">Diferencia (sistema − AFIP)</div><div class="afx-tot-v ${Math.abs(dTot) > 2 ? 'neg' : ''}">${_afxSigno(dTot)}</div></div>
+    ${(() => {
+      const tol = R.tolTotal != null ? R.tolTotal : 2;
+      if (Math.abs(dTot) <= tol) {
+        return `<div><div class="afx-tot-l">Diferencia (sistema − AFIP)</div><div class="afx-tot-v" style="color:#0f766e;">Sin diferencia</div>` +
+          (Math.abs(dTot) >= 1 ? `<div class="afx-tile-s" style="margin-top:4px;">${_afxSigno(Math.round(dTot))} por redondeo de centavos</div>` : '') + `</div>`;
+      }
+      return `<div><div class="afx-tot-l">Diferencia (sistema − AFIP)</div><div class="afx-tot-v neg">${_afxSigno(dTot)}</div></div>`;
+    })()}
   </div>`;
 
   const sec = (clave, color, titulo, n, resumen, desc, cab, filas) => {
@@ -19062,9 +19086,10 @@ function _afxPintarResultado() {
   let secs = '';
 
   if (R.faltan.length) {
-    const nAnul = R.faltan.filter(x => x.nc).length;
-    secs += sec('faltan', 'rojo', 'En AFIP, no en el sistema', R.faltan.length,
-      `Neto <b>${prFmtMonto(suma(R.faltan, x => x.f.neto))}</b>${nAnul ? ` · <b>${nAnul}</b> anulada${nAnul !== 1 ? 's' : ''} con NC` : ''}`,
+    const nAnulF = R.faltan.filter(x => x.nc).length;
+    const colorF = nAnulF === R.faltan.length ? 'nar' : 'rojo';   // solo anuladas: aviso, no error
+    secs += sec('faltan', colorF, 'En AFIP, no en el sistema', R.faltan.length,
+      `Neto <b>${prFmtMonto(suma(R.faltan, x => x.f.neto))}</b>${nAnulF ? ` · <b>${nAnulF}</b> anulada${nAnulF !== 1 ? 's' : ''} con NC` : ''}`,
       'Facturas emitidas que ninguna línea tiene cargadas',
       '<th>N° factura</th><th>Fecha</th><th>Tipo</th><th>Cliente (AFIP)</th><th>Neto AFIP</th><th>Observación</th>',
       R.faltan.map(({ f, nc }) => `<tr><td class="nro">${_escHtml(f.nro)}</td><td>${_afxFechaTxt(f.fecha)}</td><td>${_escHtml(f.tipoCorto)}</td><td>${_escHtml(f.receptor)}</td><td class="num">${f.neto == null ? '—' : prFmtMonto(f.neto)}</td><td>${nc
@@ -19154,8 +19179,10 @@ function afxDescargarPdf() {
     let y = 39 + lineaArch.length * 4 + 2;
 
     // Resumen en cinco celdas
+    const nAnulP = (R.anuladas || []).length;
+    const netoValP = R.netoAfipValido != null ? R.netoAfipValido : R.netoAfip;
     const celdas = [['FACTURAS AFIP', _afx.facturas.length], ['COINCIDEN', R.coinciden.length],
-      ['NO EN EL SISTEMA', R.faltan.length], ['NO EN AFIP', R.sobran.length], ['CON DIFERENCIAS', R.conDif]];
+      ['NO EN EL SISTEMA', R.faltanReal != null ? R.faltanReal : R.faltan.length], ['NO EN AFIP', R.sobran.length], ['CON DIFERENCIAS', R.conDif]];
     const cw = (derecha - M) / celdas.length;
     celdas.forEach(([l, v], i) => {
       const x = M + i * cw;
@@ -19168,9 +19195,18 @@ function afxDescargarPdf() {
     });
     y += 19;
     doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(30, 32, 46);
-    const dT = R.sistemaPeriodo - R.netoAfip;
-    doc.text(`Neto AFIP ${prFmtMonto(R.netoAfip)}  ·  Facturado en el sistema ${prFmtMonto(R.sistemaPeriodo)}  ·  Diferencia ${(dT > 0 ? '+' : dT < 0 ? '-' : '') + prFmtMonto(Math.abs(dT))}`, M, y);
-    y += 6;
+    const dT = R.sistemaPeriodo - netoValP;
+    const difTxt = Math.abs(dT) <= (R.tolTotal != null ? R.tolTotal : 2)
+      ? 'sin diferencia' + (Math.abs(dT) >= 1 ? ` (${dT > 0 ? '+' : '-'}${prFmtMonto(Math.abs(Math.round(dT)))} por redondeo de centavos)` : '')
+      : (dT > 0 ? '+' : dT < 0 ? '-' : '') + prFmtMonto(Math.abs(dT));
+    const lineaTot = doc.splitTextToSize(`Neto AFIP${nAnulP ? ' (sin anuladas con NC)' : ''} ${prFmtMonto(netoValP)}  ·  Facturado en el sistema ${prFmtMonto(R.sistemaPeriodo)}  ·  Diferencia ${difTxt}`, derecha - M);
+    doc.text(lineaTot, M, y);
+    y += 2 + lineaTot.length * 4.2;
+    if (nAnulP) {
+      doc.setFontSize(8); doc.setTextColor(74, 80, 104);
+      doc.text(`Se excluyen ${prFmtMonto(R.netoAnuladas)} de ${nAnulP} factura${nAnulP !== 1 ? 's' : ''} anulada${nAnulP !== 1 ? 's' : ''} con nota de crédito (figuran en la sección 1 con su NC).`, M, y);
+      y += 5;
+    }
 
     let nSec = 0;
     const sp = l => _afxSitioPo(l).replace(' · ', ' / ');   // el "·" sale tenue en Helvetica
