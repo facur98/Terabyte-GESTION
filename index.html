@@ -5172,7 +5172,7 @@
     <div style="display:flex;justify-content:space-between;align-items:start;gap:14px;margin-bottom:20px;">
       <div>
         <div class="modal-title" style="margin:0;line-height:1.2;">Nueva obra</div>
-        <div style="font-size:13px;color:var(--text-light);margin-top:5px;">Elegí el sitio, la cuadrilla prevista y el plazo estimado</div>
+        <div style="font-size:13px;color:var(--text-light);margin-top:5px;">Elegí el sitio y el plazo estimado. La cuadrilla es opcional</div>
       </div>
       <button onclick="cerrarFormObra()" style="background:none;border:none;cursor:pointer;font-size:22px;color:var(--text-light);line-height:1;">✕</button>
     </div>
@@ -5185,13 +5185,13 @@
       </div>
 
       <div>
-        <label class="form-label">Cuadrilla prevista</label>
+        <label class="form-label">Cuadrilla prevista <span style="font-weight:400;color:var(--text-light);">(opcional)</span></label>
         <div class="ob-cuad-lista" id="ob-cuad-lista"></div>
         <div class="ob-cuad-resumen">
           <span class="ob-dot-badge" id="ob-dotacion">0</span>
           <span id="ob-cuad-txt">Nadie seleccionado</span>
         </div>
-        <div class="ob-hint">Es la cuadrilla <b>prevista</b>, no fija: sirve para estimar el plazo y como punto de partida de la asignación diaria. Podés asignar a alguien que no esté acá.</div>
+        <div class="ob-hint">Es la cuadrilla <b>prevista</b>, no fija: sirve para estimar el plazo y como punto de partida de la asignación diaria. Podés asignar a alguien que no esté acá. Si no la sabés, dejala vacía: se toma la gente del <b>primer día de trabajo</b>.</div>
       </div>
 
       <div>
@@ -5524,7 +5524,7 @@ function mesActualStr() {
    a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
    Se pinta en el pie del sidebar (#sidebar-version).
    ═══════════════════════════════════════════════════════ */
-const APP_VERSION = 'V 021126 1400';
+const APP_VERSION = 'V 051126 1345';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
@@ -8109,12 +8109,71 @@ function obraDiasPersona(idSitio) {
 
    Devuelve null si falta cualquiera de los dos factores. Una obra con plazo en
    días pero sin cuadrilla prevista NO tiene P: no se sabe cuánta gente iba, y
-   multiplicar por 1 daría un número que parece válido y no lo es. */
+   multiplicar por 1 daría un número que parece válido y no lo es.
+   #149 — la dotación es la EFECTIVA: la cargada o, si no hay, la del primer día. */
 function obraPlazoP(o) {
   if (!o) return null;
   if (o.plazoDias === null || o.plazoDias <= 0) return null;
-  if (!o.dotacion  || o.dotacion  <= 0) return null;
-  return o.plazoDias * o.dotacion;
+  const dot = obraDotacionEfectiva(o);
+  if (!dot || dot <= 0) return null;
+  return o.plazoDias * dot;
+}
+
+/* ── Cuadrilla prevista desde el PRIMER DÍA (cambio #149) ──
+   La cuadrilla ya no hace falta en el alta: si no se cargó, se toma la gente
+   del primer día con asignaciones del sitio (cualquier fecha, incluida una
+   planificada). Mientras la obra no esté Terminada se lee en vivo, así cargar
+   el primer día de a una persona en el Gantt no congela una cuadrilla a medias.
+   Se GUARDA en OBRAS al terminar el trabajo o al aprobar, en la misma escritura
+   que cambia el estado (_obraCuadrillaAutoCampos).
+   Las Terminadas sin cuadrilla NO se derivan: sus liquidaciones ya cerradas
+   tienen que seguir dando lo mismo. Una cuadrilla cargada nunca se pisa. */
+function _obraPrimerDiaCuadrilla(idSitio) {
+  if (!idSitio || !Array.isArray(asignaciones) || !asignaciones.length) return null;
+  let fecha = '';
+  for (const a of asignaciones) {
+    if (a.sitioId === idSitio && (!fecha || a.fecha < fecha)) fecha = a.fecha;
+  }
+  if (!fecha) return null;
+  const ids = [];
+  for (const a of asignaciones) {
+    if (a.sitioId === idSitio && a.fecha === fecha && !ids.includes(a.empleadoId)) ids.push(a.empleadoId);
+  }
+  return ids.length ? { fecha, ids } : null;
+}
+
+/* ¿La obra tiene cuadrilla CARGADA? Cualquiera de las dos columnas alcanza:
+   si hay algo guardado, se respeta tal cual y la P sigue saliendo de
+   DOTACION_PREVISTA como siempre. */
+function _obraTieneCuadrillaCargada(o) {
+  return !!o && ((!!o.dotacion && o.dotacion > 0) ||
+                 (Array.isArray(o.cuadrilla) && o.cuadrilla.length > 0));
+}
+
+/* IDs de la cuadrilla prevista efectiva, y si salió del primer día. */
+function obraCuadrillaEfectiva(o) {
+  if (!o) return { ids: [], auto: false };
+  if (_obraTieneCuadrillaCargada(o)) return { ids: (o.cuadrilla || []).slice(), auto: false };
+  if (o.estado === OBRA_TERMINADA) return { ids: [], auto: false };
+  const pd = _obraPrimerDiaCuadrilla(o.sitioId);
+  return pd ? { ids: pd.ids, auto: true } : { ids: [], auto: false };
+}
+
+function obraDotacionEfectiva(o) {
+  if (!o) return 0;
+  if (_obraTieneCuadrillaCargada(o)) return o.dotacion || 0;
+  return obraCuadrillaEfectiva(o).ids.length;
+}
+
+/* Campos para GUARDAR la cuadrilla del primer día junto con otra escritura de
+   la obra. null si no corresponde (ya cargada, Terminada o sin días). */
+function _obraCuadrillaAutoCampos(o) {
+  const c = obraCuadrillaEfectiva(o);
+  if (!c.auto || !c.ids.length) return null;
+  return {
+    campos: { DOTACION_PREVISTA: String(c.ids.length), CUADRILLA_PREVISTA: c.ids.join(',') },
+    patch:  { dotacion: c.ids.length, cuadrilla: c.ids.slice() }
+  };
 }
 
 /* Avance contra el plazo. Devuelve null si la obra no tiene P calculable:
@@ -8287,8 +8346,9 @@ function obraSitiosDisponibles() {
 /* Nombres de la cuadrilla prevista, para mostrar. Un empleado borrado de la
    hoja cae al ID crudo, igual que hace nombreEmpleado en el resto del sistema. */
 function obraCuadrillaNombres(o) {
-  if (!o || !o.cuadrilla || !o.cuadrilla.length) return [];
-  return o.cuadrilla.map(id => nombreEmpleado(id));
+  const ids = obraCuadrillaEfectiva(o).ids;   // #149
+  if (!ids.length) return [];
+  return ids.map(id => nombreEmpleado(id));
 }
 
 // ── Render principal ──────────────────────────────────────────────
@@ -8929,12 +8989,14 @@ function _sgRenderFila(g) {
        pide el alta. Acá el único camino es el botón "Crear obra". */
     plazoHtml = `<div><span class="sg-dias-vacio">—</span></div>`;
   } else if (g.plazoDias !== null && g.plazoDias > 0) {
-    const dot = (g.obra && g.obra.dotacion) ? g.obra.dotacion : 0;
+    const dot = obraDotacionEfectiva(g.obra);   // #149 — cargada o del primer día
     /* Sin dotación prevista no hay P: se avisa en vez de inventar un número.
-       Es clickeable para poder completarla. */
+       #149 — sin cuadrilla cargada ni días, se completa con el primer día. */
     const sub = (g.plazoP !== null)
       ? `× ${dot} = ${g.plazoP} dp`
-      : `<span style="color:#92700c;">falta la cuadrilla</span>`;
+      : (g.obra && g.obra.estado === OBRA_TERMINADA)
+        ? `<span style="color:#92700c;">falta la cuadrilla</span>`
+        : `<span style="color:#92700c;" title="Se completa con la gente del primer día de trabajo">cuadrilla: 1er día</span>`;
     plazoHtml = `<div class="ob-plazo-cell" onclick="obraEditarPlazo('${idEsc}')" title="Editar el plazo estimado">
       <div class="ob-plazo-num">${g.plazoDias} <span class="ob-plazo-u">d</span></div>
       <div class="ob-plazo-sub">${sub}</div>
@@ -9355,7 +9417,7 @@ async function obraRetomar(idSitio) {
     titulo: 'Retomar obra', confirmar: 'Retomar', tono: 'ok',
     detalle: cfDatos([['Obra', idSitio],
                       ['Pausada desde', desde ? _gtFechaLarga(desde) : null],
-                      ['Cuadrilla prevista', obra.cuadrilla.length ? obraCuadrillaNombres(obra).join(', ') : null]]),
+                      ['Cuadrilla prevista', obraCuadrillaNombres(obra).length ? obraCuadrillaNombres(obra).join(', ') : null]]),
     campos: [{ id: 'obs', label: 'Nota (opcional)', tipo: 'texto', placeholder: 'Ej: llegaron los materiales' }],
     nota: 'La obra vuelve a admitir asignaciones. Si la pausa consumió tiempo de removilización, revisá el plazo.'
   });
@@ -9408,8 +9470,12 @@ async function obraTerminarTrabajo(idSitio) {
 
   setLoading(true, 'Cerrando el trabajo');
   try {
-    await _obraActualizar(obra, { ESTADO: OBRA_ESPERANDO, PAUSADA: '' },
-                                { estado: OBRA_ESPERANDO, pausada: false });
+    /* #149 — si la cuadrilla salió del primer día, se guarda acá, en la misma
+       escritura: con el fin de trabajo se cierra la medición. */
+    const _auto = _obraCuadrillaAutoCampos(obra);
+    await _obraActualizar(obra,
+      Object.assign({ ESTADO: OBRA_ESPERANDO, PAUSADA: '' }, _auto ? _auto.campos : {}),
+      Object.assign({ estado: OBRA_ESPERANDO, pausada: false }, _auto ? _auto.patch : {}));
     await _obraRegistrarEventoFecha(obra, OEV_FIN_TRABAJO, fecha, '');
     _gtRefrescar();
     toast(`${idSitio}: trabajo terminado ✓ · esperando aprobación`);
@@ -9450,8 +9516,12 @@ async function obraAprobarCierre(idSitio) {
 
   setLoading(true, 'Aprobando el cierre');
   try {
-    await _obraActualizar(obra, { ESTADO: OBRA_TERMINADA, FECHA_APROBACION: fecha },
-                                { estado: OBRA_TERMINADA, fechaAprob: fecha });
+    /* #149 — red de seguridad: una Terminada ya no deriva la cuadrilla del
+       primer día, así que si todavía no estaba guardada se guarda ahora. */
+    const _auto = _obraCuadrillaAutoCampos(obra);
+    await _obraActualizar(obra,
+      Object.assign({ ESTADO: OBRA_TERMINADA, FECHA_APROBACION: fecha }, _auto ? _auto.campos : {}),
+      Object.assign({ estado: OBRA_TERMINADA, fechaAprob: fecha }, _auto ? _auto.patch : {}));
     _gtRefrescar();
     toast(`${idSitio} aprobada y cerrada ✓`);
   } catch (e) {
@@ -9538,7 +9608,9 @@ async function obraReabrir(idSitio) {
 async function obraEditarPlazo(idSitio) {
   if (bloqueoViewer()) return;
   let obra = obraDeSitio(idSitio);
-  const dot = (obra && obra.dotacion) ? obra.dotacion : 0;
+  /* #149 — dotación efectiva; una heredada sin ficha toma la de su primer día. */
+  const _pd = _obraPrimerDiaCuadrilla(idSitio);
+  const dot = obra ? obraDotacionEfectiva(obra) : (_pd ? _pd.ids.length : 0);
   const x = obraDiasPersona(idSitio);
 
   const r = await cfAbrir({
@@ -9552,7 +9624,9 @@ async function obraEditarPlazo(idSitio) {
                placeholder: 'Ej: 6', req: true }],
     nota: dot
       ? `Con la cuadrilla prevista de ${dot}, cada día equivale a ${dot} días-persona. Modificarlo recalcula la obra completa, incluidos los días ya trabajados.`
-      : 'Sin cuadrilla prevista no se puede calcular el plazo en días-persona y la obra no va a poder medirse.'
+      : (obra && obra.estado === OBRA_TERMINADA)
+        ? 'Sin cuadrilla prevista no se puede calcular el plazo en días-persona y la obra no va a poder medirse.'
+        : 'Todavía no hay cuadrilla prevista: se completa sola con la gente del primer día de trabajo que se cargue.'
   });
   if (!r) return;
 
@@ -9573,7 +9647,7 @@ async function obraEditarPlazo(idSitio) {
     }
     _gtRefrescar();
     const p = obraPlazoP(obraDeSitio(idSitio));
-    toast(`Plazo de ${idSitio}: ${plazo} día${plazo!==1?'s':''}${p !== null ? ` · ${p} dp` : ' · falta la cuadrilla prevista'} ✓`);
+    toast(`Plazo de ${idSitio}: ${plazo} día${plazo!==1?'s':''}${p !== null ? ` · ${p} dp` : ' · la cuadrilla sale del primer día'} ✓`);
   } catch (e) {
     toast(`Error al guardar el plazo: ${e.message}`, 'err');
   } finally { setLoading(false); }
@@ -9718,9 +9792,10 @@ function gtFilas(idSitio) {
   const obra  = obraDeSitio(idSitio);
   const conteo = new Map();
   asigs.forEach(a => conteo.set(a.empleadoId, (conteo.get(a.empleadoId) || 0) + 1));
-  (obra ? obra.cuadrilla : []).forEach(id => { if (!conteo.has(id)) conteo.set(id, 0); });
+  const prevIds = obraCuadrillaEfectiva(obra).ids;   // #149
+  prevIds.forEach(id => { if (!conteo.has(id)) conteo.set(id, 0); });
   return [...conteo.entries()]
-    .map(([id, n]) => ({ id, dp: n, prevista: !!(obra && obra.cuadrilla.includes(id)) }))
+    .map(([id, n]) => ({ id, dp: n, prevista: prevIds.includes(id) }))
     .sort((a, b) => (b.dp - a.dp) || nombreEmpleado(a.id).localeCompare(nombreEmpleado(b.id)));
 }
 
@@ -11229,7 +11304,7 @@ function _gtRenderTiles(id, obra) {
     const p = obraPlazoP(obra);
     t.push(`<div class="gt-tile"><div class="gt-tile-lbl">Plazo</div>
       <div class="gt-tile-val">${obra.plazoDias}<span style="font-size:15px;color:var(--text-light);"> d</span></div>
-      <div class="gt-tile-sub">${p !== null ? `× ${obra.dotacion} = ${p} dp` : 'falta la cuadrilla prevista'}</div></div>`);
+      <div class="gt-tile-sub">${p !== null ? `× ${obraDotacionEfectiva(obra)} = ${p} dp` : (obra.estado === OBRA_TERMINADA ? 'falta la cuadrilla prevista' : 'cuadrilla: sale del 1er día')}</div></div>`);
   } else {
     t.push(`<div class="gt-tile"><div class="gt-tile-lbl">Plazo</div>
       <div class="gt-tile-val" style="font-size:17px;color:#92700c;cursor:pointer;" onclick="obraEditarPlazo('${_escJs(id)}')">Sin cargar</div>
@@ -11898,7 +11973,7 @@ function _aoRenderLista() {
   if (!id || !fechas.length) { cont.innerHTML = ''; _aoResumen(); return; }
 
   const obra = obraDeSitio(id);
-  const prev = new Set(obra ? obra.cuadrilla : []);
+  const prev = new Set(obraCuadrillaEfectiva(obra).ids);   // #149
 
   /* Se listan los ACTIVOS, más cualquiera que ya tenga días en esta obra
      aunque esté de baja: si no, una obra en curso mostraría un plantel que no
@@ -12264,8 +12339,8 @@ function obfActualizarResumen() {
       `<b>${dias * ids.length} días-persona</b>, que es el plazo contra el que se mide la obra.`;
   } else if (Number.isFinite(dias) && dias > 0) {
     av.style.display = '';
-    av.innerHTML = `Sin cuadrilla prevista no se puede calcular el plazo en días-persona, ` +
-      `así que la obra no va a poder medirse. Podés completarla después.`;
+    av.innerHTML = `Sin cuadrilla prevista: se completa sola con la gente del <b>primer día de trabajo</b> ` +
+      `que cargues, y ahí se calcula el plazo en días-persona.`;
   } else {
     av.style.display = 'none';
   }
