@@ -3673,6 +3673,25 @@
       .evo-linea.dib { stroke-dashoffset: 0; } .evo-pt.dib { opacity: 1; }
       .evo-marco { transition: none; }
     }
+    /* ═══ #150 · PO sitios agrupados por sitio — bloque aditivo ═══ */
+    #table-sitios .sit-id-box { display: inline-flex; align-items: center; justify-content: flex-start; gap: 8px; width: 118px; text-align: left; vertical-align: middle; }
+    #table-sitios .sit-id-slot { width: 14px; flex: none; display: inline-flex; justify-content: center; color: var(--accent-blue); font-size: 11px; }
+    #table-sitios .sit-chev i { transition: transform .2s ease; }
+    #table-sitios tr.sit-grupo-abierto .sit-chev i { transform: rotate(90deg); }
+    #table-sitios tr.sit-grupo-abierto td { background: rgba(79,128,255,0.11) !important; }
+    #table-sitios tr.sit-grupo-abierto td:first-child,
+    #table-sitios tr.sit-hijo td:first-child { box-shadow: inset 4px 0 0 var(--accent-blue); }
+    #table-sitios tr.sit-hijo td { background: rgba(79,128,255,0.04); border-bottom: 1px solid rgba(79,128,255,0.10); }
+    #table-sitios tr.sit-hijo-ult td { border-bottom: 2px solid var(--accent-blue); }
+    #table-sitios tr.sit-atenuada td:not(.col-acciones):not(.sit-check-col) { opacity: .42; }
+    #table-sitios .sit-tree { color: #9fb4f0; font-size: 15px; line-height: 1; }
+    #table-sitios .sit-id-po { font-size: 12px; font-weight: 500; color: var(--text-mid); }
+    #table-sitios .sit-cant-po { display: inline-block; min-width: 26px; padding: 3px 9px; border-radius: 20px; background: #1e2a4a; color: #fff; font-size: 11px; font-weight: 700; }
+    #table-sitios .sit-conc-grp { background: rgba(90,96,117,0.10); color: var(--text-mid); }
+    #table-sitios .sit-st-mixto { display: inline-flex; align-items: center; gap: 5px; padding: 4px 11px; border-radius: 20px; font-size: 12px; font-weight: 600; background: rgba(90,96,117,0.10); color: #3d4258; cursor: help; }
+    #table-sitios .sit-st-mixto i { color: var(--accent-blue); font-size: 12px; }
+    .sit-check-grp { width: 16px; height: 16px; cursor: pointer; accent-color: var(--accent-blue); margin: 0; }
+    .sit-check-grp:disabled { cursor: not-allowed; opacity: .35; }
   </style>
 </head>
 <body>
@@ -5524,7 +5543,7 @@ function mesActualStr() {
    a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
    Se pinta en el pie del sidebar (#sidebar-version).
    ═══════════════════════════════════════════════════════ */
-const APP_VERSION = 'V 051126 1345';
+const APP_VERSION = 'V 101126 1016';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
@@ -7440,25 +7459,66 @@ function renderSitios(filtro = '', filtros = null) {
     );
   }
 
-  if (!lista.length) { tbody.innerHTML = `<tr><td colspan="10"><div class="empty-state"><span class="es-icon">📍</span><p>Sin sitios que coincidan con los filtros.</p></div></td></tr>`; return; }
-  tbody.innerHTML = lista.map(s => {
+  /* #150 — PO sitios AGRUPADOS por sitio (ID + cliente).
+     La hoja SITIOS sigue siendo una fila por PO y cada PO se gestiona igual que
+     antes (+Seg, editar, eliminar, tanda, tooltip, doble clic a Seguimiento).
+     Solo cambia la PRESENTACIÓN:
+       - `lista` (ya filtrada arriba, sin cambios) decide QUÉ sitios aparecen:
+         un sitio entra si AL MENOS una de sus PO pasa los filtros.
+       - Adentro de un sitio abierto se ven TODAS sus PO; las que no pasan el
+         filtro van atenuadas (pedido del usuario).
+       - Encabezado: cantidad y total de TODAS las PO del sitio (no cambian con
+         el filtro). Status: el común si todas coinciden; si no, "Mixto" ⓘ.
+       - Sitio con una sola PO: fila directa, sin desplegable.
+       - Un solo sitio abierto a la vez (`_sitGrupoAbierto`), que sobrevive a
+         los re-render (sincronizar, guardar, filtrar). */
+  const pasaFiltro = new Set(lista.map(s => s.uid));
+  const ordenGrupos = [];
+  const grupos = new Map();
+  lista.forEach(s => {
+    const k = _sitGrupoKey(s);
+    if (!grupos.has(k)) { grupos.set(k, null); ordenGrupos.push(k); }
+  });
+  // Cada grupo con TODAS sus PO (no solo las filtradas)
+  sitios.forEach(s => {
+    const k = _sitGrupoKey(s);
+    if (!grupos.has(k)) return;
+    if (!grupos.get(k)) grupos.set(k, []);
+    grupos.get(k).push(s);
+  });
+  ordenGrupos.forEach(k => grupos.get(k).sort(_sitOrdenPO));
+
+  // Status una sola vez por PO en este render (lo usan fila, encabezado y tilde)
+  const stCache = new Map();
+  const stDe = s => { if (!stCache.has(s.uid)) stCache.set(s.uid, getSitStatus(s.uid)); return stCache.get(s.uid); };
+
+  // Si el sitio abierto queda fuera del filtro, `_sitGrupoAbierto` se conserva:
+  // vuelve a verse abierto cuando el filtro lo deja pasar otra vez.
+  _sitGruposRender = ordenGrupos.map(k => ({ key: k, pos: grupos.get(k) }));
+  _sitGrpDisponibles = new Map();
+  // Universo del tilde general: las PO que pasan el filtro y están 100% libres
+  // (mismo criterio que antes), estén en un sitio abierto o cerrado.
+  _sitVisiblesDisponibles = lista.filter(s => _sitDisponiblePara100(s)).map(s => s.uid);
+
+  const filaPO = (s, opts) => {
     const cli = getCli(s.clienteId);
-    const cb  = s.concepto === 'Básico' ? 'badge-blue' : 'badge-violet';
-    const st  = getSitStatus(s.uid);
+    const st  = stDe(s);
     /* #129 — El verde (100% facturado) usa la MISMA vinculación que el Status
-       (_lineasVinculadasASitio, R6: por número de PO). Antes vinculaba solo por
-       monto: un PO sin facturar con el mismo total que un hermano facturado se
-       pintaba de verde (CF00790||3), y un error de tipeo en el SITIO_ID de una
-       factura quedaba tapado. Además recorría sitios por cada línea: era el ~1 s
-       de demora de esta vista en cada filtro. */
+       (_lineasVinculadasASitio, R6: por número de PO), no solo el monto. */
     const pctFacTotal = _lineasVinculadasASitio(s)
       .filter(l => l.estado === 'Facturado')
       .reduce((a,l) => a + l.pct, 0);
     // Disponibilidad para tanda (C1-a): sin nada confirmado en `lineas` Y sin nada en `_proyPendientes`
     const disponibleTanda = _sitDisponiblePara100(s);
     const checked = _sitSeleccionados.has(s.uid);
-    const rowClassBase = pctFacTotal >= 100 ? 'row-facturado-100 row-sit-clickable' : 'row-sit-clickable';
-    const rowClass = checked ? rowClassBase + ' row-seleccionada' : rowClassBase;
+    let rowClass = pctFacTotal >= 100 ? 'row-facturado-100 row-sit-clickable' : 'row-sit-clickable';
+    if (checked) rowClass += ' row-seleccionada';
+    if (opts.hijo) rowClass += ' sit-hijo' + (opts.ultimo ? ' sit-hijo-ult' : '');
+    if (opts.hijo && !pasaFiltro.has(s.uid)) rowClass += ' sit-atenuada';
+    const cb = s.concepto === 'Básico' ? 'badge-blue' : 'badge-violet';
+    const celdaId = opts.hijo
+      ? `<span class="sit-id-box sit-id-hijo"><span class="sit-id-slot"></span><span class="sit-tree">${opts.ultimo ? '└' : '├'}</span><span class="sit-id-po">PO</span></span>`
+      : `<span class="sit-id-box"><span class="sit-id-slot"></span><span>${s.id}</span></span>`;
     return `<tr class="${rowClass}"
       ondblclick="irASeguimientoDesdeSitio('${s.id.replace(/'/g, "\\'")}')"
       onmouseenter="showSitTooltip(event,'${s.uid}')"
@@ -7469,22 +7529,140 @@ function renderSitios(filtro = '', filtros = null) {
           onclick="event.stopPropagation();toggleSelSitio('${s.uid}',this.checked)"
           title="${disponibleTanda ? 'Seleccionar para tanda' : 'Solo sitios con 100% disponible se pueden seleccionar para una tanda'}" />
       </td>
-      <td style="font-weight:600;">${s.id}</td>
+      <td style="font-weight:600;">${celdaId}</td>
       <td>${s.localidad}</td>
-      <td><span style="display:flex;align-items:center;gap:6px;">${cli?dot(cli.color):''}${s.clienteId}</span></td>
-      <td><span class="badge ${cb}">${s.concepto}</span></td>
+      <td><span style="display:flex;align-items:center;gap:6px;">${opts.hijo ? '' : `${cli?dot(cli.color):''}${s.clienteId}`}</span></td>
+      <td><span class="badge ${cb}" title="${s.concepto}">${_sitConceptoCorto(s.concepto)}</span></td>
       <td style="font-size:12px;color:var(--text-mid);">${s.poNro||'—'}</td>
       <td style="font-weight:600;">${s.po ? fmt(s.po) : '—'}</td>
       <td><span title="${st.label}" style="display:inline-block;padding:4px 11px;border-radius:20px;font-size:12px;font-weight:600;background:${st.color};color:${st.text};">${_sitStatusCorto(st.label)}</span></td>
       <td class="sit-col-obs" style="color:var(--text-mid);font-size:12px;">${s.obs||'—'}</td>
       <td class="col-acciones" ondblclick="event.stopPropagation()"><span style="display:flex;align-items:center;gap:6px;">
         <button class="btn btn-glass btn-sm" onclick="abrirProyectarSitio('${s.uid}')" title="Proyectar" style="color:var(--accent-blue);font-size:11px;font-weight:700;padding:5px 9px;">+Seg</button>
-        <button class="btn btn-glass btn-sm" onclick="abrirEditarSitio('${s.uid}')" title="Editar">✏️</button>
-        <button class="btn btn-rose btn-sm" onclick="eliminarSitio('${s.uid}')" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
+        <button class="btn btn-glass btn-sm" onclick="abrirEditarSitio('${s.uid}')" title="Editar" aria-label="Editar"><i class="fa-solid fa-pen"></i></button>
+        <button class="btn btn-rose btn-sm" onclick="eliminarSitio('${s.uid}')" title="Eliminar" aria-label="Eliminar"><i class="fa-solid fa-trash"></i></button>
       </span></td>
     </tr>`;
-  }).join('');
+  };
+
+  const filaGrupo = (g, idx) => {
+    const pos  = g.pos;
+    const s0   = pos[0];
+    const cli  = getCli(s0.clienteId);
+    const abierto = g.key === _sitGrupoAbierto;
+    const total = pos.reduce((a, s) => a + (s.po || 0), 0);
+    const locs  = [...new Set(pos.map(s => s.localidad).filter(Boolean))];
+    const prov  = locs.length === 1 ? locs[0] : (locs.length ? 'Varias' : '');
+    const nB  = pos.filter(s => s.concepto === 'Básico').length;
+    const nAD = pos.filter(s => s.concepto === 'Adicional').length;
+    const conc = [nB ? nB + 'B' : '', nAD ? nAD + 'AD' : ''].filter(Boolean).join(' - ') || '—';
+    // Status: común o Mixto con el desglose en el title
+    const sts = pos.map(stDe);
+    const cuenta = new Map();
+    sts.forEach(st => cuenta.set(st.label, (cuenta.get(st.label) || 0) + 1));
+    let stHtml;
+    if (cuenta.size === 1) {
+      const st = sts[0];
+      stHtml = `<span title="${st.label}" style="display:inline-block;padding:4px 11px;border-radius:20px;font-size:12px;font-weight:600;background:${st.color};color:${st.text};">${_sitStatusCorto(st.label)}</span>`;
+    } else {
+      const desglose = [...cuenta.entries()].map(([l, n]) => `${n} × ${_sitStatusCorto(l)}`).join(' · ');
+      stHtml = `<span class="sit-st-mixto" title="${desglose}">Mixto <i class="fa-solid fa-circle-info"></i></span>`;
+    }
+    // Tilde del sitio: marca/desmarca sus PO disponibles para tanda. Mismo
+    // universo que el tilde general: solo las que pasan el filtro (las
+    // atenuadas no se tocan, aunque estén libres).
+    const disp = pos.filter(s => pasaFiltro.has(s.uid) && _sitDisponiblePara100(s)).map(s => s.uid);
+    _sitGrpDisponibles.set(idx, disp);
+    const nSel = disp.filter(u => _sitSeleccionados.has(u)).length;
+    const todos = disp.length > 0 && nSel === disp.length;
+    let html = `<tr class="row-sit-clickable sit-grupo${abierto ? ' sit-grupo-abierto' : ''}" data-grp="${idx}" onclick="toggleGrupoSitio(${idx})">
+      <td class="sit-check-col" onclick="event.stopPropagation()">
+        <input type="checkbox" class="sit-check-grp" data-grp="${idx}" ${disp.length ? '' : 'disabled'} ${todos ? 'checked' : ''}
+          onclick="event.stopPropagation();toggleSelGrupoSitio(${idx},this.checked)"
+          title="${disp.length ? 'Seleccionar las PO disponibles de este sitio' : 'Ninguna PO de este sitio tiene 100% disponible'}" />
+      </td>
+      <td style="font-weight:700;"><span class="sit-id-box"><span class="sit-id-slot sit-chev"><i class="fa-solid fa-chevron-right"></i></span><span>${s0.id}</span></span></td>
+      <td>${prov}</td>
+      <td><span style="display:flex;align-items:center;gap:6px;">${cli?dot(cli.color):''}${s0.clienteId}</span></td>
+      <td><span class="badge sit-conc-grp">${conc}</span></td>
+      <td><span class="sit-cant-po" title="${pos.length} PO">${pos.length}</span></td>
+      <td style="font-weight:700;">${total ? fmt(total) : '—'}</td>
+      <td>${stHtml}</td>
+      <td class="sit-col-obs"></td>
+      <td class="col-acciones"></td>
+    </tr>`;
+    if (abierto) html += pos.map((s, i) => filaPO(s, { hijo: true, ultimo: i === pos.length - 1 })).join('');
+    return html;
+  };
+
+  if (!_sitGruposRender.length) { tbody.innerHTML = `<tr><td colspan="10"><div class="empty-state"><span class="es-icon">📍</span><p>Sin sitios que coincidan con los filtros.</p></div></td></tr>`; actualizarBulkBar(); return; }
+  tbody.innerHTML = _sitGruposRender.map((g, idx) =>
+    g.pos.length === 1 ? filaPO(g.pos[0], { hijo: false }) : filaGrupo(g, idx)
+  ).join('');
+  _sitSyncChecksGrupo();
   actualizarBulkBar();
+}
+
+/* ── #150 · Agrupación de PO sitios: estado y helpers ─────────────────── */
+let _sitGrupoAbierto = null;          // clave "ID\u0001CLIENTE" del sitio abierto (uno solo)
+let _sitGruposRender = [];            // grupos del último render, por índice (data-grp)
+let _sitGrpDisponibles = new Map();   // índice de grupo → uids disponibles para tanda
+let _sitVisiblesDisponibles = [];     // uids disponibles de TODO lo filtrado (abiertos o no)
+
+function _sitGrupoKey(s) { return `${s.id}\u0001${s.clienteId}`; }
+
+/* Básico primero; después por N° de PO (orden natural: "2" antes que "10"). */
+function _sitOrdenPO(a, b) {
+  const ca = a.concepto === 'Básico' ? 0 : 1, cb = b.concepto === 'Básico' ? 0 : 1;
+  if (ca !== cb) return ca - cb;
+  return String(a.poNro || '').localeCompare(String(b.poNro || ''), 'es', { numeric: true });
+}
+
+/* Solo para mostrar: la hoja y todo lo demás siguen con "Básico"/"Adicional". */
+function _sitConceptoCorto(c) {
+  if (c === 'Básico') return 'BAS';
+  if (c === 'Adicional') return 'AD';
+  return c || '—';
+}
+
+/* Abre/cierra un sitio. Uno solo abierto a la vez. La fila tocada queda en el
+   mismo lugar de la pantalla: si se cierra otro sitio más arriba, se compensa
+   el scroll en lo que se achicó. */
+function toggleGrupoSitio(idx) {
+  const g = _sitGruposRender[idx];
+  if (!g) return;
+  const antes = document.querySelector(`#tabla-sitios tr.sit-grupo[data-grp="${idx}"]`);
+  const topAntes = antes ? antes.getBoundingClientRect().top : null;
+  _sitGrupoAbierto = (_sitGrupoAbierto === g.key) ? null : g.key;
+  hideSitTooltip();
+  renderSitios();
+  const nIdx = _sitGruposRender.findIndex(x => x.key === g.key);
+  const despues = nIdx >= 0 ? document.querySelector(`#tabla-sitios tr.sit-grupo[data-grp="${nIdx}"]`) : null;
+  if (topAntes !== null && despues) {
+    const delta = despues.getBoundingClientRect().top - topAntes;
+    if (Math.abs(delta) >= 1) window.scrollBy(0, delta);
+  }
+}
+
+function toggleSelGrupoSitio(idx, checked) {
+  if (bloqueoViewer()) { _sitSyncChecksGrupo(); return; }   // cambio #68 — modo solo lectura
+  const uids = _sitGrpDisponibles.get(idx) || [];
+  uids.forEach(uid => {
+    if (checked) _sitSeleccionados.add(uid); else _sitSeleccionados.delete(uid);
+    const chk = document.querySelector(`#tabla-sitios .sit-check[onclick*="'${uid}'"]`);
+    if (chk) { chk.checked = checked; chk.closest('tr')?.classList.toggle('row-seleccionada', checked); }
+  });
+  actualizarBulkBar();
+}
+
+/* Refleja la selección en los tildes de sitio (marcado / parcial / vacío). */
+function _sitSyncChecksGrupo() {
+  document.querySelectorAll('#tabla-sitios .sit-check-grp').forEach(chk => {
+    const uids = _sitGrpDisponibles.get(Number(chk.dataset.grp)) || [];
+    const n = uids.filter(u => _sitSeleccionados.has(u)).length;
+    chk.checked = uids.length > 0 && n === uids.length;
+    chk.indeterminate = n > 0 && n < uids.length;
+  });
 }
 
 function aplicarFiltrosSitios() { renderSitios(); }
@@ -7667,30 +7845,38 @@ function toggleSelSitio(uid, checked) {
   // Actualizar visual sin re-render completo
   const fila = document.querySelector(`#tabla-sitios tr td.sit-check-col input[onclick*="${uid}"]`)?.closest('tr');
   if (fila) fila.classList.toggle('row-seleccionada', checked);
+  _sitSyncChecksGrupo();   // #150 — el tilde del sitio refleja sus PO
   actualizarBulkBar();
   actualizarCheckAll();
 }
 
 function toggleSelAllSitios(cb) {
   if (bloqueoViewer()) return;   // cambio #68 — modo solo lectura
-  // Toma todas las filas visibles con checkbox habilitado
+  /* #150 — Con la agrupación, las PO de un sitio cerrado no están en el DOM.
+     El universo es el mismo de antes (PO filtradas con 100% disponible), pero
+     sale de `_sitVisiblesDisponibles`, que arma renderSitios. */
+  _sitVisiblesDisponibles.forEach(uid => {
+    if (cb.checked) _sitSeleccionados.add(uid);
+    else _sitSeleccionados.delete(uid);
+  });
   document.querySelectorAll('#tabla-sitios .sit-check:not(:disabled)').forEach(chk => {
     const uid = (chk.getAttribute('onclick') || '').match(/'([^']+)'/)?.[1];
     if (!uid) return;
-    chk.checked = cb.checked;
-    if (cb.checked) _sitSeleccionados.add(uid);
-    else _sitSeleccionados.delete(uid);
-    chk.closest('tr')?.classList.toggle('row-seleccionada', cb.checked);
+    const sel = _sitSeleccionados.has(uid);
+    chk.checked = sel;
+    chk.closest('tr')?.classList.toggle('row-seleccionada', sel);
   });
+  _sitSyncChecksGrupo();
   actualizarBulkBar();
 }
 
 function actualizarCheckAll() {
   const checkAll = document.getElementById('sit-check-all');
   if (!checkAll) return;
-  const visibles = document.querySelectorAll('#tabla-sitios .sit-check:not(:disabled)');
+  // #150 — Cuenta sobre todas las PO filtradas disponibles (también las de sitios cerrados)
+  const visibles = _sitVisiblesDisponibles;
   if (!visibles.length) { checkAll.checked = false; checkAll.indeterminate = false; return; }
-  const marcados = [...visibles].filter(c => c.checked).length;
+  const marcados = visibles.filter(u => _sitSeleccionados.has(u)).length;
   if (marcados === 0)               { checkAll.checked = false; checkAll.indeterminate = false; }
   else if (marcados === visibles.length) { checkAll.checked = true;  checkAll.indeterminate = false; }
   else                              { checkAll.checked = false; checkAll.indeterminate = true; }
@@ -7716,6 +7902,7 @@ function limpiarSelSitios() {
   _sitSeleccionados.clear();
   document.querySelectorAll('#tabla-sitios .sit-check').forEach(c => { c.checked = false; });
   document.querySelectorAll('#tabla-sitios tr.row-seleccionada').forEach(r => r.classList.remove('row-seleccionada'));
+  _sitSyncChecksGrupo();
   actualizarBulkBar();
 }
 
