@@ -3692,6 +3692,9 @@
     #table-sitios .sit-st-mixto i { color: var(--accent-blue); font-size: 12px; }
     .sit-check-grp { width: 16px; height: 16px; cursor: pointer; accent-color: var(--accent-blue); margin: 0; }
     .sit-check-grp:disabled { cursor: not-allowed; opacity: .35; }
+    /* #151 · Cebra sutil entre sitios (solo filas de primer nivel). Sin !important:
+       verde de 100% facturado, selección, hover y sitio abierto siguen ganando. */
+    #table-sitios tr.sit-zebra td { background: rgba(100,110,140,0.06); }
   </style>
 </head>
 <body>
@@ -5543,7 +5546,7 @@ function mesActualStr() {
    a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
    Se pinta en el pie del sidebar (#sidebar-version).
    ═══════════════════════════════════════════════════════ */
-const APP_VERSION = 'V 101126 1016';
+const APP_VERSION = 'V 101126 1036';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
@@ -7514,6 +7517,7 @@ function renderSitios(filtro = '', filtros = null) {
     let rowClass = pctFacTotal >= 100 ? 'row-facturado-100 row-sit-clickable' : 'row-sit-clickable';
     if (checked) rowClass += ' row-seleccionada';
     if (opts.hijo) rowClass += ' sit-hijo' + (opts.ultimo ? ' sit-hijo-ult' : '');
+    if (opts.zebra) rowClass += ' sit-zebra';   // #151 — cebra entre sitios
     if (opts.hijo && !pasaFiltro.has(s.uid)) rowClass += ' sit-atenuada';
     const cb = s.concepto === 'Básico' ? 'badge-blue' : 'badge-violet';
     const celdaId = opts.hijo
@@ -7575,7 +7579,7 @@ function renderSitios(filtro = '', filtros = null) {
     _sitGrpDisponibles.set(idx, disp);
     const nSel = disp.filter(u => _sitSeleccionados.has(u)).length;
     const todos = disp.length > 0 && nSel === disp.length;
-    let html = `<tr class="row-sit-clickable sit-grupo${abierto ? ' sit-grupo-abierto' : ''}" data-grp="${idx}" onclick="toggleGrupoSitio(${idx})">
+    let html = `<tr class="row-sit-clickable sit-grupo${abierto ? ' sit-grupo-abierto' : ''}${idx % 2 ? ' sit-zebra' : ''}" data-grp="${idx}" onclick="toggleGrupoSitio(${idx})">
       <td class="sit-check-col" onclick="event.stopPropagation()">
         <input type="checkbox" class="sit-check-grp" data-grp="${idx}" ${disp.length ? '' : 'disabled'} ${todos ? 'checked' : ''}
           onclick="event.stopPropagation();toggleSelGrupoSitio(${idx},this.checked)"
@@ -7597,7 +7601,7 @@ function renderSitios(filtro = '', filtros = null) {
 
   if (!_sitGruposRender.length) { tbody.innerHTML = `<tr><td colspan="10"><div class="empty-state"><span class="es-icon">📍</span><p>Sin sitios que coincidan con los filtros.</p></div></td></tr>`; actualizarBulkBar(); return; }
   tbody.innerHTML = _sitGruposRender.map((g, idx) =>
-    g.pos.length === 1 ? filaPO(g.pos[0], { hijo: false }) : filaGrupo(g, idx)
+    g.pos.length === 1 ? filaPO(g.pos[0], { hijo: false, zebra: idx % 2 === 1 }) : filaGrupo(g, idx)
   ).join('');
   _sitSyncChecksGrupo();
   actualizarBulkBar();
