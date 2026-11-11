@@ -3707,6 +3707,8 @@
     #table-costos tbody tr.cst-zebra td { background: #f6f7fa; }
     #table-costos tbody tr.cst-fila:hover td { background: rgba(79,128,255,0.08); }
     .ms-option.ms-option-off { opacity: .4; cursor: not-allowed; }
+    .ms-pb { padding: 8px 12px; border-bottom: 1px solid rgba(200,205,225,0.5); }
+    .ms-pb input { width: 100%; box-sizing: border-box; padding: 7px 10px; border-radius: 8px; border: 1px solid rgba(200,205,225,0.9); font-family: inherit; font-size: 12.5px; text-transform: none; letter-spacing: normal; font-weight: 400; color: var(--text-dark); }
     .ms-option.ms-option-off input { cursor: not-allowed; }
     .gt-tile.gt-tile-costo { cursor: pointer; border: 2px solid rgba(79,128,255,0.55); }
     .gt-tile.gt-tile-costo:hover { background: rgba(79,128,255,0.06); }
@@ -4428,7 +4430,7 @@
       <div class="table-wrap">
         <table id="table-costos">
           <thead><tr>
-            <th style="text-align:left;">Obra</th>
+            <th style="text-align:left;">Obra <div class="ms-wrap ms-th" id="cst-f-obra" data-title="Obra" data-buscar="1"></div></th>
             <th>Cliente <div class="ms-wrap ms-th" id="cst-f-cli" data-title="Cliente"></div></th>
             <th>Estado <div class="ms-wrap ms-th" id="cst-f-estado" data-title="Estado"></div></th>
             <th>Período <div class="ms-wrap ms-th" id="cst-f-mes" data-title="Mes con personal"></div></th>
@@ -5691,7 +5693,7 @@ function mesActualStr() {
    a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
    Se pinta en el pie del sidebar (#sidebar-version).
    ═══════════════════════════════════════════════════════ */
-const APP_VERSION = 'V 101126 2057';
+const APP_VERSION = 'V 101126 2125';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
@@ -7054,7 +7056,7 @@ function msInit(id, options, placeholder, onChange) {
      filtros en cada render (que es el onChange), y eso cerraba el panel al tildar
      cada opción. Con el filtro estilo Excel el panel queda abierto, como en Excel. */
   const prevOpen = !!window._msState[id]?.isOpen;
-  window._msState[id] = { options, selected: newSel, placeholder, onChange, isOpen: prevOpen };
+  window._msState[id] = { options, selected: newSel, placeholder, onChange, isOpen: prevOpen, q: window._msState[id]?.q || '' };   // #153 — conserva la búsqueda
   msRender(id);
 }
 
@@ -7107,8 +7109,12 @@ function _msRenderTh(id, wrap, st, selCount) {
     <div class="ms-panel ms-panel-th ${st.isOpen ? 'ms-open' : ''}" onclick="event.stopPropagation()">
       <div class="ms-ph"><span class="ms-ph-t">Filtrar por ${titulo}</span><button type="button" class="ms-ph-x" title="Cerrar" onclick="msToggleOpen('${idJs}', event)"><i class="fa-solid fa-xmark"></i></button></div>
       <div class="ms-pa"><button type="button" onclick="msSelectAll('${idJs}', event)">Seleccionar todo</button><button type="button" class="${selCount === 0 ? 'ms-disabled' : ''}" onclick="msClear('${idJs}', event)">Limpiar</button></div>
+      ${wrap.dataset.buscar ? `<div class="ms-pb"><input type="text" placeholder="Buscar…" value="${_escAttr(st.q || '')}" oninput="msBuscar('${idJs}', this.value)" onclick="event.stopPropagation()"></div>` : ''}
       <div class="ms-pl">${optsHtml || '<div class="ms-vacio">Sin opciones para mostrar</div>'}</div>
     </div>`;
+  /* #153 — Buscador opcional (data-buscar en el contenedor). Filtra en pantalla,
+     sin redibujar, para no perder el foco al tipear. */
+  if (wrap.dataset.buscar && st.q) msBuscar(id, st.q);
   if (st.isOpen) {
     /* Si el panel se sale por la derecha de la ventana, se corre a la izquierda. */
     const p = wrap.querySelector('.ms-panel');
@@ -7118,6 +7124,17 @@ function _msRenderTh(id, wrap, st, selCount) {
       if (exceso > 0) p.style.left = (-exceso) + 'px';
     }
   }
+}
+
+/* #153 — Buscador del panel de columna: oculta las opciones que no contienen el texto. */
+function msBuscar(id, q) {
+  const st = window._msState[id];
+  if (!st) return;
+  st.q = q;
+  const t = String(q || '').trim().toLowerCase();
+  document.querySelectorAll('#' + id + ' .ms-pl .ms-option').forEach(l => {
+    l.style.display = !t || l.textContent.toLowerCase().includes(t) ? '' : 'none';
+  });
 }
 
 /* #128 — "Seleccionar todo" del panel de columna. Tildar todo equivale a no
@@ -20493,8 +20510,8 @@ function _cstObras() {
   }).filter(o => o.c.items.length);
 }
 function _cstPasa(o, excepto) {
-  const f = { cli: msGet('cst-f-cli'), estado: msGet('cst-f-estado'), mes: msGet('cst-f-mes') };
-  const vals = { cli: [o.cli], estado: [o.estado], mes: o.meses };
+  const f = { obra: msGet('cst-f-obra'), cli: msGet('cst-f-cli'), estado: msGet('cst-f-estado'), mes: msGet('cst-f-mes') };
+  const vals = { obra: [o.id], cli: [o.cli], estado: [o.estado], mes: o.meses };
   return Object.keys(f).every(k => k === excepto || !f[k].length || vals[k].some(v => f[k].includes(v)));
 }
 function cstOrden(v) { _cst.orden = v; renderCostos(); }
@@ -20520,7 +20537,8 @@ function renderCostos() {
       return { value: v, label: etiqueta ? etiqueta(v) : v, count: n, disabled: n === 0 && !sel.has(v) };
     });
   };
-  msInit('cst-f-cli', opts('cli', o => [o.cli]), 'Todos los clientes', renderCostos);
+  msInit('cst-f-obra', opts('obra', o => [o.id]), 'Todas las obras', renderCostos);   // #153
+  msInit('cst-f-cli', opts('cli', o => [o.cli], v => v || 'Sin cliente'), 'Todos los clientes', renderCostos);
   msInit('cst-f-estado', opts('estado', o => [o.estado]), 'Todos los estados', renderCostos);
   msInit('cst-f-mes', opts('mes', o => o.meses, m => _CST_MES[Number(m.slice(5)) - 1] + ' ' + m.slice(0, 4)), 'Todos los meses', renderCostos);
 
