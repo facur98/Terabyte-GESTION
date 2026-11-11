@@ -3695,6 +3695,71 @@
     /* #151 · Cebra sutil entre sitios (solo filas de primer nivel). Sin !important:
        verde de 100% facturado, selección, hover y sitio abierto siguen ganando. */
     #table-sitios tr.sit-zebra td { background: rgba(100,110,140,0.06); }
+    /* ═══ #152 · Costo de obra — bloque aditivo ═══ */
+    #nav-costos { padding: 8px 9px; font-size: 11.5px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--text-dark); }
+    #nav-costos.active { background: rgba(79,128,255,0.12); color: var(--accent-blue); }
+    #nav-costos.active::before { display: none; }
+    #nav-costos.active .ng-ic { background: var(--accent-blue); color: #fff; }
+    #table-costos thead th { background: rgba(15,23,42,0.86) !important; color: #fff !important; padding: 12px 10px; text-align: center; position: sticky; top: var(--tb-h, 0px); z-index: 6; letter-spacing: .7px; border-bottom: none !important; }
+    #table-costos thead th:has(.ms-fbtn.ms-has-sel) { background: #f8e6d2 !important; color: #0f172a !important; box-shadow: inset 0 -2px 0 0 #d97706; }
+    #table-costos tbody td { text-align: center; padding: 11px 10px; }
+    #table-costos tbody tr.cst-fila { cursor: pointer; }
+    #table-costos tbody tr.cst-zebra td { background: #f6f7fa; }
+    #table-costos tbody tr.cst-fila:hover td { background: rgba(79,128,255,0.08); }
+    .ms-option.ms-option-off { opacity: .4; cursor: not-allowed; }
+    .ms-option.ms-option-off input { cursor: not-allowed; }
+    .gt-tile.gt-tile-costo { cursor: pointer; border: 2px solid rgba(79,128,255,0.55); }
+    .gt-tile.gt-tile-costo:hover { background: rgba(79,128,255,0.06); }
+    .cst-pill { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+    .cst-nota { font-size: 11.5px; color: var(--text-light); font-weight: 400; }
+    .cst-vacio { padding: 24px; text-align: center; color: var(--text-light); font-style: italic; }
+    .cst-aviso { padding: 12px 16px; border-radius: 12px; background: rgba(79,128,255,0.08); color: #2f4fb0; font-size: 13px; margin-bottom: 14px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .cst-aviso-err { background: #fde2e2; color: #7f1d1d; }
+    .cst-costo { position: relative; }
+    .cst-costo-v { font-weight: 600; border-bottom: 1px dashed #9aa0b8; cursor: help; }
+    .cst-hover { display: none; position: absolute; bottom: calc(100% - 6px); left: 50%; transform: translateX(-50%); z-index: 20; min-width: 240px; background: #1e2a4a; color: #fff; border-radius: 10px; padding: 10px 12px; box-shadow: 0 10px 28px rgba(20,25,60,0.28); font-size: 12.5px; text-align: left; }
+    .cst-costo:hover .cst-hover { display: block; }
+    .cst-hover > div { display: flex; justify-content: space-between; gap: 14px; padding: 2px 0; }
+    .cst-hover span { color: #c7d0e6; }
+    .cst-hover .cst-hover-t { border-top: 1px solid rgba(255,255,255,0.15); margin-top: 4px; padding-top: 6px; }
+    .cst-hover .cst-hover-t span { color: #fff; }
+    .cst-fila-cards { display: flex; gap: 20px; flex-wrap: wrap; align-items: stretch; margin-bottom: 20px; }
+    .cst-fila-cards > .card { margin-bottom: 0; }
+    .cst-card { margin-bottom: 20px; }
+    .cst-card-h { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
+    .cst-ley { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; font-size: 12px; color: var(--text-mid); }
+    .cst-ley span { display: inline-flex; align-items: center; gap: 6px; }
+    .cst-ley i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; }
+    .cst-tip { position: absolute; top: 8px; min-width: 260px; background: #1e2a4a; color: #fff; border-radius: 12px; padding: 12px 14px; box-shadow: 0 10px 30px rgba(20,25,60,0.28); pointer-events: none; font-size: 12.5px; z-index: 5; }
+    .cst-tip-t { font-weight: 700; font-size: 13px; text-transform: capitalize; margin-bottom: 6px; }
+    .cst-tip-r { display: flex; gap: 10px; align-items: baseline; padding: 2px 0; }
+    .cst-tip-r span { flex: 1; } .cst-tip-r em { color: #a9b4d0; font-size: 11.5px; font-style: normal; } .cst-tip-r b { min-width: 84px; text-align: right; }
+    .cst-tip-tot { display: flex; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.15); margin-top: 6px; padding-top: 6px; font-weight: 700; }
+    .cst-barra { display: flex; height: 14px; border-radius: 8px; overflow: hidden; background: #f1f2f6; margin-bottom: 14px; }
+    .cst-comp { display: flex; align-items: center; gap: 10px; font-size: 13px; padding: 5px 0; }
+    .cst-comp i { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+    .cst-comp span { flex: 1; color: var(--text-mid); } .cst-comp em { width: 58px; text-align: right; color: var(--text-light); font-style: normal; }
+    .cst-sep { border-top: 1px solid rgba(200,205,220,0.5); margin: 10px 0 6px; }
+    .cst-tabla { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .cst-tabla thead th { background: #1e2a4a; color: #fff; padding: 10px; font-size: 10.5px; letter-spacing: .7px; text-transform: uppercase; text-align: center; white-space: nowrap; }
+    .cst-tabla tbody td { padding: 10px; text-align: center; border-bottom: 1px solid #edf0f6; }
+    .cst-tabla tfoot td { padding: 10px; text-align: center; font-weight: 700; background: #f6f8ff; }
+    .cst-tabla tr.cst-fila { cursor: pointer; }
+    .cst-tabla tr.cst-fila:hover td { background: rgba(79,128,255,0.06); }
+    .cst-tabla tr.cst-sel td { background: #eaf0ff; }
+    .cst-tabla tr.cst-dim td { opacity: .5; }
+    .cst-peso { display: flex; align-items: center; gap: 10px; }
+    .cst-peso > div { flex: 1; height: 10px; border-radius: 6px; background: #f1f2f6; overflow: hidden; display: flex; }
+    .cst-peso em { width: 52px; text-align: right; color: var(--text-mid); font-style: normal; }
+    .cst-acu { display: flex; align-items: center; gap: 8px; }
+    .cst-acu > div { flex: 1; min-width: 110px; height: 6px; border-radius: 4px; background: #f1f2f6; overflow: hidden; }
+    .cst-acu > div span { display: block; height: 100%; background: #1e2a4a; }
+    .cst-acu b { min-width: 92px; text-align: right; font-size: 12px; }
+    .cst-gente { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border-radius: 20px; border: 1px solid #c9d6fb; background: #eaf0ff; color: #2f5fd6; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; }
+    .cst-gente:hover { background: #dbe5ff; }
+    .cst-rev { padding: 10px 12px; border-radius: 10px; font-size: 13px; line-height: 1.5; margin-bottom: 10px; }
+    .cst-rev-warn { background: #fdf1d4; color: #6b3b05; } .cst-rev-err { background: #fde2e2; color: #7f1d1d; }
+    .cst-rev-info { background: #f1f2f6; color: #3d4258; } .cst-rev-naranja { background: #fde7d6; color: #7c2d12; } .cst-rev-ok { background: #dcf5ea; color: #04563e; }
   </style>
 </head>
 <body>
@@ -3780,6 +3845,10 @@
     <!-- #138 — Evolución: solo Admin / Gerencia (evoAplicarVisibilidad) -->
     <a class="nav-item" id="nav-evolucion" onclick="showView('evolucion',this)" style="display:none;">
       <span class="ng-ic"><i class="fa-solid fa-chart-line"></i></span><span>Evolución</span>
+    </a>
+    <!-- #152 — Costos de obra: solo Admin / Gerencia (costoAplicarVisibilidad) -->
+    <a class="nav-item" id="nav-costos" onclick="showView('costos',this)" style="display:none;">
+      <span class="ng-ic"><i class="fa-solid fa-sack-dollar"></i></span><span>Costos</span>
     </a>
     <!-- Análisis y datos: ítem principal suelto -->
     </div>
@@ -4329,6 +4398,68 @@
       </div>
       <div id="nm-body"></div>
     </div>
+  </div>
+
+  <!-- ═══════════ #152 · SECCIÓN COSTOS (Admin / Gerencia) ═══════════ -->
+  <div id="view-costos" class="view">
+    <div class="topbar">
+      <div>
+        <div class="page-title">Costos <span>de obra</span></div>
+        <div style="font-size:13px;color:var(--text-light);margin-top:3px;">Obras con personal cargado · margen final = total PO − mano de obra propia − contratistas (OC)</div>
+      </div>
+      <div class="topbar-actions">
+        <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--text-mid);">Ordenar
+          <select class="form-input" style="padding:8px 10px;width:auto;" onchange="cstOrden(this.value)">
+            <option value="margen">Menor margen primero</option>
+            <option value="margenD">Mayor margen primero</option>
+            <option value="pct">Menor margen % primero</option>
+            <option value="costo">Mayor costo primero</option>
+            <option value="reciente">Más reciente primero</option>
+          </select></label>
+        <button class="btn btn-glass" onclick="sincronizar()" style="font-size:12px;"><i class="fa-solid fa-rotate"></i> Sincronizar</button>
+      </div>
+    </div>
+    <div id="cst-aviso"></div>
+    <div class="card">
+      <div class="card-header" style="flex-wrap:wrap;gap:12px;">
+        <div class="card-title">Costo por obra</div>
+        <div id="cst-cuenta" style="font-size:12px;color:var(--text-light);"></div>
+      </div>
+      <div class="table-wrap">
+        <table id="table-costos">
+          <thead><tr>
+            <th style="text-align:left;">Obra</th>
+            <th>Cliente <div class="ms-wrap ms-th" id="cst-f-cli" data-title="Cliente"></div></th>
+            <th>Estado <div class="ms-wrap ms-th" id="cst-f-estado" data-title="Estado"></div></th>
+            <th>Período <div class="ms-wrap ms-th" id="cst-f-mes" data-title="Mes con personal"></div></th>
+            <th>Días-persona</th>
+            <th>Costo total</th>
+            <th>Total PO</th>
+            <th>Margen final</th>
+            <th>Margen %</th>
+          </tr></thead>
+          <tbody id="cst-tbody"></tbody>
+        </table>
+      </div>
+      <div style="font-size:11.5px;color:var(--text-light);margin-top:12px;">Pasá el mouse por el costo total para ver mano de obra y contratistas. Días-persona (usados / previstos): verde dentro de lo previsto, ámbar hasta 20 % arriba, rojo más de 20 % arriba. Todavía sin materiales ni cargas sociales.</div>
+    </div>
+  </div>
+
+  <!-- ═══════════ #152 · COSTO DE UNA OBRA (Admin / Gerencia) ═══════════ -->
+  <div id="view-obra-costo" class="view">
+    <div class="topbar">
+      <div style="min-width:0;">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+          <button class="btn btn-glass btn-sm" id="oco-volver" onclick="cerrarObraCosto()"><i class="fa-solid fa-arrow-left"></i> Volver</button>
+          <div class="page-title" style="margin:0;">Costo de obra <span id="oco-titulo">—</span></div>
+        </div>
+        <div style="font-size:13px;color:var(--text-light);margin-top:4px;" id="oco-sub">—</div>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-glass" onclick="sincronizar()" style="font-size:12px;"><i class="fa-solid fa-rotate"></i> Sincronizar</button>
+      </div>
+    </div>
+    <div id="oco-body"></div>
   </div>
 
   <!-- ═══════════ VISTA: OBRA (Gantt + carga) — fase 3 ═══════════ -->
@@ -5232,6 +5363,20 @@
   </div>
 </div>
 
+<!-- #152 — Detalle de un día en el costo de obra -->
+<div class="modal-overlay" id="modal-costo-dia">
+  <div class="modal" style="max-width:760px;padding:26px 30px;">
+    <div style="display:flex;justify-content:space-between;align-items:start;gap:14px;margin-bottom:14px;">
+      <div style="flex:1;">
+        <div class="modal-title" id="oco-dia-title" style="margin:0;line-height:1.2;text-transform:capitalize;"></div>
+        <div id="oco-dia-sub" style="font-size:13px;color:var(--text-light);margin-top:5px;"></div>
+      </div>
+      <button onclick="cerrarModalCostoDia()" style="background:none;border:none;cursor:pointer;font-size:22px;color:var(--text-light);line-height:1;">✕</button>
+    </div>
+    <div id="oco-dia-body" style="max-height:60vh;overflow-y:auto;"></div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modal-sg-dias">
   <div class="modal" style="max-width:760px;padding:28px 32px;">
     <div style="display:flex;justify-content:space-between;align-items:start;gap:14px;margin-bottom:6px;">
@@ -5546,7 +5691,7 @@ function mesActualStr() {
    a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
    Se pinta en el pie del sidebar (#sidebar-version).
    ═══════════════════════════════════════════════════════ */
-const APP_VERSION = 'V 101126 1036';
+const APP_VERSION = 'V 101126 2057';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
@@ -6451,6 +6596,7 @@ async function _refrescoEnFondo() {
       if (id === 'sitios')      renderSitios();
       if (id === 'clientes')    renderClientes();
       if (id === 'seguimiento') renderSeguimiento();
+      if (id === 'costos' || id === 'obra-costo') costoRefrescarVista();   // #152
     }
     cacheGuardar(data);
   } catch (err) {
@@ -6613,7 +6759,10 @@ function _aplicarDatosAll(data) {
          sueldos son sensibles y puede preferirse no tenerlos en la planilla.
          `leerHoja` lee la cabecera real, así que agregarla NO requiere tocar
          Code.gs ni redesplegar. */
-      sueldo:    String(get(r, 'SUELDO') || '').trim()
+      sueldo:    String(get(r, 'SUELDO') || '').trim(),
+      /* #152 — ID del mismo empleado en TERA Empleados (E10, E11…). Columna
+         opcional EQUIV_EMPLEADOS: vacía = no se le calcula costo de obra. */
+      equiv:     String(get(r, 'EQUIV_EMPLEADOS') || '').trim().toUpperCase()
     })).filter(e => e.id);
 
     // Deduplicar por EmpleadoID (U1); si hubiera repetidos, se queda con la primera aparición
@@ -6858,6 +7007,8 @@ function showView(name, el) {
   _tbAjustar();
   if (name === 'dashboard')    actualizarDashboard();
   if (name === 'evolucion')    renderEvolucion(true);   // #138
+  if (name === 'costos')       { renderCostos(); costoCargar().then(costoRefrescarVista); }   // #152
+  if (name === 'obra-costo')   { renderObraCosto(); costoCargar().then(costoRefrescarVista); } // #152
   if (name === 'clientes')     renderClientes();
   if (name === 'sitios')       { poblarSelect('sit-cliente'); aplicarFiltrosSitios(); }
   if (name === 'sitios-globales') renderSitiosGlobales();
@@ -6943,8 +7094,11 @@ function _msRenderTh(id, wrap, st, selCount) {
   const optsHtml = st.options.map(o => {
     const isSel = st.selected.has(String(o.value));
     const cnt   = (typeof o.count === 'number') ? ` <span class="ms-cnt">(${o.count})</span>` : '';
-    return `<label class="ms-option" onclick="event.stopPropagation()">
-      <input type="checkbox" ${isSel ? 'checked' : ''} onchange="msToggle('${idJs}', '${String(o.value).replace(/'/g, "\\'")}', this.checked)" />
+    /* #152 — `disabled`: la opción no daría resultados con los otros filtros
+       (gris, no se puede tildar). Sin el campo, todo igual que antes. */
+    const off   = !!o.disabled && !isSel;
+    return `<label class="ms-option${off ? ' ms-option-off' : ''}" onclick="event.stopPropagation()" ${off ? 'title="Sin resultados con los otros filtros"' : ''}>
+      <input type="checkbox" ${isSel ? 'checked' : ''} ${off ? 'disabled' : ''} onchange="msToggle('${idJs}', '${String(o.value).replace(/'/g, "\\'")}', this.checked)" />
       <span class="ms-option-label">${o.label}${cnt}</span>
     </label>`;
   }).join('');
@@ -6972,7 +7126,7 @@ function msSelectAll(id, ev) {
   if (ev) ev.stopPropagation();
   const st = window._msState[id];
   if (!st) return;
-  st.options.forEach(o => st.selected.add(String(o.value)));
+  st.options.forEach(o => { if (!o.disabled) st.selected.add(String(o.value)); });   // #152 — las grises no
   msRender(id);
   if (typeof st.onChange === 'function') st.onChange();
 }
@@ -11509,6 +11663,9 @@ function _gtRenderTiles(id, obra) {
       <div class="gt-tile-val">${Math.round(av.pct)}%</div>
       <div class="gt-tile-sub">${rest >= 0 ? `quedan ${rest} dp` : `${-rest} dp por encima`}</div></div>`);
   }
+  /* #152 — Costo a hoy: solo Admin / Gerencia. Abre la vista de costo. */
+  const tc = costoTileHtml(id);
+  if (tc) t.push(tc);
   document.getElementById('gt-tiles').innerHTML = t.join('');
 }
 
@@ -15248,6 +15405,8 @@ async function sincronizar(silencioso = false) {
     if (id === 'sitios')      renderSitios();
     if (id === 'clientes')    renderClientes();
     if (id === 'seguimiento') renderSeguimiento();
+    /* #152 — Sincronizar también vuelve a leer el costo del personal. */
+    if (id === 'costos' || id === 'obra-costo' || id === 'obra') { costoRefrescarVista(); if (costoPermitido()) costoCargar(true).then(costoRefrescarVista); }
   }
 }
 
@@ -15307,6 +15466,7 @@ async function autoSync() {
         if (id === 'sitios')      renderSitios();
         if (id === 'clientes')    renderClientes();
         if (id === 'seguimiento') renderSeguimiento();
+        if (id === 'costos' || id === 'obra-costo') costoRefrescarVista();   // #152
       }
     }
   } catch (err) {
@@ -18266,7 +18426,8 @@ function vistaBloqueada(name) {
   return viewerVistaBloqueada(name) ||
          facturacionVistaBloqueada(name) ||
          colabVistaBloqueada(name) ||        // #118
-         evoVistaBloqueada(name);            // #138
+         evoVistaBloqueada(name) ||          // #138
+         costoVistaBloqueada(name);          // #152
 }
 
 /* ¿El usuario logueado es viewer? Null-safe: sin sesión devuelve false. */
@@ -18508,6 +18669,7 @@ function aplicarPerfil() {
   if (esColab()) activarModoColab();
   else           desactivarModoColab();
   evoAplicarVisibilidad();   // #138 — Evolución: solo Admin / Gerencia
+  costoAplicarVisibilidad(); // #152 — Costos: mismo permiso
 }
 
 let _usuariosAdmin = [];
@@ -18632,6 +18794,7 @@ function cerrarSesion() {
 function _cerrarSesionAhora() {
   _usuarioActual = null; _usuariosAdmin = [];
   evoAplicarVisibilidad();      // #138 — sin sesión no hay Evolución
+  costoAplicarVisibilidad();    // #152
   desactivarModoViewer();       // cambio #68 — limpiar el modo solo lectura
   desactivarModoFacturacion();  // cambio #117 — ídem, perfil Facturación
   desactivarModoColab();        // cambio #118 — ídem, perfil Colab. proyecto
@@ -19910,6 +20073,490 @@ function _evoEnganchar() {
   if (fly) { fly.classList.add('lg-sin-trans'); _lgUbicarLogo(); void fly.offsetWidth; fly.classList.remove('lg-sin-trans'); }
   if (_lgVisible()) _lgIniciar(); else _lgOcultar();
 })();
+
+/* ═══════════════════════════════════════════════════════════════════
+   #152 · COSTO DE OBRA (mano de obra propia + contratistas)
+   ═══════════════════════════════════════════════════════════════════
+   El costo de cada empleado por día lo calcula el sistema TERA Empleados
+   (solapa «CostoDiario», 3_CostoObra.gs). La planilla de gestión la trae con
+   IMPORTRANGE a COSTO_PERSONAL y el backend la entrega solo cuando se pide
+   (?sheet=COSTO_PERSONAL): no viaja en el ALL.
+
+   Cruce: cada asignación ejecutada (fecha ≤ hoy) de un empleado PROPIO con
+   equivalencia (EMPLEADOS.EQUIV_EMPLEADOS) busca su fila del día.
+     · Presente / reducida → valor del día + horas extra.
+     · Sin asistencia cargada (quincenal, día hábil) → valor del día y control.
+     · Ausente / vacaciones / licencia → 0 y control (decisión 10/11).
+     · Dos sitios el mismo día → partes iguales (contando depósito y estados
+       especiales: un día mitad obra y mitad depósito carga media jornada).
+   Contratistas: Σ TOTAL_COSTO de las OC EMITIDAS del sitio.
+   Margen final = total de las PO del sitio − mano de obra − contratistas.
+   Solo Admin y Gerencia (mismo permiso que Evolución). */
+const COSTO_HOJA = 'COSTO_PERSONAL';
+const COSTO_VIGENCIA_MS = 5 * 60 * 1000;
+var _costo = { map: null, porEmp: {}, cargadoAt: 0, cargando: null, error: '', actualizado: '', hasta: '' };
+var _oco = { sitio: null, sel: null, volver: 'obra', dia: null, dias: [] };   // vista de costo de una obra
+var _cst = { orden: 'margen' };                                              // sección Costos
+
+function costoPermitido() { return evoPermitido(); }
+function costoVistaBloqueada(name) { return (name === 'costos' || name === 'obra-costo') && !costoPermitido(); }
+function costoAplicarVisibilidad() {
+  const ok = costoPermitido();
+  const nav = document.getElementById('nav-costos');
+  if (nav) nav.style.display = ok ? '' : 'none';
+  if (!ok) {
+    const v = document.querySelector('.view.active');
+    if (v && (v.id === 'view-costos' || v.id === 'view-obra-costo')) showView('dashboard');
+  }
+}
+
+/* Trae COSTO_PERSONAL. Se reutiliza 5 minutos; `forzar` la vuelve a pedir. */
+function costoCargar(forzar) {
+  if (_costo.cargando) return _costo.cargando;
+  if (!forzar && _costo.map && Date.now() - _costo.cargadoAt < COSTO_VIGENCIA_MS) return Promise.resolve();
+  _costo.cargando = apiGet(COSTO_HOJA).then(res => {
+    const filas = Array.isArray(res.data) ? res.data : [];
+    const n = v => { const x = Number(String(v == null ? '' : v).replace(',', '.')); return isFinite(x) ? x : 0; };
+    const g = (r, k) => { const kk = Object.keys(r).find(x => x.trim().toUpperCase() === k); return kk === undefined ? '' : String(r[kk] == null ? '' : r[kk]).trim(); };
+    const map = new Map(), porEmp = {};
+    let act = '', hasta = '';
+    filas.forEach(r => {
+      const fecha = g(r, 'FECHA').slice(0, 10), emp = g(r, 'EMPLEADO');
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha) || !emp) return;
+      const o = {
+        fecha, emp, pago: g(r, 'PAGO'), tipo: g(r, 'TIPO DE DÍA'), estado: g(r, 'ESTADO') || 'presente',
+        h50: n(g(r, 'HE 50 % (H)')), h100: n(g(r, 'HE 100 % (H)')), vh: n(g(r, 'VALOR HORA')),
+        valorDia: n(g(r, 'VALOR DÍA')), he: n(g(r, '$ HE')), liq: g(r, 'LIQUIDACIÓN USADA')
+      };
+      map.set(fecha + '|' + emp, o);
+      if (!porEmp[emp]) porEmp[emp] = { pago: o.pago };
+      const a = g(r, 'ACTUALIZADO'); if (a > act) act = a;
+      if (fecha > hasta) hasta = fecha;
+    });
+    _costo.map = map; _costo.porEmp = porEmp; _costo.cargadoAt = Date.now();
+    _costo.actualizado = act; _costo.hasta = hasta; _costo.error = '';
+  }).catch(err => {
+    _costo.error = (err && err.message) || 'No se pudo leer el costo del personal';
+  }).finally(() => { _costo.cargando = null; });
+  return _costo.cargando;
+}
+
+/* Re-render de lo que esté mirando el usuario cuando llegan datos nuevos. */
+function costoRefrescarVista() {
+  const v = document.querySelector('.view.active');
+  if (!v) return;
+  if (v.id === 'view-costos') renderCostos();
+  if (v.id === 'view-obra-costo') renderObraCosto();
+  if (v.id === 'view-obra' && _gtSitio) _gtRenderTiles(_gtSitio, obraDeSitio(_gtSitio));
+}
+
+/* Asignaciones ejecutadas de propios con equivalencia: fecha|empleado → sitios del día. */
+function _costoIdx() {
+  const hoy = fechaHoyStr();
+  const eq = new Map();
+  empleados.forEach(e => { if (e.relacion === 'P' && e.equiv) eq.set(e.id, e); });
+  const porDia = new Map();
+  asignaciones.forEach(a => {
+    if (!eq.has(a.empleadoId) || !_asigEjecutada(a, hoy)) return;
+    const k = a.fecha + '|' + a.empleadoId;
+    if (!porDia.has(k)) porDia.set(k, new Set());
+    porDia.get(k).add(a.sitioId);
+  });
+  return { eq, porDia };
+}
+
+/* Costo de UN empleado UN día, ya multiplicado por su parte del día. */
+function _costoItem(fecha, e, parte) {
+  const r = _costo.map ? _costo.map.get(fecha + '|' + e.equiv) : null;
+  const it = { fecha, empId: e.id, nombre: e.nombre || e.id, parte, base: 0, he50: 0, he100: 0, h50: 0, h100: 0, ctrl: '', estado: r ? r.estado : '', tipo: r ? r.tipo : '', liq: r ? r.liq : '', pago: r ? r.pago : ((_costo.porEmp[e.equiv] || {}).pago || '') };
+  if (!r) {
+    if (!_costo.porEmp[e.equiv]) it.ctrl = 'Sin datos en el sistema de empleados';
+    else if (it.pago !== 'mensual') it.ctrl = 'Sin asistencia cargada';
+  } else if (r.estado === 'presente' || r.estado === 'reducida') {
+    it.base = r.valorDia; it.h50 = r.h50; it.h100 = r.h100;
+    it.he50 = Math.round(r.h50 * 1.5 * r.vh); it.he100 = Math.max(0, Math.round(r.he) - it.he50);
+    if (!r.liq) it.ctrl = 'Sin liquidación en el sistema de empleados';
+  } else if (r.estado === 'sin registro') {
+    it.base = r.valorDia; it.ctrl = 'Sin asistencia cargada';
+  } else {
+    it.ctrl = 'Asignado pero figura ' + r.estado;
+  }
+  if (parte !== 1) { it.base *= parte; it.he50 *= parte; it.he100 *= parte; it.h50 *= parte; it.h100 *= parte; }
+  it.base = Math.round(it.base); it.he50 = Math.round(it.he50); it.he100 = Math.round(it.he100);
+  it.tot = it.base + it.he50 + it.he100;
+  return it;
+}
+
+/* Costo completo de un sitio. `idx` opcional (para no rearmarlo por cada obra). */
+function costoObra(sitioId, idx) {
+  const { eq, porDia } = idx || _costoIdx();
+  const items = [];
+  porDia.forEach((set, k) => {
+    if (!set.has(sitioId)) return;
+    const p = k.indexOf('|');
+    items.push(_costoItem(k.slice(0, p), eq.get(k.slice(p + 1)), 1 / set.size));
+  });
+  items.sort((a, b) => a.fecha < b.fecha ? -1 : a.fecha > b.fecha ? 1 : a.nombre.localeCompare(b.nombre));
+  const mo = items.reduce((a, x) => a + x.tot, 0);
+  const ocTot = _costoOcSitio(sitioId);
+  const po = sitios.filter(s => s.id === sitioId).reduce((a, s) => a + (s.po || 0), 0);
+  /* Las PO de $1 son marcadores de AMX sin PO todavía: sin total real no hay margen. */
+  const sinPO = po <= 1;
+  return { sitioId, items, mo, oc: ocTot, tot: mo + ocTot, po, sinPO, margen: sinPO ? null : po - (mo + ocTot) };
+}
+function _costoOcSitio(sitioId) {
+  return (oc || []).filter(o => o.sitioId === sitioId && o.estado === OC_ESTADO_EMITIDA).reduce((a, o) => a + (o.totalCosto || 0), 0);
+}
+
+const _cMoney = n => (n < 0 ? '− $' : '$') + Math.abs(Math.round(n)).toLocaleString('es-AR');
+const _cMill  = n => (n < 0 ? '− $' : '$') + (Math.abs(n) / 1e6).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' M';
+const _cPct   = x => (Math.round(x * 1000) / 10).toLocaleString('es-AR') + ' %';
+const _cHs    = h => (Math.round(h * 10) / 10).toLocaleString('es-AR') + ' h';
+const _cDiaSem = f => ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'][new Date(f + 'T12:00:00').getDay()];
+const _cDdMm  = f => f.slice(8, 10) + '/' + f.slice(5, 7);
+function _cSemaforo(dp, plan) {
+  if (!plan) return 'background:#eceef4;color:#5a6075';
+  if (dp <= plan) return 'background:#dcf5ea;color:#046c4e';
+  if (dp <= plan * 1.2) return 'background:#fdf1d4;color:#8a4b06';
+  return 'background:#fde2e2;color:#9b1c1c';
+}
+function _cMargenPctStyle(x) { return x < 0.6 ? 'background:#fde2e2;color:#9b1c1c' : x < 0.78 ? 'background:#fdf1d4;color:#8a4b06' : 'background:#dcf5ea;color:#046c4e'; }
+
+/* Aviso común cuando todavía no hay datos o falló la lectura. */
+function _costoAvisoHtml() {
+  if (_costo.cargando && !_costo.map) return '<div class="cst-aviso"><i class="fa-solid fa-spinner fa-spin"></i> Leyendo el costo del personal…</div>';
+  if (_costo.error && !_costo.map) return `<div class="cst-aviso cst-aviso-err"><b>No se pudo leer el costo del personal.</b> ${_escHtml(_costo.error)}. Revisá que la hoja <b>${COSTO_HOJA}</b> exista en la planilla y tenga el IMPORTRANGE con acceso permitido. <button class="btn btn-glass btn-sm" onclick="costoCargar(true).then(costoRefrescarVista)">Reintentar</button></div>`;
+  if (_costo.map && !_costo.map.size) return `<div class="cst-aviso cst-aviso-err"><b>La hoja ${COSTO_HOJA} está vacía.</b> En el sistema de Empleados corré «Costo diario: recalcular ahora» y revisá el IMPORTRANGE.</div>`;
+  return '';
+}
+
+/* ── Recuadro "Costo a hoy" en la vista de obra ───────────────────── */
+function costoTileHtml(id) {
+  if (!costoPermitido()) return '';
+  if (!_costo.map) {
+    if (!_costo.cargando && !_costo.error) costoCargar().then(() => { if (_gtSitio === id) _gtRenderTiles(id, obraDeSitio(id)); });
+    const t = _costo.error ? 'No disponible' : 'Calculando…';
+    return `<div class="gt-tile gt-tile-costo" onclick="abrirObraCosto('${_escJs(id)}','obra')" title="Abrir el costo de la obra"><div class="gt-tile-lbl">Costo a hoy</div><div class="gt-tile-val" style="font-size:17px;">${t}</div><div class="gt-tile-sub">Ver costo →</div></div>`;
+  }
+  if (!_costo.map.size) {
+    return `<div class="gt-tile gt-tile-costo" onclick="abrirObraCosto('${_escJs(id)}','obra')"><div class="gt-tile-lbl">Costo a hoy</div><div class="gt-tile-val" style="font-size:17px;">Sin datos</div><div class="gt-tile-sub">falta el costo del personal</div></div>`;
+  }
+  const c = costoObra(id);
+  if (!c.items.length && !c.oc) {
+    return `<div class="gt-tile gt-tile-costo" onclick="abrirObraCosto('${_escJs(id)}','obra')"><div class="gt-tile-lbl">Costo a hoy</div><div class="gt-tile-val" style="font-size:17px;">Sin personal</div><div class="gt-tile-sub">Ver costo →</div></div>`;
+  }
+  const col = c.sinPO ? 'var(--text-light)' : c.margen < 0 ? '#b42318' : '#047857';
+  return `<div class="gt-tile gt-tile-costo" onclick="abrirObraCosto('${_escJs(id)}','obra')" title="Abrir el costo de la obra">
+    <div class="gt-tile-lbl">Costo a hoy</div>
+    <div class="gt-tile-val">${_cMill(c.tot)}</div>
+    <div class="gt-tile-sub" style="color:${col};font-weight:600;">${c.sinPO ? 'sin PO cargada' : 'margen final ' + _cMill(c.margen)} · Ver costo →</div></div>`;
+}
+
+/* ── Vista: costo de una obra ─────────────────────────────────────── */
+function abrirObraCosto(id, volver) {
+  if (!id || !costoPermitido()) return;
+  _oco.sitio = id; _oco.sel = null; _oco.volver = volver || 'costos';
+  showView('obra-costo', null);
+}
+function cerrarObraCosto() {
+  if (_oco.volver === 'obra' && _oco.sitio) { abrirVistaObra(_oco.sitio); return; }
+  showView('costos', document.getElementById('nav-costos'));
+}
+function ocoElegir(empId) { _oco.sel = _oco.sel === empId ? null : empId; renderObraCosto(); }
+
+function renderObraCosto() {
+  const body = document.getElementById('oco-body');
+  if (!body) return;
+  const id = _oco.sitio;
+  if (!id) { cerrarObraCosto(); return; }
+  document.getElementById('oco-titulo').textContent = id;
+  const btnV = document.getElementById('oco-volver');
+  if (btnV) btnV.innerHTML = `<i class="fa-solid fa-arrow-left"></i> ${_oco.volver === 'obra' ? _escHtml(id) : 'Costos'}`;
+  const obra = obraDeSitio(id);
+  const sitio = sitios.find(x => x.id === id);
+  const cli = sitio ? getCli(sitio.clienteId) : null;
+  const sub = [];
+  if (sitio && sitio.clienteId) sub.push(sitio.clienteId);
+  sub.push(obra ? obra.estado : 'Sin alta de obra');
+  if (obra && obra.fechaInicio) sub.push('Inicio ' + _sgFormatoFechaCorta(obra.fechaInicio));
+  if (_costo.hasta) sub.push('Costos al ' + _sgFormatoFechaCorta(_costo.hasta));
+  document.getElementById('oco-sub').innerHTML = (cli ? dot(cli.color) + ' ' : '') + _escHtml(sub.join(' · '));
+
+  if (!_costo.map) {
+    if (!_costo.cargando && !_costo.error) costoCargar().then(costoRefrescarVista);
+    body.innerHTML = _costoAvisoHtml() || '<div class="cst-aviso">Leyendo…</div>';
+    return;
+  }
+  const c = costoObra(id);
+  const aviso = _costoAvisoHtml();
+  const sel = _oco.sel;
+  const its = sel ? c.items.filter(x => x.empId === sel) : c.items;
+
+  // Totales de la obra (siempre todos)
+  const tBase = c.items.reduce((a, x) => a + x.base, 0);
+  const tHe50 = c.items.reduce((a, x) => a + x.he50, 0), tHe100 = c.items.reduce((a, x) => a + x.he100, 0);
+  const h50 = c.items.reduce((a, x) => a + x.h50, 0), h100 = c.items.reduce((a, x) => a + x.h100, 0);
+  const dp = obraDiasPersona(id), plan = obraPlazoP(obra);
+
+  // Por día
+  const diasMap = new Map();
+  c.items.forEach(x => { if (!diasMap.has(x.fecha)) diasMap.set(x.fecha, []); diasMap.get(x.fecha).push(x); });
+  const fechas = [...diasMap.keys()].sort();
+  _oco.dias = fechas.map(f => ({ fecha: f, items: diasMap.get(f) }));
+
+  // Por empleado
+  const empMap = new Map();
+  c.items.forEach(x => {
+    if (!empMap.has(x.empId)) empMap.set(x.empId, { id: x.empId, nombre: x.nombre, dias: 0, base: 0, he: 0, h50: 0, h100: 0 });
+    const e = empMap.get(x.empId);
+    if (x.base > 0) e.dias++;
+    e.base += x.base; e.he += x.he50 + x.he100; e.h50 += x.h50; e.h100 += x.h100;
+  });
+  const emps = [...empMap.values()].map(e => ({ ...e, tot: e.base + e.he })).sort((a, b) => b.tot - a.tot);
+  const maxEmp = emps.length ? emps[0].tot || 1 : 1;
+  const pc = v => c.tot ? _cPct(v / c.tot) : '—';
+
+  // KPIs
+  const mgCol = c.sinPO ? 'var(--text-light)' : c.margen < 0 ? '#b42318' : '#047857';
+  const kpi = `<div class="gt-tiles">
+    <div class="gt-tile"><div class="gt-tile-lbl">Costo a hoy</div><div class="gt-tile-val">${_cMoney(c.tot)}</div><div class="gt-tile-sub">mano de obra ${_cMoney(c.mo)} · contratistas ${_cMoney(c.oc)}</div></div>
+    <div class="gt-tile"><div class="gt-tile-lbl">Total de las PO</div><div class="gt-tile-val">${c.sinPO ? 'Sin PO' : _cMoney(c.po)}</div><div class="gt-tile-sub">${sitios.filter(s => s.id === id).length} PO</div></div>
+    <div class="gt-tile"><div class="gt-tile-lbl">Margen final</div><div class="gt-tile-val" style="color:${mgCol};">${c.sinPO ? '—' : _cMoney(c.margen)}</div><div class="gt-tile-sub">${c.sinPO ? 'falta cargar la PO' : _cPct(c.margen / c.po) + ' del total PO'}</div></div>
+    <div class="gt-tile"><div class="gt-tile-lbl">Días-persona</div><div class="gt-tile-val"><span class="cst-pill" style="font-size:18px;${_cSemaforo(dp, plan)}">${dp}${plan ? ' / ' + plan : ''}</span></div><div class="gt-tile-sub">${plan ? Math.round(dp / plan * 100) + ' % de lo previsto' : 'sin plazo cargado'}</div></div>
+    <div class="gt-tile"><div class="gt-tile-lbl">Horas extra</div><div class="gt-tile-val">${_cMoney(tHe50 + tHe100)}</div><div class="gt-tile-sub">${_cHs(h50)} al 50 % · ${_cHs(h100)} al 100 %</div></div>
+  </div>`;
+
+  // Gráfico (barras por día + acumulado). Una pausa de más de 7 días se marca.
+  const slots = [];
+  fechas.forEach((f, i) => {
+    if (i > 0) {
+      const ant = new Date(fechas[i - 1] + 'T12:00:00'), act = new Date(f + 'T12:00:00');
+      if ((act - ant) / 864e5 > 7) slots.push({ pausa: true, desde: fechas[i - 1], hasta: f });
+    }
+    slots.push({ f });
+  });
+  const W = 960, H = 210, L = 64, T = 16;
+  const sw = slots.length ? (W - L - 20) / slots.length : 1, bw = Math.min(54, sw * 0.56);
+  const valDia = f => (diasMap.get(f) || []).filter(x => !sel || x.empId === sel);
+  const maxD = Math.max(1, ...fechas.map(f => valDia(f).reduce((a, x) => a + x.tot, 0)));
+  const paso = maxD > 400000 ? 150000 : maxD > 200000 ? 100000 : maxD > 80000 ? 50000 : 20000;
+  const topD = Math.ceil(maxD / paso) * paso;
+  const totSel = its.reduce((a, x) => a + x.tot, 0) || 1;
+  let acu = 0; const pts = [];
+  let svg = '';
+  for (let v = 0; v <= topD; v += paso) {
+    const y = T + H - v / topD * H;
+    svg += `<line x1="${L}" x2="${W - 20}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#e6e9f1"/><text x="${L - 8}" y="${(y + 4).toFixed(1)}" text-anchor="end" font-size="11" fill="#7a8099">${v ? (v / 1000).toLocaleString('es-AR') + ' k' : '0'}</text>`;
+  }
+  const hits = [];
+  slots.forEach((s, i) => {
+    const cx = L + sw * i + sw / 2;
+    if (s.pausa) {
+      svg += `<rect x="${(cx - sw / 2 + 4).toFixed(1)}" y="${T}" width="${(sw - 8).toFixed(1)}" height="${H}" rx="8" fill="#f4f5f9"/><text x="${cx.toFixed(1)}" y="${T + H / 2 - 6}" text-anchor="middle" font-size="12" font-weight="600" fill="#7a8099">Pausa</text><text x="${cx.toFixed(1)}" y="${T + H / 2 + 12}" text-anchor="middle" font-size="10.5" fill="#9aa0b8">${_cDdMm(s.desde)} – ${_cDdMm(s.hasta)}</text>`;
+      return;
+    }
+    const xs = valDia(s.f);
+    const b = xs.reduce((a, x) => a + x.base, 0), h = xs.reduce((a, x) => a + x.he50 + x.he100, 0);
+    acu += b + h;
+    const yb = T + H - b / topD * H, yh = yb - h / topD * H;
+    pts.push(cx.toFixed(1) + ',' + (T + H - acu / totSel * H).toFixed(1));
+    svg += `<rect x="${(cx - bw / 2).toFixed(1)}" y="${yb.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(0, T + H - yb).toFixed(1)}" rx="3" fill="#4f80ff"/>`;
+    svg += `<rect x="${(cx - bw / 2).toFixed(1)}" y="${yh.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(0, yb - yh).toFixed(1)}" rx="3" fill="#f59e0b"/>`;
+    if (b + h) svg += `<text x="${cx.toFixed(1)}" y="${(yh - 6).toFixed(1)}" text-anchor="middle" font-size="10.5" font-weight="600" fill="#3d4258">${Math.round((b + h) / 1000).toLocaleString('es-AR')} k</text>`;
+    const esFer = (diasMap.get(s.f) || []).some(x => x.tipo === 'feriado');
+    svg += `<text x="${cx.toFixed(1)}" y="${T + H + 18}" text-anchor="middle" font-size="11.5" font-weight="600" fill="#1a1d2e">${_cDdMm(s.f)}</text><text x="${cx.toFixed(1)}" y="${T + H + 33}" text-anchor="middle" font-size="10.5" fill="${esFer ? '#c2410c' : '#7a8099'}">${esFer ? 'feriado' : _cDiaSem(s.f)}</text>`;
+    hits.push(`<rect x="${(cx - sw / 2).toFixed(1)}" y="8" width="${sw.toFixed(1)}" height="${H + 40}" fill="#4f80ff" fill-opacity="0.001" style="cursor:pointer" onmouseenter="ocoTip('${s.f}', ${(cx / W * 100).toFixed(2)})" onmouseleave="ocoTipOff()" onclick="ocoAbrirDia('${s.f}')"></rect>`);
+  });
+  if (pts.length) svg += `<polyline points="${pts.join(' ')}" fill="none" stroke="#1e2a4a" stroke-width="2.2" stroke-linejoin="round"/>`;
+  const selNom = sel ? (emps.find(e => e.id === sel) || {}).nombre : '';
+  const grafico = `<div class="card cst-card" style="flex:999 1 640px;min-width:0;">
+    <div class="cst-card-h"><div class="card-title">${sel ? 'Avance de ' + _escHtml(selNom) : 'Avance día por día'}</div>
+      <div class="cst-ley"><span><i style="background:#4f80ff"></i>Días normales</span><span><i style="background:#f59e0b"></i>Horas extra</span><span><i style="background:#1e2a4a;height:2px;width:16px"></i>Acumulado (${_cMoney(acu)})</span>
+      ${sel ? `<button class="btn btn-glass btn-sm" onclick="ocoElegir(null)">${_escHtml(selNom)} · ver todos</button>` : ''}</div></div>
+    ${fechas.length ? `<div style="overflow-x:auto;position:relative;" id="oco-graf"><svg viewBox="0 0 ${W} 265" width="100%" style="min-width:640px;display:block" role="img" aria-label="Costo por día de la obra">${svg}${hits.join('')}</svg><div id="oco-tip" class="cst-tip" style="display:none;"></div></div>` : '<div class="cst-vacio">Todavía no hay personal propio cargado en esta obra.</div>'}
+  </div>`;
+
+  // Composición + plazo
+  const comp = [['Días normales', tBase, '#4f80ff'], ['Horas extra 50 %', tHe50, '#f59e0b'], ['Horas extra 100 %', tHe100, '#c2410c'], ['Contratistas (OC)', c.oc, '#8b5cf6']];
+  const composicion = `<div class="card cst-card" style="flex:1 1 320px;">
+    <div class="card-title" style="margin-bottom:14px;">De qué está hecho el costo</div>
+    <div class="cst-barra">${comp.map(x => c.tot ? `<div style="width:${(x[1] / c.tot * 100).toFixed(2)}%;background:${x[2]}"></div>` : '').join('')}</div>
+    ${comp.map(x => `<div class="cst-comp"><i style="background:${x[2]}"></i><span>${x[0]}</span><b>${_cMoney(x[1])}</b><em>${pc(x[1])}</em></div>`).join('')}
+    <div class="cst-sep"></div>
+    <div class="cst-comp"><span>Costo por día-persona</span><b>${dp ? _cMoney(c.mo / dp) : '—'}</b></div>
+    <div class="cst-comp"><span>Plazo</span><b>${obra && obra.plazoDias ? obra.plazoDias + ' días' : 'sin cargar'}</b></div>
+  </div>`;
+
+  // Por empleado
+  const filasEmp = emps.map(e => `<tr class="cst-fila ${sel === e.id ? 'cst-sel' : (sel ? 'cst-dim' : '')}" onclick="ocoElegir('${_escJs(e.id)}')">
+      <td style="text-align:left;font-weight:600;">${_escHtml(e.nombre)}</td><td>${e.dias}</td><td>${_cMoney(e.base)}</td>
+      <td>${e.h50 ? _cHs(e.h50) : '—'}</td><td>${e.h100 ? _cHs(e.h100) : '—'}</td><td>${e.he ? _cMoney(e.he) : '—'}</td><td style="font-weight:700;">${_cMoney(e.tot)}</td>
+      <td><div class="cst-peso"><div><span style="width:${(e.base / maxEmp * 100).toFixed(1)}%;background:#4f80ff"></span><span style="width:${(e.he / maxEmp * 100).toFixed(1)}%;background:#f59e0b"></span></div><em>${pc(e.tot)}</em></div></td></tr>`).join('');
+  const porEmpleado = `<div class="card cst-card">
+    <div class="cst-card-h"><div class="card-title">Costo por empleado</div><div class="cst-nota">Tocá un empleado para ver solo su costo en el gráfico y en los días</div></div>
+    <div class="table-wrap"><table class="cst-tabla"><thead><tr><th style="text-align:left;">Empleado</th><th>Días</th><th>Días normales</th><th>HE 50 %</th><th>HE 100 %</th><th>$ Horas extra</th><th>Total</th><th>Peso en la obra</th></tr></thead>
+    <tbody>${filasEmp || '<tr><td colspan="8" class="cst-vacio">Sin personal propio cargado.</td></tr>'}</tbody>
+    ${emps.length ? `<tfoot><tr><td style="text-align:left;">Total mano de obra</td><td></td><td>${_cMoney(tBase)}</td><td>${_cHs(h50)}</td><td>${_cHs(h100)}</td><td>${_cMoney(tHe50 + tHe100)}</td><td>${_cMoney(c.mo)}</td><td></td></tr></tfoot>` : ''}</table></div></div>`;
+
+  // Por día
+  let acu2 = 0;
+  const totRef = its.reduce((a, x) => a + x.tot, 0) || 1;
+  const filasDia = fechas.map(f => {
+    const xs = valDia(f);
+    const b = xs.reduce((a, x) => a + x.base, 0), h = xs.reduce((a, x) => a + x.he50 + x.he100, 0);
+    acu2 += b + h;
+    const nombres = xs.map(x => x.nombre).join(' · ');
+    return `<tr class="${xs.length ? '' : 'cst-dim'}"><td><b>${_cDdMm(f)}</b><div class="cst-nota">${_cDiaSem(f)}</div></td>
+      <td>${xs.length ? `<button class="cst-gente" onclick="ocoAbrirDia('${f}')" title="${_escAttr(nombres)}"><i class="fa-solid fa-user-group"></i> ${xs.length} ${xs.length === 1 ? 'persona' : 'personas'} <i class="fa-solid fa-circle-info"></i></button>` : '—'}</td>
+      <td>${b ? _cMoney(b) : '—'}</td><td style="color:#b45309;">${h ? _cMoney(h) : '—'}</td><td style="font-weight:700;">${_cMoney(b + h)}</td>
+      <td><div class="cst-acu"><div><span style="width:${(acu2 / totRef * 100).toFixed(1)}%"></span></div><b>${_cMoney(acu2)}</b></div></td></tr>`;
+  }).join('');
+  const porDia = `<div class="card cst-card" style="flex:999 1 640px;min-width:0;">
+    <div class="card-title" style="margin-bottom:12px;">Detalle por día</div>
+    <div class="table-wrap"><table class="cst-tabla"><thead><tr><th>Fecha</th><th>Quiénes fueron</th><th>Días normales</th><th>Horas extra</th><th>Total del día</th><th>Acumulado</th></tr></thead>
+    <tbody>${filasDia || '<tr><td colspan="6" class="cst-vacio">Sin días con personal propio.</td></tr>'}</tbody></table></div></div>`;
+
+  // Para revisar
+  const rev = [];
+  if (plan && dp > plan) rev.push(['warn', `<b>Plazo superado.</b> ${dp} días-persona sobre ${plan} previstos.`]);
+  const ctrls = new Map();
+  c.items.forEach(x => { if (x.ctrl) { if (!ctrls.has(x.ctrl)) ctrls.set(x.ctrl, []); ctrls.get(x.ctrl).push(x); } });
+  ctrls.forEach((xs, t) => rev.push(['err', `<b>${_escHtml(t)}:</b> ${xs.slice(0, 6).map(x => _escHtml(x.nombre) + ' ' + _cDdMm(x.fecha)).join(', ')}${xs.length > 6 ? ` y ${xs.length - 6} más` : ''}.`]));
+  const prestadas = new Map();
+  c.items.forEach(x => {
+    if (!x.liq || !x.base) return;
+    const propia = x.pago === 'mensual' ? x.fecha.slice(0, 7) + '-2' : x.fecha.slice(0, 7) + '-' + (Number(x.fecha.slice(8)) <= 15 ? 1 : 2);
+    if (x.liq !== propia) prestadas.set(x.nombre, x.liq);
+  });
+  if (prestadas.size) rev.push(['info', `<b>Sin liquidación del período todavía.</b> ${[...prestadas].map(([n, l]) => _escHtml(n) + ' usa la de ' + _escHtml(l)).join(' · ')}.`]);
+  const fer = c.items.filter(x => x.tipo === 'feriado' && x.tot);
+  if (fer.length) rev.push(['naranja', `<b>Feriados trabajados.</b> ${_cMoney(fer.reduce((a, x) => a + x.tot, 0))} en horas extra al 100 %.`]);
+  if (!rev.length) rev.push(['ok', '<b>Sin observaciones.</b> Todos los días asignados tienen su asistencia y su liquidación.']);
+  const revisar = `<div class="card cst-card" style="flex:1 1 320px;"><div class="card-title" style="margin-bottom:12px;">Para revisar</div>
+    ${rev.map(r => `<div class="cst-rev cst-rev-${r[0]}">${r[1]}</div>`).join('')}</div>`;
+
+  body.innerHTML = aviso + kpi +
+    `<div class="cst-fila-cards">${grafico}${composicion}</div>` + porEmpleado +
+    `<div class="cst-fila-cards" style="align-items:flex-start;">${porDia}${revisar}</div>`;
+}
+
+/* Tooltip del gráfico: costo del día por empleado. */
+function ocoTip(f, xPct) {
+  const tip = document.getElementById('oco-tip');
+  const d = _oco.dias.find(x => x.fecha === f);
+  if (!tip || !d) return;
+  const xs = d.items.filter(x => !_oco.sel || x.empId === _oco.sel);
+  const det = x => x.base && (x.he50 + x.he100) ? 'día ' + _cMoney(x.base) + ' + HE ' + _cMoney(x.he50 + x.he100) : (x.he50 + x.he100 ? 'solo HE' : (x.base ? 'día normal' : (x.ctrl || 'sin costo')));
+  tip.innerHTML = `<div class="cst-tip-t">${_cDiaSem(f)} ${_cDdMm(f)}</div>` +
+    xs.map(x => `<div class="cst-tip-r"><span>${_escHtml(x.nombre)}</span><em>${_escHtml(det(x))}</em><b>${_cMoney(x.tot)}</b></div>`).join('') +
+    `<div class="cst-tip-tot"><span>Total del día</span><b>${_cMoney(xs.reduce((a, x) => a + x.tot, 0))}</b></div>`;
+  tip.style.display = 'block';
+  if (xPct > 62) { tip.style.left = ''; tip.style.right = (100 - xPct + 3).toFixed(1) + '%'; }
+  else { tip.style.right = ''; tip.style.left = (xPct + 3).toFixed(1) + '%'; }
+}
+function ocoTipOff() { const t = document.getElementById('oco-tip'); if (t) t.style.display = 'none'; }
+
+/* Modal del día: cada persona con día normal, HE 50 / 100 y total. */
+function ocoAbrirDia(f) {
+  const d = _oco.dias.find(x => x.fecha === f);
+  if (!d) return;
+  ocoTipOff();
+  const xs = d.items;
+  const fila = x => `<tr class="${_oco.sel === x.empId ? 'cst-sel' : ''}"><td style="text-align:left;font-weight:600;">${_escHtml(x.nombre)}${x.parte !== 1 ? ` <span class="cst-nota">(${Math.round(x.parte * 100)} % del día)</span>` : ''}${x.ctrl ? `<div class="cst-nota" style="color:#b42318;">${_escHtml(x.ctrl)}</div>` : ''}</td>
+    <td>${x.base ? _cMoney(x.base) : '—'}</td><td style="color:#b45309;">${x.h50 ? _cHs(x.h50) + ' · ' + _cMoney(x.he50) : '—'}</td><td style="color:#9a3412;">${x.h100 ? _cHs(x.h100) + ' · ' + _cMoney(x.he100) : '—'}</td><td style="font-weight:700;">${_cMoney(x.tot)}</td></tr>`;
+  document.getElementById('oco-dia-title').textContent = _cDiaSem(f) + ' ' + fechaCorta(f);
+  document.getElementById('oco-dia-sub').textContent = _oco.sitio + ' · ' + xs.length + (xs.length === 1 ? ' persona' : ' personas');
+  document.getElementById('oco-dia-body').innerHTML = `<table class="cst-tabla"><thead><tr><th style="text-align:left;">Empleado</th><th>Día normal</th><th>HE 50 %</th><th>HE 100 %</th><th>Total</th></tr></thead>
+    <tbody>${xs.map(fila).join('')}</tbody>
+    <tfoot><tr><td style="text-align:left;">Total del día</td><td>${_cMoney(xs.reduce((a, x) => a + x.base, 0))}</td><td colspan="2">${_cMoney(xs.reduce((a, x) => a + x.he50 + x.he100, 0))} en horas extra</td><td>${_cMoney(xs.reduce((a, x) => a + x.tot, 0))}</td></tr></tfoot></table>`;
+  document.getElementById('modal-costo-dia').classList.add('open');
+}
+function cerrarModalCostoDia() { document.getElementById('modal-costo-dia').classList.remove('open'); }
+
+/* ── Sección Costos: todas las obras con personal cargado ─────────── */
+const _CST_MES = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+function _cstObras() {
+  const idx = _costoIdx();
+  const ids = new Set();
+  idx.porDia.forEach(set => set.forEach(s => { if (!esEstadoEspecial(s)) ids.add(s); }));
+  return [...ids].map(id => {
+    const c = costoObra(id, idx);
+    const obra = obraDeSitio(id);
+    const sitio = sitios.find(s => s.id === id);
+    const fechas = c.items.map(x => x.fecha).sort();
+    return {
+      id, c, cli: sitio ? sitio.clienteId : '', estado: obra ? obra.estado : 'Sin alta',
+      desde: fechas[0] || '', hasta: fechas[fechas.length - 1] || '',
+      meses: [...new Set(fechas.map(f => f.slice(0, 7)))].sort(),
+      dp: obraDiasPersona(id), plan: obraPlazoP(obra)
+    };
+  }).filter(o => o.c.items.length);
+}
+function _cstPasa(o, excepto) {
+  const f = { cli: msGet('cst-f-cli'), estado: msGet('cst-f-estado'), mes: msGet('cst-f-mes') };
+  const vals = { cli: [o.cli], estado: [o.estado], mes: o.meses };
+  return Object.keys(f).every(k => k === excepto || !f[k].length || vals[k].some(v => f[k].includes(v)));
+}
+function cstOrden(v) { _cst.orden = v; renderCostos(); }
+
+function renderCostos() {
+  const tbody = document.getElementById('cst-tbody');
+  if (!tbody) return;
+  const aviso = document.getElementById('cst-aviso');
+  if (!_costo.map) {
+    if (!_costo.cargando && !_costo.error) costoCargar().then(costoRefrescarVista);
+    if (aviso) aviso.innerHTML = _costoAvisoHtml();
+    tbody.innerHTML = '<tr><td colspan="9" class="cst-vacio">Leyendo el costo del personal…</td></tr>';
+    return;
+  }
+  if (aviso) aviso.innerHTML = _costoAvisoHtml();
+  const todas = _cstObras();
+  // Filtros de encabezado: cada opción cuenta con los OTROS filtros; 0 = gris (no elegible)
+  const opts = (k, valores, etiqueta) => {
+    const base = todas.filter(o => _cstPasa(o, k));
+    const sel = new Set(msGet('cst-f-' + k));
+    return [...new Set(todas.flatMap(valores))].sort().map(v => {
+      const n = base.filter(o => valores(o).includes(v)).length;
+      return { value: v, label: etiqueta ? etiqueta(v) : v, count: n, disabled: n === 0 && !sel.has(v) };
+    });
+  };
+  msInit('cst-f-cli', opts('cli', o => [o.cli]), 'Todos los clientes', renderCostos);
+  msInit('cst-f-estado', opts('estado', o => [o.estado]), 'Todos los estados', renderCostos);
+  msInit('cst-f-mes', opts('mes', o => o.meses, m => _CST_MES[Number(m.slice(5)) - 1] + ' ' + m.slice(0, 4)), 'Todos los meses', renderCostos);
+
+  let L = todas.filter(o => _cstPasa(o, null));
+  /* Sin PO (marcador de $1): sin margen, van al final en los órdenes por margen. */
+  const conPO = (fn) => (a, b) => (a.c.sinPO - b.c.sinPO) || (a.c.sinPO ? 0 : fn(a, b));
+  const ord = {
+    margen:   conPO((a, b) => a.c.margen - b.c.margen),
+    margenD:  conPO((a, b) => b.c.margen - a.c.margen),
+    pct:      conPO((a, b) => a.c.margen / a.c.po - b.c.margen / b.c.po),
+    costo:    (a, b) => b.c.tot - a.c.tot,
+    reciente: (a, b) => b.hasta.localeCompare(a.hasta)
+  };
+  L.sort(ord[_cst.orden] || ord.margen);
+  const cnt = document.getElementById('cst-cuenta');
+  if (cnt) cnt.textContent = L.length + (L.length === 1 ? ' obra' : ' obras') + ' con personal cargado';
+  if (!L.length) { tbody.innerHTML = '<tr><td colspan="9" class="cst-vacio">Ninguna obra con personal cargado coincide con los filtros.</td></tr>'; return; }
+  tbody.innerHTML = L.map((o, i) => {
+    const c = o.c;
+    const pct = c.sinPO ? null : c.margen / c.po;
+    const estSt = o.estado === OBRA_TERMINADA ? 'background:#f1f2f6;color:#3d4258' : o.estado === 'Sin alta' ? 'background:#fdf1d4;color:#8a4b06' : 'background:#dcf5ea;color:#046c4e';
+    return `<tr class="cst-fila ${i % 2 ? 'cst-zebra' : ''}" onclick="abrirObraCosto('${_escJs(o.id)}','costos')">
+      <td style="text-align:left;font-weight:700;color:var(--accent-blue);">${_escHtml(o.id)} →</td>
+      <td>${_escHtml(o.cli || '—')}</td>
+      <td><span class="cst-pill" style="${estSt}">${_escHtml(o.estado)}</span></td>
+      <td>${_cDdMm(o.desde)} → ${_cDdMm(o.hasta)}<div class="cst-nota">${o.meses.map(m => _CST_MES[Number(m.slice(5)) - 1] + ' ' + m.slice(0, 4)).join(' · ')}</div></td>
+      <td><span class="cst-pill" style="${_cSemaforo(o.dp, o.plan)}">${o.dp}${o.plan ? ' / ' + o.plan : ' · sin plazo'}</span></td>
+      <td class="cst-costo"><span class="cst-costo-v">${_cMoney(c.tot)}</span>
+        <div class="cst-hover"><div><span>Mano de obra propia</span><b>${_cMoney(c.mo)}</b></div><div><span>Contratistas (OC)</span><b>${_cMoney(c.oc)}</b></div><div class="cst-hover-t"><span>Costo total</span><b>${_cMoney(c.tot)}</b></div></div></td>
+      <td>${c.sinPO ? '<span class="cst-nota">Sin PO</span>' : _cMoney(c.po)}</td>
+      <td style="font-weight:700;font-size:14px;color:${c.sinPO ? 'var(--text-light)' : c.margen < 0 ? '#b42318' : '#047857'};">${c.sinPO ? '—' : _cMoney(c.margen)}</td>
+      <td>${pct === null ? '—' : `<span class="cst-pill" style="${_cMargenPctStyle(pct)}">${_cPct(pct)}</span>`}</td>
+    </tr>`;
+  }).join('');
+}
+
 </script>
 </body>
 </html>
