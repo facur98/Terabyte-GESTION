@@ -3701,6 +3701,7 @@
     #table-costos thead th:has(.ms-fbtn.ms-has-sel) { background: #f8e6d2 !important; color: #0f172a !important; box-shadow: inset 0 -2px 0 0 #d97706; }
     #table-costos tbody td { text-align: center; padding: 11px 10px; }
     #table-costos tbody tr.cst-fila { cursor: pointer; }
+    #table-costos tbody tr.cst-fila.cst-sin-det { cursor: default; }   /* #157 */
     /* #156 — estimado de contratistas */
     .cst-est { display: inline-block; margin-top: 3px; padding: 1px 7px; border-radius: 10px; background: #fdf1d4; color: #8a4b06; font-size: 10.5px; font-weight: 700; white-space: nowrap; }
     .cst-hover .cst-hover-est span, .cst-hover .cst-hover-est b { color: #fcd34d; }
@@ -4594,7 +4595,7 @@
           <tbody id="cst-tbody"></tbody>
         </table>
       </div>
-      <div style="font-size:11.5px;color:var(--text-light);margin-top:12px;">Pasá el mouse por el costo total para ver mano de obra y contratistas. Días: jornadas con gente en la obra (usados / plazo). Días-persona: suma de personas por día (usados / previstos). Gris = sin plazo cargado. Ambos: verde dentro de lo previsto, ámbar hasta 20 % arriba, rojo más de 20 % arriba. Contratistas: costo de las OC emitidas; si estuvo en la obra y no tiene OC, se estima con el % de su primera OC sobre el total PO, según sus días-persona (margen provisorio). Todavía sin materiales ni cargas sociales.</div>
+      <div style="font-size:11.5px;color:var(--text-light);margin-top:12px;">Pasá el mouse por el costo total para ver mano de obra y contratistas. Días: jornadas con gente en la obra (usados / plazo). Días-persona: suma de personas por día (usados / previstos). Gris = sin plazo cargado. Ambos: verde dentro de lo previsto, ámbar hasta 20 % arriba, rojo más de 20 % arriba. Contratistas: costo de las OC emitidas; si estuvo en la obra y no tiene OC, se estima con el % de su primera OC sobre el total PO, según sus días-persona («estimado»). Las obras solo de contratista no abren detalle: pasá el mouse por el costo. Todavía sin materiales ni cargas sociales.</div>
     </div>
   </div>
 
@@ -5844,7 +5845,7 @@ function mesActualStr() {
    a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
    Se pinta en el pie del sidebar (#sidebar-version).
    ═══════════════════════════════════════════════════════ */
-const APP_VERSION = 'V 121126 1105';
+const APP_VERSION = 'V 121126 1110';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
@@ -20487,6 +20488,12 @@ function costoTileHtml(id) {
     return `<div class="gt-tile gt-tile-costo" onclick="abrirObraCosto('${_escJs(id)}','obra')"><div class="gt-tile-lbl">Costo a hoy</div><div class="gt-tile-val" style="font-size:17px;">Sin personal</div><div class="gt-tile-sub">Ver costo →</div></div>`;
   }
   const col = c.sinPO ? 'var(--text-light)' : c.margen < 0 ? '#b42318' : '#047857';
+  if (c.tipo === 'contratista') {   // #157 — solo contratista: el recuadro informa, no abre detalle
+    return `<div class="gt-tile" title="Obra de contratista: costo = lo que se le paga (OC o % de su primera OC)">
+    <div class="gt-tile-lbl">Costo a hoy</div>
+    <div class="gt-tile-val">${_cMill(c.tot)}</div>
+    <div class="gt-tile-sub" style="color:${col};font-weight:600;">${c.sinPO ? 'sin PO cargada' : 'margen final ' + _cMill(c.margen)}${c.est ? ' · estimado' : ''}</div></div>`;
+  }
   return `<div class="gt-tile gt-tile-costo" onclick="abrirObraCosto('${_escJs(id)}','obra')" title="Abrir el costo de la obra">
     <div class="gt-tile-lbl">Costo a hoy</div>
     <div class="gt-tile-val">${_cMill(c.tot)}</div>
@@ -20496,6 +20503,7 @@ function costoTileHtml(id) {
 /* ── Vista: costo de una obra ─────────────────────────────────────── */
 function abrirObraCosto(id, volver) {
   if (!id || !costoPermitido()) return;
+  if (costoObra(id).tipo === 'contratista') return;   // #157 — solo contratista: sin detalle
   _oco.sitio = id; _oco.sel = null; _oco.volver = volver || 'costos';
   showView('obra-costo', null);
 }
@@ -20561,9 +20569,9 @@ function renderObraCosto() {
   // KPIs
   const mgCol = c.sinPO ? 'var(--text-light)' : c.margen < 0 ? '#b42318' : '#047857';
   const kpi = `<div class="gt-tiles">
-    <div class="gt-tile"><div class="gt-tile-lbl">Costo a hoy</div><div class="gt-tile-val">${_cMoney(c.tot)}</div><div class="gt-tile-sub">mano de obra ${_cMoney(c.mo)} · contratistas ${_cMoney(c.oc + c.est)}${c.est ? ' <span class="cst-est">incluye estimado</span>' : ''}</div></div>
+    <div class="gt-tile"><div class="gt-tile-lbl">Costo a hoy</div><div class="gt-tile-val">${_cMoney(c.tot)}</div><div class="gt-tile-sub">mano de obra ${_cMoney(c.mo)} · contratistas ${_cMoney(c.oc + c.est)}${c.est ? ' <span class="cst-est">estimado</span>' : ''}</div></div>
     <div class="gt-tile"><div class="gt-tile-lbl">Total de las PO</div><div class="gt-tile-val">${c.sinPO ? 'Sin PO' : _cMoney(c.po)}</div><div class="gt-tile-sub">${sitios.filter(s => s.id === id).length} PO</div></div>
-    <div class="gt-tile"><div class="gt-tile-lbl">Margen final</div><div class="gt-tile-val" style="color:${mgCol};">${c.sinPO ? '—' : _cMoney(c.margen)}</div><div class="gt-tile-sub">${c.sinPO ? 'falta cargar la PO' : _cPct(c.margen / c.po) + ' del total PO' + (c.est ? ' · provisorio' : '')}</div></div>
+    <div class="gt-tile"><div class="gt-tile-lbl">Margen final</div><div class="gt-tile-val" style="color:${mgCol};">${c.sinPO ? '—' : _cMoney(c.margen)}</div><div class="gt-tile-sub">${c.sinPO ? 'falta cargar la PO' : _cPct(c.margen / c.po) + ' del total PO'}</div></div>
     <div class="gt-tile"><div class="gt-tile-lbl">Días</div><div class="gt-tile-val"><span class="cst-pill" style="font-size:18px;${_cSemaforo(dias, planDias)}">${dias}${planDias ? ' / ' + planDias : ''}</span></div><div class="gt-tile-sub">${planDias ? Math.round(dias / planDias * 100) + ' % del plazo' : 'sin plazo cargado'}</div></div>
     <div class="gt-tile"><div class="gt-tile-lbl">Días-persona</div><div class="gt-tile-val"><span class="cst-pill" style="font-size:18px;${_cSemaforo(dp, plan)}">${dp}${plan ? ' / ' + plan : ''}</span></div><div class="gt-tile-sub">${plan ? Math.round(dp / plan * 100) + ' % de lo previsto' : 'sin plazo cargado'}</div></div>
     <div class="gt-tile"><div class="gt-tile-lbl">Horas extra</div><div class="gt-tile-val">${_cMoney(tHe50 + tHe100)}</div><div class="gt-tile-sub">${_cHs(h50)} al 50 % · ${_cHs(h100)} al 100 %</div></div>
@@ -20692,7 +20700,7 @@ function renderObraCosto() {
   if (fer.length) rev.push(['naranja', `<b>Feriados trabajados.</b> ${_cMoney(fer.reduce((a, x) => a + x.tot, 0))} en horas extra al 100 %.`]);
   c.ctr.forEach(x => {   // #156
     if (x.ocs.length && !x.dp) rev.push(['info', `<b>${_escHtml(x.nombre)}</b> tiene OC emitida en esta obra pero no figura en la asignación diaria.`]);
-    else if (!x.ocs.length && x.dp) rev.push(['warn', c.sinPO ? `<b>${_escHtml(x.nombre)} sin OC y sin PO:</b> no se puede estimar su costo.` : `<b>Costo estimado.</b> ${_escHtml(x.nombre)} no tiene OC emitida: ${_cMoney(x.est)} (${_ctrEstTexto(x, c)}). El margen es provisorio.`]);
+    else if (!x.ocs.length && x.dp) rev.push(['warn', c.sinPO ? `<b>${_escHtml(x.nombre)} sin OC y sin PO:</b> no se puede estimar su costo.` : `<b>Costo estimado.</b> ${_escHtml(x.nombre)} no tiene OC emitida: ${_cMoney(x.est)} (${_ctrEstTexto(x, c)}).`]);
   });
   if (!rev.length) rev.push(['ok', '<b>Sin observaciones.</b> Todos los días asignados tienen su asistencia y su liquidación.']);
   const revisar = `<div class="card cst-card" style="flex:1 1 320px;"><div class="card-title" style="margin-bottom:12px;">Para revisar</div>
@@ -20826,18 +20834,20 @@ function renderCostos() {
     const c = o.c;
     const pct = c.sinPO ? null : c.margen / c.po;
     const estSt = o.estado === OBRA_TERMINADA ? 'background:#f1f2f6;color:#3d4258' : o.estado === 'Sin alta' ? 'background:#fdf1d4;color:#8a4b06' : 'background:#dcf5ea;color:#046c4e';
-    return `<tr class="cst-fila ${i % 2 ? 'cst-zebra' : ''}" onclick="abrirObraCosto('${_escJs(o.id)}','costos')">
-      <td style="text-align:left;font-weight:700;color:var(--accent-blue);">${_escHtml(o.id)} →</td>
+    /* #157 — obra solo de contratista: sin detalle (no hay empleados que mostrar). */
+    const conDet = c.tipo !== 'contratista';
+    return `<tr class="cst-fila ${conDet ? '' : 'cst-sin-det'} ${i % 2 ? 'cst-zebra' : ''}"${conDet ? ` onclick="abrirObraCosto('${_escJs(o.id)}','costos')"` : ''}>
+      <td style="text-align:left;font-weight:700;color:${conDet ? 'var(--accent-blue)' : 'var(--text-dark)'};">${_escHtml(o.id)}${conDet ? ' →' : ''}</td>
       <td>${_escHtml(o.cli || '—')}</td>
       <td>${c.tipo ? `<span class="cst-pill" style="${_CTR_TIPO_ST[c.tipo]}">${_CTR_TIPO[c.tipo]}</span><div class="cst-nota" style="font-weight:600;color:var(--text-mid);">${_escHtml(_ctrEjTexto(c))}</div>` : '—'}</td>
       <td><span class="cst-pill" style="${estSt}">${_escHtml(o.estado)}</span></td>
       <td>${_cDdMm(o.desde)} → ${_cDdMm(o.hasta)}<div class="cst-nota">${_cstMesesTxt(o.meses)}</div></td>
       <td><span class="cst-pill" style="${_cSemaforo(o.dias, o.planDias)}"${o.planDias ? '' : ' title="Sin plazo cargado"'}>${o.dias}${o.planDias ? ' / ' + o.planDias : ''}</span></td>
       <td><span class="cst-pill" style="${_cSemaforo(o.dp, o.plan)}"${o.plan ? '' : ' title="Sin plazo cargado"'}>${o.dp}${o.plan ? ' / ' + o.plan : ''}</span></td>
-      <td class="cst-costo"><span class="cst-costo-v">${_cMoney(c.tot)}</span>${c.est ? '<div><span class="cst-est">incluye estimado</span></div>' : ''}
+      <td class="cst-costo"><span class="cst-costo-v">${_cMoney(c.tot)}</span>${c.est ? '<div><span class="cst-est" title="Costo del contratista según el % de su primera OC (no hay OC emitida en esta obra)">estimado</span></div>' : ''}
         <div class="cst-hover"><div><span>Mano de obra propia</span><b>${_cMoney(c.mo)}</b></div><div><span>Contratistas (OC emitidas)</span><b>${_cMoney(c.oc)}</b></div>${c.ctr.filter(x => x.est).map(x => `<div class="cst-hover-est"><span>${_escHtml(x.nombre)} · estimado</span><b>${_cMoney(x.est)}</b></div><div class="cst-hover-nota">${_ctrEstTexto(x, c)}</div>`).join('')}<div class="cst-hover-t"><span>Costo total</span><b>${_cMoney(c.tot)}</b></div></div></td>
       <td>${c.sinPO ? '<span class="cst-nota">Sin PO</span>' : _cMoney(c.po)}</td>
-      <td style="font-weight:700;font-size:14px;color:${c.sinPO ? 'var(--text-light)' : c.margen < 0 ? '#b42318' : '#047857'};">${c.sinPO ? '—' : _cMoney(c.margen)}${!c.sinPO && c.est ? '<div class="cst-nota" style="color:#8a4b06;font-weight:600;">provisorio</div>' : ''}</td>
+      <td style="font-weight:700;font-size:14px;color:${c.sinPO ? 'var(--text-light)' : c.margen < 0 ? '#b42318' : '#047857'};">${c.sinPO ? '—' : _cMoney(c.margen)}</td>
       <td>${pct === null ? '—' : `<span class="cst-pill" style="${_cMargenPctStyle(pct)}">${_cPct(pct)}</span>`}</td>
     </tr>`;
   }).join('');
