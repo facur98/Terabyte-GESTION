@@ -3703,6 +3703,7 @@
     #table-costos tbody tr.cst-fila { cursor: pointer; }
     #table-costos tbody tr.cst-fila.cst-sin-det { cursor: default; }   /* #157 */
     #table-costos thead th.cst-th-ord { cursor: pointer; user-select: none; }   /* #159 */
+    .cst-ej { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; }   /* #160 */
     #table-costos thead th.cst-th-ord .cst-ord-ic { font-size: 10px; opacity: .55; margin-left: 3px; }
     #table-costos thead th.cst-th-on .cst-ord-ic { opacity: 1; color: #fcd34d; }
     /* #156 — estimado de contratistas */
@@ -5849,7 +5850,7 @@ function mesActualStr() {
    a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
    Se pinta en el pie del sidebar (#sidebar-version).
    ═══════════════════════════════════════════════════════ */
-const APP_VERSION = 'V 121126 1135';
+const APP_VERSION = 'V 121126 1145';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
@@ -20440,10 +20441,14 @@ function costoObra(sitioId, idx) {
 }
 const _CTR_TIPO = { propia: 'Propia', contratista: 'Contratista', mixta: 'Mixta' };
 const _CTR_TIPO_ST = { propia: 'background:#e3ebff;color:#1e40af', contratista: 'background:#efe7fb;color:#5b21b6', mixta: 'background:#fdf1d4;color:#8a4b06' };
-/* Texto de ejecución: "Cuadrilla propia" · "Vieira · Ojeda" · "Propia + Gramajo". */
-function _ctrEjTexto(c) {
-  const n = c.ctr.map(x => x.nombre + (x.dp ? '' : ' (solo OC)')).join(' · ');
-  return c.tipo === 'propia' ? 'Cuadrilla propia' : c.tipo === 'mixta' ? 'Propia + ' + n : n;
+/* #160 — Ejecución como chips: «Propia» en azul y cada contratista con su
+   nombre en violeta (sin la palabra «Contratista»). Mixta = los dos. */
+function _ctrEjPills(c) {
+  if (!c.tipo) return '—';
+  const p = [];
+  if (c.tipo !== 'contratista') p.push(`<span class="cst-pill" style="${_CTR_TIPO_ST.propia}">Propia</span>`);
+  c.ctr.forEach(x => p.push(`<span class="cst-pill" style="${_CTR_TIPO_ST.contratista}"${x.dp ? '' : ' title="Tiene OC emitida pero no figura en la asignación diaria"'}>${_escHtml(x.nombre)}${x.dp ? '' : ' <small style="font-weight:500;opacity:.75;">· solo OC</small>'}</span>`));
+  return `<div class="cst-ej">${p.join('')}</div>`;
 }
 /* Detalle del estimado de un contratista (hover y pantalla de la obra). */
 function _ctrEstTexto(x, c) {
@@ -20861,7 +20866,7 @@ function renderCostos() {
     return `<tr class="cst-fila ${conDet ? '' : 'cst-sin-det'} ${i % 2 ? 'cst-zebra' : ''}"${conDet ? ` onclick="abrirObraCosto('${_escJs(o.id)}','costos')"` : ''}>
       <td style="text-align:left;font-weight:700;color:${conDet ? 'var(--accent-blue)' : 'var(--text-dark)'};">${_escHtml(o.id)}${conDet ? ' →' : ''}</td>
       <td>${_escHtml(o.cli || '—')}</td>
-      <td>${c.tipo ? `<span class="cst-pill" style="${_CTR_TIPO_ST[c.tipo]}">${_CTR_TIPO[c.tipo]}</span><div class="cst-nota" style="font-weight:600;color:var(--text-mid);">${_escHtml(_ctrEjTexto(c))}</div>` : '—'}</td>
+      <td>${_ctrEjPills(c)}</td>
       <td><span class="cst-pill" style="${estSt}">${_escHtml(o.estado)}</span></td>
       <td>${_cDdMm(o.desde)} → ${_cDdMm(o.hasta)}<div class="cst-nota">${_cstMesesTxt(o.meses)}</div></td>
       <td><span class="cst-pill" style="${_cSemaforo(o.dias, o.planDias)}"${o.planDias ? '' : ' title="Sin plazo cargado"'}>${o.dias}${o.planDias ? ' / ' + o.planDias : ''}</span></td>
