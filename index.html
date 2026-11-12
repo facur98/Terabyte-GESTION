@@ -3702,6 +3702,9 @@
     #table-costos tbody td { text-align: center; padding: 11px 10px; }
     #table-costos tbody tr.cst-fila { cursor: pointer; }
     #table-costos tbody tr.cst-fila.cst-sin-det { cursor: default; }   /* #157 */
+    #table-costos thead th.cst-th-ord { cursor: pointer; user-select: none; }   /* #159 */
+    #table-costos thead th.cst-th-ord .cst-ord-ic { font-size: 10px; opacity: .55; margin-left: 3px; }
+    #table-costos thead th.cst-th-on .cst-ord-ic { opacity: 1; color: #fcd34d; }
     /* #156 — estimado de contratistas */
     .cst-est { display: inline-block; margin-top: 3px; padding: 1px 7px; border-radius: 10px; background: #fdf1d4; color: #8a4b06; font-size: 10.5px; font-weight: 700; white-space: nowrap; }
     .cst-hover .cst-hover-est span, .cst-hover .cst-hover-est b { color: #fcd34d; }
@@ -4561,12 +4564,13 @@
       </div>
       <div class="topbar-actions">
         <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--text-mid);">Ordenar
-          <select class="form-input" style="padding:8px 10px;width:auto;" onchange="cstOrden(this.value)">
+          <select class="form-input" id="cst-orden" style="padding:8px 10px;width:auto;" onchange="cstOrden(this.value)">
+            <option value="reciente" selected>Más reciente primero</option>   <!-- #159 — orden por defecto -->
             <option value="margen">Menor margen primero</option>
             <option value="margenD">Mayor margen primero</option>
             <option value="pct">Menor margen % primero</option>
+            <option value="pctD">Mayor margen % primero</option>
             <option value="costo">Mayor costo primero</option>
-            <option value="reciente">Más reciente primero</option>
           </select></label>
         <button class="btn btn-glass" onclick="sincronizar()" style="font-size:12px;"><i class="fa-solid fa-rotate"></i> Sincronizar</button>
       </div>
@@ -4589,8 +4593,8 @@
             <th>Días-persona</th>
             <th>Costo total</th>
             <th>Total PO</th>
-            <th>Margen final</th>
-            <th>Margen %</th>
+            <th class="cst-th-ord" id="cst-th-margen" onclick="cstOrdenCol('margen')" title="Ordenar por margen">Margen final <span class="cst-ord-ic"></span></th>   <!-- #159 -->
+            <th class="cst-th-ord" id="cst-th-pct" onclick="cstOrdenCol('pct')" title="Ordenar por margen %">Margen % <span class="cst-ord-ic"></span></th>
           </tr></thead>
           <tbody id="cst-tbody"></tbody>
         </table>
@@ -5845,7 +5849,7 @@ function mesActualStr() {
    a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
    Se pinta en el pie del sidebar (#sidebar-version).
    ═══════════════════════════════════════════════════════ */
-const APP_VERSION = 'V 121126 1120';
+const APP_VERSION = 'V 121126 1135';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
@@ -20270,7 +20274,7 @@ const COSTO_HOJA = 'COSTO_PERSONAL';
 const COSTO_VIGENCIA_MS = 5 * 60 * 1000;
 var _costo = { map: null, porEmp: {}, cargadoAt: 0, cargando: null, error: '', actualizado: '', hasta: '' };
 var _oco = { sitio: null, sel: null, volver: 'obra', dia: null, dias: [] };   // vista de costo de una obra
-var _cst = { orden: 'margen' };                                              // sección Costos
+var _cst = { orden: 'reciente' };   // #159 — antes 'margen'                                              // sección Costos
 
 function costoPermitido() { return evoPermitido(); }
 function costoVistaBloqueada(name) { return (name === 'costos' || name === 'obra-costo') && !costoPermitido(); }
@@ -20785,6 +20789,13 @@ function _cstMesesTxt(meses) {
   return [...porAnio].map(([y, ms]) => ms.join(' · ') + ' ' + y).join(' · ');
 }
 function cstOrden(v) { _cst.orden = v; renderCostos(); }
+/* #159 — clic en el encabezado: primero ascendente (menor arriba), otro clic descendente. */
+function cstOrdenCol(k) {
+  const v = _cst.orden === k ? k + 'D' : k;
+  const sel = document.getElementById('cst-orden');
+  if (sel) sel.value = v;
+  cstOrden(v);
+}
 
 function renderCostos() {
   const tbody = document.getElementById('cst-tbody');
@@ -20816,7 +20827,7 @@ function renderCostos() {
     msInit('cst-f-ej', o2, 'Toda ejecución', renderCostos);
   }
   msInit('cst-f-estado', opts('estado', o => [o.estado]), 'Todos los estados', renderCostos);
-  msInit('cst-f-mes', opts('mes', o => o.meses, m => _CST_MES[Number(m.slice(5)) - 1] + ' ' + m.slice(0, 4)), 'Todos los meses', renderCostos);
+  msInit('cst-f-mes', opts('mes', o => o.meses, m => _CST_MES[Number(m.slice(5)) - 1] + ' ' + m.slice(0, 4)).reverse(), 'Todos los meses', renderCostos);   // #159 — más reciente arriba
 
   let L = todas.filter(o => _cstPasa(o, null));
   /* Sin PO (marcador de $1): sin margen, van al final en los órdenes por margen. */
@@ -20825,9 +20836,18 @@ function renderCostos() {
     margen:   conPO((a, b) => a.c.margen - b.c.margen),
     margenD:  conPO((a, b) => b.c.margen - a.c.margen),
     pct:      conPO((a, b) => a.c.margen / a.c.po - b.c.margen / b.c.po),
+    pctD:     conPO((a, b) => b.c.margen / b.c.po - a.c.margen / a.c.po),   // #159
     costo:    (a, b) => b.c.tot - a.c.tot,
-    reciente: (a, b) => b.hasta.localeCompare(a.hasta)
+    reciente: (a, b) => b.hasta.localeCompare(a.hasta) || b.desde.localeCompare(a.desde) || a.id.localeCompare(b.id)
   };
+  /* #159 — flecha en el encabezado de la columna por la que se ordena */
+  [['margen', 'cst-th-margen'], ['pct', 'cst-th-pct']].forEach(([k, id]) => {
+    const th = document.getElementById(id); if (!th) return;
+    const on = _cst.orden === k || _cst.orden === k + 'D';
+    th.classList.toggle('cst-th-on', on);
+    const ic = th.querySelector('.cst-ord-ic');
+    if (ic) ic.innerHTML = on ? `<i class="fa-solid fa-arrow-${_cst.orden === k ? 'up' : 'down'}"></i>` : '<i class="fa-solid fa-sort"></i>';
+  });
   L.sort(ord[_cst.orden] || ord.margen);
   const cnt = document.getElementById('cst-cuenta');
   if (cnt) cnt.textContent = L.length + (L.length === 1 ? ' obra' : ' obras');
