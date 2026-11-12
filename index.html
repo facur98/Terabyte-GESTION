@@ -4595,7 +4595,7 @@
           <tbody id="cst-tbody"></tbody>
         </table>
       </div>
-      <div style="font-size:11.5px;color:var(--text-light);margin-top:12px;">Pasá el mouse por el costo total para ver mano de obra y contratistas. Días: jornadas con gente en la obra (usados / plazo). Días-persona: suma de personas por día (usados / previstos). Gris = sin plazo cargado. Ambos: verde dentro de lo previsto, ámbar hasta 20 % arriba, rojo más de 20 % arriba. Contratistas: costo de las OC emitidas; si estuvo en la obra y no tiene OC, se estima con el % de su primera OC sobre el total PO, según sus días-persona («estimado»). Las obras solo de contratista no abren detalle: pasá el mouse por el costo. Todavía sin materiales ni cargas sociales.</div>
+      <div style="font-size:11.5px;color:var(--text-light);margin-top:12px;">Pasá el mouse por el costo total para ver mano de obra y contratistas. Días: jornadas con gente en la obra (usados / plazo). Días-persona: suma de personas por día (usados / previstos). Gris = sin plazo cargado. Ambos: verde dentro de lo previsto, ámbar hasta 20 % arriba, rojo más de 20 % arriba. Contratistas: costo de las OC emitidas; si estuvo en la obra y no tiene OC, se estima con el % de su primera OC sobre el total PO («estimado»). Las obras solo de contratista no abren detalle: pasá el mouse por el costo. Todavía sin materiales ni cargas sociales.</div>
     </div>
   </div>
 
@@ -5845,7 +5845,7 @@ function mesActualStr() {
    a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
    Se pinta en el pie del sidebar (#sidebar-version).
    ═══════════════════════════════════════════════════════ */
-const APP_VERSION = 'V 121126 1110';
+const APP_VERSION = 'V 121126 1120';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
@@ -20343,7 +20343,9 @@ function _costoIdx() {
    Costo real = OC EMITIDAS del sitio (como antes). Un contratista que
    estuvo en la obra (asignación diaria, relación «C») y NO tiene OC
    emitida en ese sitio se ESTIMA:
-     total PO × % de su primera OC emitida × (sus días-persona / días-persona del sitio)
+     total PO × % de su primera OC emitida
+   #158 — Solo si la obra se comparte (mixta o varios contratistas sin OC) se
+   reparte internamente por días-persona; ese reparto no se muestra.
    El % sale de su PRIMERA OC emitida con costo < venta: las de monto fijo
    (costo = venta) se descartan. Sin ninguna OC: OC_PCT_DEFAULT.
    Sin PO real ($1) no se estima. */
@@ -20442,7 +20444,7 @@ function _ctrEjTexto(c) {
 /* Detalle del estimado de un contratista (hover y pantalla de la obra). */
 function _ctrEstTexto(x, c) {
   if (c.sinPO) return 'sin PO: no se puede estimar';
-  return `${_cPct(x.pct)} ${x.pctDef ? '(por defecto, sin OC propia)' : '(su primera OC, ' + _escHtml(x.pctNro) + ')'} × total PO × ${x.dp} de ${c.dpTot} días-persona`;
+  return `${_cPct(x.pct)} ${x.pctDef ? '(por defecto, sin OC propia)' : '(su primera OC, ' + _escHtml(x.pctNro) + ')'} × total PO${x.dp !== c.dpTot ? ' (su parte de la obra)' : ''}`;
 }
 function _costoOcSitio(sitioId) {
   return (oc || []).filter(o => o.sitioId === sitioId && o.estado === OC_ESTADO_EMITIDA).reduce((a, o) => a + (o.totalCosto || 0), 0);
@@ -20462,7 +20464,7 @@ function _cSemaforo(dp, plan) {
 }
 /* #155 — Plazo en DÍAS (el que se carga en el alta). null si no hay. */
 function _cPlazoDias(o) { return (o && o.plazoDias !== null && o.plazoDias > 0) ? o.plazoDias : null; }
-function _cMargenPctStyle(x) { return x < 0.6 ? 'background:#fde2e2;color:#9b1c1c' : x < 0.78 ? 'background:#fdf1d4;color:#8a4b06' : 'background:#dcf5ea;color:#046c4e'; }
+function _cMargenPctStyle(x) { return x < 0.5 ? 'background:#fde2e2;color:#9b1c1c' : x < 0.78 ? 'background:#fdf1d4;color:#8a4b06' : 'background:#dcf5ea;color:#046c4e'; }
 
 /* Aviso común cuando todavía no hay datos o falló la lectura. */
 function _costoAvisoHtml() {
@@ -20656,14 +20658,14 @@ function renderObraCosto() {
     const costo = x.ocs.length ? x.real : x.est;
     const origen = x.ocs.length ? '<span class="cst-pill" style="background:#dcf5ea;color:#046c4e">OC emitida</span>'
       : `<span class="cst-pill" style="background:#fdf1d4;color:#8a4b06">Estimado</span><div class="cst-nota">${_ctrEstTexto(x, c)}</div>`;
-    return `<tr><td style="text-align:left;font-weight:600;">${_escHtml(x.nombre)}</td><td>${x.fechas.size || '—'}</td><td>${x.dp || '—'}</td>
+    return `<tr><td style="text-align:left;font-weight:600;">${_escHtml(x.nombre)}</td><td>${x.fechas.size || '—'}</td>
       <td style="text-align:left;">${ocsTxt}</td><td style="font-weight:700;">${_cMoney(costo)}</td><td>${origen}</td></tr>`;
   }).join('');
   const porCtr = c.ctr.length ? `<div class="card cst-card">
-    <div class="cst-card-h"><div class="card-title">Contratistas</div><div class="cst-nota">Costo real = OC emitidas. Sin OC: total PO × % de su primera OC × su parte en días-persona</div></div>
-    <div class="table-wrap"><table class="cst-tabla"><thead><tr><th style="text-align:left;">Contratista</th><th>Días en obra</th><th>Días-persona</th><th style="text-align:left;">OC</th><th>Costo</th><th>Origen</th></tr></thead>
+    <div class="cst-card-h"><div class="card-title">Contratistas</div><div class="cst-nota">Costo real = OC emitidas. Sin OC: total PO × % de su primera OC (estimado)</div></div>
+    <div class="table-wrap"><table class="cst-tabla"><thead><tr><th style="text-align:left;">Contratista</th><th>Días en obra</th><th style="text-align:left;">OC</th><th>Costo</th><th>Origen</th></tr></thead>
     <tbody>${filasCtr}</tbody>
-    <tfoot><tr><td style="text-align:left;">Total contratistas</td><td></td><td>${c.dpTot ? c.ctr.reduce((a, x) => a + x.dp, 0) + ' de ' + c.dpTot : '—'}</td><td></td><td>${_cMoney(c.oc + c.est)}</td><td></td></tr></tfoot></table></div></div>` : '';
+    <tfoot><tr><td style="text-align:left;">Total contratistas</td><td></td><td></td><td>${_cMoney(c.oc + c.est)}</td><td></td></tr></tfoot></table></div></div>` : '';
 
   // Por día
   let acu2 = 0;
