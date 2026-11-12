@@ -3701,6 +3701,15 @@
     #table-costos thead th:has(.ms-fbtn.ms-has-sel) { background: #f8e6d2 !important; color: #0f172a !important; box-shadow: inset 0 -2px 0 0 #d97706; }
     #table-costos tbody td { text-align: center; padding: 11px 10px; }
     #table-costos tbody tr.cst-fila { cursor: pointer; }
+    /* #156 — estimado de contratistas */
+    .cst-est { display: inline-block; margin-top: 3px; padding: 1px 7px; border-radius: 10px; background: #fdf1d4; color: #8a4b06; font-size: 10.5px; font-weight: 700; white-space: nowrap; }
+    .cst-hover .cst-hover-est span, .cst-hover .cst-hover-est b { color: #fcd34d; }
+    /* 11 columnas: celdas más angostas y la obra en una línea */
+    #table-costos thead th, #table-costos tbody td { padding-left: 6px; padding-right: 6px; }
+    #table-costos thead th { letter-spacing: .3px; }
+    #table-costos tbody td:nth-child(4) .cst-pill { white-space: normal; max-width: 112px; }
+    #table-costos tbody td:first-child { white-space: nowrap; }
+    .cst-hover .cst-hover-nota { display: block; max-width: 300px; font-size: 11px; color: #9fb0d6; margin: -2px 0 4px; line-height: 1.35; white-space: normal; }
     #table-costos tbody tr.cst-zebra td { background: #f6f7fa; }
     #table-costos tbody tr.cst-fila:hover td { background: rgba(79,128,255,0.08); }
     .ms-option.ms-option-off { opacity: .4; cursor: not-allowed; }
@@ -4547,7 +4556,7 @@
     <div class="topbar">
       <div>
         <div class="page-title">Costos <span>de obra</span></div>
-        <div style="font-size:13px;color:var(--text-light);margin-top:3px;">Obras con personal cargado · margen final = total PO − mano de obra propia − contratistas (OC)</div>
+        <div style="font-size:13px;color:var(--text-light);margin-top:3px;">Obras con gente en obra (propia o contratista) · margen final = total PO − mano de obra propia − contratistas</div>
       </div>
       <div class="topbar-actions">
         <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--text-mid);">Ordenar
@@ -4572,6 +4581,7 @@
           <thead><tr>
             <th style="text-align:left;">Obra <div class="ms-wrap ms-th" id="cst-f-obra" data-title="Obra" data-buscar="1"></div></th>
             <th>Cliente <div class="ms-wrap ms-th" id="cst-f-cli" data-title="Cliente"></div></th>
+            <th>Ejecución <div class="ms-wrap ms-th" id="cst-f-ej" data-title="Ejecución / contratista"></div></th>   <!-- #156 -->
             <th>Estado <div class="ms-wrap ms-th" id="cst-f-estado" data-title="Estado"></div></th>
             <th>Período <div class="ms-wrap ms-th" id="cst-f-mes" data-title="Mes con personal"></div></th>
             <th>Días</th>   <!-- #155 — días reales de trabajo (fechas con gente) -->
@@ -4584,7 +4594,7 @@
           <tbody id="cst-tbody"></tbody>
         </table>
       </div>
-      <div style="font-size:11.5px;color:var(--text-light);margin-top:12px;">Pasá el mouse por el costo total para ver mano de obra y contratistas. Días: jornadas con gente en la obra (usados / plazo). Días-persona: suma de personas por día (usados / previstos). Ambos: verde dentro de lo previsto, ámbar hasta 20 % arriba, rojo más de 20 % arriba. Todavía sin materiales ni cargas sociales.</div>
+      <div style="font-size:11.5px;color:var(--text-light);margin-top:12px;">Pasá el mouse por el costo total para ver mano de obra y contratistas. Días: jornadas con gente en la obra (usados / plazo). Días-persona: suma de personas por día (usados / previstos). Gris = sin plazo cargado. Ambos: verde dentro de lo previsto, ámbar hasta 20 % arriba, rojo más de 20 % arriba. Contratistas: costo de las OC emitidas; si estuvo en la obra y no tiene OC, se estima con el % de su primera OC sobre el total PO, según sus días-persona (margen provisorio). Todavía sin materiales ni cargas sociales.</div>
     </div>
   </div>
 
@@ -5834,7 +5844,7 @@ function mesActualStr() {
    a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
    Se pinta en el pie del sidebar (#sidebar-version).
    ═══════════════════════════════════════════════════════ */
-const APP_VERSION = 'V 121126 1010';
+const APP_VERSION = 'V 121126 1105';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
@@ -20325,7 +20335,46 @@ function _costoIdx() {
     if (!porDia.has(k)) porDia.set(k, new Set());
     porDia.get(k).add(a.sitioId);
   });
-  return { eq, porDia };
+  return { eq, porDia, pct: _ctrPctMapa() };   // #156 — % por contratista
+}
+
+/* ═══ #156 · CONTRATISTAS en el costo ═══════════════════════════════
+   Costo real = OC EMITIDAS del sitio (como antes). Un contratista que
+   estuvo en la obra (asignación diaria, relación «C») y NO tiene OC
+   emitida en ese sitio se ESTIMA:
+     total PO × % de su primera OC emitida × (sus días-persona / días-persona del sitio)
+   El % sale de su PRIMERA OC emitida con costo < venta: las de monto fijo
+   (costo = venta) se descartan. Sin ninguna OC: OC_PCT_DEFAULT.
+   Sin PO real ($1) no se estima. */
+function _ctrEsC(empId) { return String(relacionEmpleado(empId) || '').toUpperCase() === 'C'; }
+function _ctrNombre(id) {
+  if (!id) return 'Sin contratista';
+  const e = empleados.find(x => x.id === id);
+  return e ? (e.nombre || e.id) : id;
+}
+function _ctrPctMapa() {
+  const m = new Map();
+  (oc || []).filter(o => o.estado === OC_ESTADO_EMITIDA && o.contratistaId && o.totalVenta > 0 && o.totalCosto > 0 && o.totalCosto < o.totalVenta)
+    .sort((a, b) => String(a.fecha || '').localeCompare(String(b.fecha || '')) || String(a.nroOc || '').localeCompare(String(b.nroOc || '')))
+    .forEach(o => { if (!m.has(o.contratistaId)) m.set(o.contratistaId, { pct: o.totalCosto / o.totalVenta, nro: o.nroOc || '' }); });
+  return m;
+}
+/* Contratistas de un sitio: por asignación ejecutada y por OC emitida. */
+function _ctrDeSitio(sitioId) {
+  const asig = _asigEjecutadasDeSitio(sitioId);
+  const porC = new Map();
+  const get = id => {
+    if (!porC.has(id)) porC.set(id, { id, nombre: _ctrNombre(id), dp: 0, fechas: new Set(), ocs: [], real: 0, est: 0, pct: null, pctNro: '', pctDef: false });
+    return porC.get(id);
+  };
+  let dpProp = 0;
+  asig.forEach(a => { if (_ctrEsC(a.empleadoId)) { const x = get(a.empleadoId); x.dp++; x.fechas.add(a.fecha); } else dpProp++; });
+  (oc || []).forEach(o => {
+    if (o.sitioId !== sitioId || o.estado !== OC_ESTADO_EMITIDA) return;
+    const x = get(o.contratistaId || '');
+    x.ocs.push(o); x.real += o.totalCosto || 0;
+  });
+  return { lista: [...porC.values()].sort((a, b) => a.nombre.localeCompare(b.nombre)), dpTot: asig.length, dpProp };
 }
 
 /* Costo de UN empleado UN día, ya multiplicado por su parte del día. */
@@ -20365,7 +20414,34 @@ function costoObra(sitioId, idx) {
   const po = sitios.filter(s => s.id === sitioId).reduce((a, s) => a + (s.po || 0), 0);
   /* Las PO de $1 son marcadores de AMX sin PO todavía: sin total real no hay margen. */
   const sinPO = po <= 1;
-  return { sitioId, items, mo, oc: ocTot, tot: mo + ocTot, po, sinPO, margen: sinPO ? null : po - (mo + ocTot) };
+  /* #156 — contratistas: OC emitidas (real) o estimado si estuvo y no tiene OC. */
+  const pctM = (idx && idx.pct) || _ctrPctMapa();
+  const cs = _ctrDeSitio(sitioId);
+  let est = 0;
+  cs.lista.forEach(x => {
+    if (x.ocs.length || !x.dp || !x.id) return;
+    const pi = pctM.get(x.id);
+    x.pct = pi ? pi.pct : OC_PCT_DEFAULT / 100; x.pctNro = pi ? pi.nro : ''; x.pctDef = !pi;
+    x.est = (sinPO || !cs.dpTot) ? 0 : Math.round(po * x.pct * x.dp / cs.dpTot);
+    est += x.est;
+  });
+  const hayProp = cs.dpProp > 0 || items.length > 0, hayC = cs.lista.length > 0;
+  const tipo = hayC ? (hayProp ? 'mixta' : 'contratista') : (hayProp ? 'propia' : '');
+  const tot = mo + ocTot + est;
+  return { sitioId, items, mo, oc: ocTot, est, tot, po, sinPO, margen: sinPO ? null : po - tot,
+           ctr: cs.lista, dpTot: cs.dpTot, dpProp: cs.dpProp, tipo };
+}
+const _CTR_TIPO = { propia: 'Propia', contratista: 'Contratista', mixta: 'Mixta' };
+const _CTR_TIPO_ST = { propia: 'background:#e3ebff;color:#1e40af', contratista: 'background:#efe7fb;color:#5b21b6', mixta: 'background:#fdf1d4;color:#8a4b06' };
+/* Texto de ejecución: "Cuadrilla propia" · "Vieira · Ojeda" · "Propia + Gramajo". */
+function _ctrEjTexto(c) {
+  const n = c.ctr.map(x => x.nombre + (x.dp ? '' : ' (solo OC)')).join(' · ');
+  return c.tipo === 'propia' ? 'Cuadrilla propia' : c.tipo === 'mixta' ? 'Propia + ' + n : n;
+}
+/* Detalle del estimado de un contratista (hover y pantalla de la obra). */
+function _ctrEstTexto(x, c) {
+  if (c.sinPO) return 'sin PO: no se puede estimar';
+  return `${_cPct(x.pct)} ${x.pctDef ? '(por defecto, sin OC propia)' : '(su primera OC, ' + _escHtml(x.pctNro) + ')'} × total PO × ${x.dp} de ${c.dpTot} días-persona`;
 }
 function _costoOcSitio(sitioId) {
   return (oc || []).filter(o => o.sitioId === sitioId && o.estado === OC_ESTADO_EMITIDA).reduce((a, o) => a + (o.totalCosto || 0), 0);
@@ -20407,7 +20483,7 @@ function costoTileHtml(id) {
     return `<div class="gt-tile gt-tile-costo" onclick="abrirObraCosto('${_escJs(id)}','obra')"><div class="gt-tile-lbl">Costo a hoy</div><div class="gt-tile-val" style="font-size:17px;">Sin datos</div><div class="gt-tile-sub">falta el costo del personal</div></div>`;
   }
   const c = costoObra(id);
-  if (!c.items.length && !c.oc) {
+  if (!c.items.length && !c.ctr.length) {   // #156 — una obra solo de contratista también tiene costo
     return `<div class="gt-tile gt-tile-costo" onclick="abrirObraCosto('${_escJs(id)}','obra')"><div class="gt-tile-lbl">Costo a hoy</div><div class="gt-tile-val" style="font-size:17px;">Sin personal</div><div class="gt-tile-sub">Ver costo →</div></div>`;
   }
   const col = c.sinPO ? 'var(--text-light)' : c.margen < 0 ? '#b42318' : '#047857';
@@ -20485,9 +20561,9 @@ function renderObraCosto() {
   // KPIs
   const mgCol = c.sinPO ? 'var(--text-light)' : c.margen < 0 ? '#b42318' : '#047857';
   const kpi = `<div class="gt-tiles">
-    <div class="gt-tile"><div class="gt-tile-lbl">Costo a hoy</div><div class="gt-tile-val">${_cMoney(c.tot)}</div><div class="gt-tile-sub">mano de obra ${_cMoney(c.mo)} · contratistas ${_cMoney(c.oc)}</div></div>
+    <div class="gt-tile"><div class="gt-tile-lbl">Costo a hoy</div><div class="gt-tile-val">${_cMoney(c.tot)}</div><div class="gt-tile-sub">mano de obra ${_cMoney(c.mo)} · contratistas ${_cMoney(c.oc + c.est)}${c.est ? ' <span class="cst-est">incluye estimado</span>' : ''}</div></div>
     <div class="gt-tile"><div class="gt-tile-lbl">Total de las PO</div><div class="gt-tile-val">${c.sinPO ? 'Sin PO' : _cMoney(c.po)}</div><div class="gt-tile-sub">${sitios.filter(s => s.id === id).length} PO</div></div>
-    <div class="gt-tile"><div class="gt-tile-lbl">Margen final</div><div class="gt-tile-val" style="color:${mgCol};">${c.sinPO ? '—' : _cMoney(c.margen)}</div><div class="gt-tile-sub">${c.sinPO ? 'falta cargar la PO' : _cPct(c.margen / c.po) + ' del total PO'}</div></div>
+    <div class="gt-tile"><div class="gt-tile-lbl">Margen final</div><div class="gt-tile-val" style="color:${mgCol};">${c.sinPO ? '—' : _cMoney(c.margen)}</div><div class="gt-tile-sub">${c.sinPO ? 'falta cargar la PO' : _cPct(c.margen / c.po) + ' del total PO' + (c.est ? ' · provisorio' : '')}</div></div>
     <div class="gt-tile"><div class="gt-tile-lbl">Días</div><div class="gt-tile-val"><span class="cst-pill" style="font-size:18px;${_cSemaforo(dias, planDias)}">${dias}${planDias ? ' / ' + planDias : ''}</span></div><div class="gt-tile-sub">${planDias ? Math.round(dias / planDias * 100) + ' % del plazo' : 'sin plazo cargado'}</div></div>
     <div class="gt-tile"><div class="gt-tile-lbl">Días-persona</div><div class="gt-tile-val"><span class="cst-pill" style="font-size:18px;${_cSemaforo(dp, plan)}">${dp}${plan ? ' / ' + plan : ''}</span></div><div class="gt-tile-sub">${plan ? Math.round(dp / plan * 100) + ' % de lo previsto' : 'sin plazo cargado'}</div></div>
     <div class="gt-tile"><div class="gt-tile-lbl">Horas extra</div><div class="gt-tile-val">${_cMoney(tHe50 + tHe100)}</div><div class="gt-tile-sub">${_cHs(h50)} al 50 % · ${_cHs(h100)} al 100 %</div></div>
@@ -20545,12 +20621,13 @@ function renderObraCosto() {
 
   // Composición + plazo
   const comp = [['Días normales', tBase, '#4f80ff'], ['Horas extra 50 %', tHe50, '#f59e0b'], ['Horas extra 100 %', tHe100, '#c2410c'], ['Contratistas (OC)', c.oc, '#8b5cf6']];
+  if (c.est) comp.push(['Contratistas (estimado)', c.est, '#c4b5fd']);   // #156
   const composicion = `<div class="card cst-card" style="flex:1 1 320px;">
     <div class="card-title" style="margin-bottom:14px;">De qué está hecho el costo</div>
     <div class="cst-barra">${comp.map(x => c.tot ? `<div style="width:${(x[1] / c.tot * 100).toFixed(2)}%;background:${x[2]}"></div>` : '').join('')}</div>
     ${comp.map(x => `<div class="cst-comp"><i style="background:${x[2]}"></i><span>${x[0]}</span><b>${_cMoney(x[1])}</b><em>${pc(x[1])}</em></div>`).join('')}
     <div class="cst-sep"></div>
-    <div class="cst-comp"><span>Costo por día-persona</span><b>${dp ? _cMoney(c.mo / dp) : '—'}</b></div>
+    <div class="cst-comp"><span>Costo por día-persona propio</span><b>${c.dpProp ? _cMoney(c.mo / c.dpProp) : '—'}</b></div>
     <div class="cst-comp"><span>Plazo</span><b>${obra && obra.plazoDias ? obra.plazoDias + ' días' : 'sin cargar'}</b></div>
   </div>`;
 
@@ -20564,6 +20641,21 @@ function renderObraCosto() {
     <div class="table-wrap"><table class="cst-tabla"><thead><tr><th style="text-align:left;">Empleado</th><th>Días</th><th>Días normales</th><th>HE 50 %</th><th>HE 100 %</th><th>$ Horas extra</th><th>Total</th><th>Peso en la obra</th></tr></thead>
     <tbody>${filasEmp || '<tr><td colspan="8" class="cst-vacio">Sin personal propio cargado.</td></tr>'}</tbody>
     ${emps.length ? `<tfoot><tr><td style="text-align:left;">Total mano de obra</td><td></td><td>${_cMoney(tBase)}</td><td>${_cHs(h50)}</td><td>${_cHs(h100)}</td><td>${_cMoney(tHe50 + tHe100)}</td><td>${_cMoney(c.mo)}</td><td></td></tr></tfoot>` : ''}</table></div></div>`;
+
+  // #156 — Contratistas de la obra
+  const filasCtr = c.ctr.map(x => {
+    const ocsTxt = x.ocs.length ? x.ocs.map(o => `<div><b>${_escHtml(o.nroOc || 'OC')}</b> <span class="cst-nota">venta ${_cMoney(o.totalVenta)} · ${o.totalVenta ? _cPct(o.totalCosto / o.totalVenta) : '—'}</span></div>`).join('') : '<span class="cst-nota">sin OC emitida</span>';
+    const costo = x.ocs.length ? x.real : x.est;
+    const origen = x.ocs.length ? '<span class="cst-pill" style="background:#dcf5ea;color:#046c4e">OC emitida</span>'
+      : `<span class="cst-pill" style="background:#fdf1d4;color:#8a4b06">Estimado</span><div class="cst-nota">${_ctrEstTexto(x, c)}</div>`;
+    return `<tr><td style="text-align:left;font-weight:600;">${_escHtml(x.nombre)}</td><td>${x.fechas.size || '—'}</td><td>${x.dp || '—'}</td>
+      <td style="text-align:left;">${ocsTxt}</td><td style="font-weight:700;">${_cMoney(costo)}</td><td>${origen}</td></tr>`;
+  }).join('');
+  const porCtr = c.ctr.length ? `<div class="card cst-card">
+    <div class="cst-card-h"><div class="card-title">Contratistas</div><div class="cst-nota">Costo real = OC emitidas. Sin OC: total PO × % de su primera OC × su parte en días-persona</div></div>
+    <div class="table-wrap"><table class="cst-tabla"><thead><tr><th style="text-align:left;">Contratista</th><th>Días en obra</th><th>Días-persona</th><th style="text-align:left;">OC</th><th>Costo</th><th>Origen</th></tr></thead>
+    <tbody>${filasCtr}</tbody>
+    <tfoot><tr><td style="text-align:left;">Total contratistas</td><td></td><td>${c.dpTot ? c.ctr.reduce((a, x) => a + x.dp, 0) + ' de ' + c.dpTot : '—'}</td><td></td><td>${_cMoney(c.oc + c.est)}</td><td></td></tr></tfoot></table></div></div>` : '';
 
   // Por día
   let acu2 = 0;
@@ -20598,12 +20690,16 @@ function renderObraCosto() {
   if (prestadas.size) rev.push(['info', `<b>Sin liquidación del período todavía.</b> ${[...prestadas].map(([n, l]) => _escHtml(n) + ' usa la de ' + _escHtml(l)).join(' · ')}.`]);
   const fer = c.items.filter(x => x.tipo === 'feriado' && x.tot);
   if (fer.length) rev.push(['naranja', `<b>Feriados trabajados.</b> ${_cMoney(fer.reduce((a, x) => a + x.tot, 0))} en horas extra al 100 %.`]);
+  c.ctr.forEach(x => {   // #156
+    if (x.ocs.length && !x.dp) rev.push(['info', `<b>${_escHtml(x.nombre)}</b> tiene OC emitida en esta obra pero no figura en la asignación diaria.`]);
+    else if (!x.ocs.length && x.dp) rev.push(['warn', c.sinPO ? `<b>${_escHtml(x.nombre)} sin OC y sin PO:</b> no se puede estimar su costo.` : `<b>Costo estimado.</b> ${_escHtml(x.nombre)} no tiene OC emitida: ${_cMoney(x.est)} (${_ctrEstTexto(x, c)}). El margen es provisorio.`]);
+  });
   if (!rev.length) rev.push(['ok', '<b>Sin observaciones.</b> Todos los días asignados tienen su asistencia y su liquidación.']);
   const revisar = `<div class="card cst-card" style="flex:1 1 320px;"><div class="card-title" style="margin-bottom:12px;">Para revisar</div>
     ${rev.map(r => `<div class="cst-rev cst-rev-${r[0]}">${r[1]}</div>`).join('')}</div>`;
 
   body.innerHTML = aviso + kpi +
-    `<div class="cst-fila-cards">${grafico}${composicion}</div>` + porEmpleado +
+    `<div class="cst-fila-cards">${grafico}${composicion}</div>` + porEmpleado + porCtr +
     `<div class="cst-fila-cards" style="align-items:flex-start;">${porDia}${revisar}</div>`;
 }
 
@@ -20646,24 +20742,37 @@ function _cstObras() {
   const idx = _costoIdx();
   const ids = new Set();
   idx.porDia.forEach(set => set.forEach(s => { if (!esEstadoEspecial(s)) ids.add(s); }));
+  /* #156 — también obras con contratistas (asignación ejecutada) u OC emitidas. */
+  const hoy = fechaHoyStr();
+  asignaciones.forEach(a => { if (a.sitioId && !esEstadoEspecial(a.sitioId) && _ctrEsC(a.empleadoId) && _asigEjecutada(a, hoy)) ids.add(a.sitioId); });
+  (oc || []).forEach(o => { if (o.sitioId && o.estado === OC_ESTADO_EMITIDA && !esEstadoEspecial(o.sitioId)) ids.add(o.sitioId); });
   return [...ids].map(id => {
     const c = costoObra(id, idx);
     const obra = obraDeSitio(id);
     const sitio = sitios.find(s => s.id === id);
-    const fechas = c.items.map(x => x.fecha).sort();
+    /* Período: días con personal propio y con contratistas; si no hay ninguno, las fechas de las OC. */
+    let fechas = [...new Set([...c.items.map(x => x.fecha), ...c.ctr.flatMap(x => [...x.fechas])])].sort();
+    if (!fechas.length) fechas = c.ctr.flatMap(x => x.ocs.map(o => o.fecha)).filter(Boolean).sort();
     return {
       id, c, cli: sitio ? sitio.clienteId : '', estado: obra ? obra.estado : 'Sin alta',
       desde: fechas[0] || '', hasta: fechas[fechas.length - 1] || '',
       meses: [...new Set(fechas.map(f => f.slice(0, 7)))].sort(),
       dp: obraDiasPersona(id), plan: obraPlazoP(obra),
-      dias: _diasTrabajadosSitio(id), planDias: _cPlazoDias(obra)   // #155
+      dias: _diasTrabajadosSitio(id), planDias: _cPlazoDias(obra),   // #155
+      ej: ['T:' + c.tipo, ...c.ctr.map(x => 'C:' + x.id)]               // #156
     };
-  }).filter(o => o.c.items.length);
+  }).filter(o => o.c.items.length || o.c.ctr.length);
 }
 function _cstPasa(o, excepto) {
-  const f = { obra: msGet('cst-f-obra'), cli: msGet('cst-f-cli'), estado: msGet('cst-f-estado'), mes: msGet('cst-f-mes') };
-  const vals = { obra: [o.id], cli: [o.cli], estado: [o.estado], mes: o.meses };
+  const f = { obra: msGet('cst-f-obra'), cli: msGet('cst-f-cli'), ej: msGet('cst-f-ej'), estado: msGet('cst-f-estado'), mes: msGet('cst-f-mes') };
+  const vals = { obra: [o.id], cli: [o.cli], ej: o.ej, estado: [o.estado], mes: o.meses };
   return Object.keys(f).every(k => k === excepto || !f[k].length || vals[k].some(v => f[k].includes(v)));
+}
+/* #156 — «Jul · Ago 2026» en vez de «Jul 2026 · Ago 2026» (más angosto). */
+function _cstMesesTxt(meses) {
+  const porAnio = new Map();
+  meses.forEach(m => { const y = m.slice(0, 4); if (!porAnio.has(y)) porAnio.set(y, []); porAnio.get(y).push(_CST_MES[Number(m.slice(5)) - 1]); });
+  return [...porAnio].map(([y, ms]) => ms.join(' · ') + ' ' + y).join(' · ');
 }
 function cstOrden(v) { _cst.orden = v; renderCostos(); }
 
@@ -20674,7 +20783,7 @@ function renderCostos() {
   if (!_costo.map) {
     if (!_costo.cargando && !_costo.error) costoCargar().then(costoRefrescarVista);
     if (aviso) aviso.innerHTML = _costoAvisoHtml();
-    tbody.innerHTML = '<tr><td colspan="10" class="cst-vacio">Leyendo el costo del personal…</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="11" class="cst-vacio">Leyendo el costo del personal…</td></tr>';
     return;
   }
   if (aviso) aviso.innerHTML = _costoAvisoHtml();
@@ -20690,6 +20799,12 @@ function renderCostos() {
   };
   msInit('cst-f-obra', opts('obra', o => [o.id]), 'Todas las obras', renderCostos);   // #153
   msInit('cst-f-cli', opts('cli', o => [o.cli], v => v || 'Sin cliente'), 'Todos los clientes', renderCostos);
+  { /* #156 — Ejecución: primero los tres tipos, después cada contratista */
+    const o2 = opts('ej', o => o.ej, v => v.startsWith('T:') ? (_CTR_TIPO[v.slice(2)] || v.slice(2)) : '· ' + _ctrNombre(v.slice(2)));
+    const rk = v => v.startsWith('T:') ? ['T:propia', 'T:contratista', 'T:mixta'].indexOf(v) : 10;
+    o2.sort((a, b) => (rk(a.value) - rk(b.value)) || a.label.localeCompare(b.label));
+    msInit('cst-f-ej', o2, 'Toda ejecución', renderCostos);
+  }
   msInit('cst-f-estado', opts('estado', o => [o.estado]), 'Todos los estados', renderCostos);
   msInit('cst-f-mes', opts('mes', o => o.meses, m => _CST_MES[Number(m.slice(5)) - 1] + ' ' + m.slice(0, 4)), 'Todos los meses', renderCostos);
 
@@ -20705,8 +20820,8 @@ function renderCostos() {
   };
   L.sort(ord[_cst.orden] || ord.margen);
   const cnt = document.getElementById('cst-cuenta');
-  if (cnt) cnt.textContent = L.length + (L.length === 1 ? ' obra' : ' obras') + ' con personal cargado';
-  if (!L.length) { tbody.innerHTML = '<tr><td colspan="10" class="cst-vacio">Ninguna obra con personal cargado coincide con los filtros.</td></tr>'; return; }
+  if (cnt) cnt.textContent = L.length + (L.length === 1 ? ' obra' : ' obras');
+  if (!L.length) { tbody.innerHTML = '<tr><td colspan="11" class="cst-vacio">Ninguna obra coincide con los filtros.</td></tr>'; return; }
   tbody.innerHTML = L.map((o, i) => {
     const c = o.c;
     const pct = c.sinPO ? null : c.margen / c.po;
@@ -20714,14 +20829,15 @@ function renderCostos() {
     return `<tr class="cst-fila ${i % 2 ? 'cst-zebra' : ''}" onclick="abrirObraCosto('${_escJs(o.id)}','costos')">
       <td style="text-align:left;font-weight:700;color:var(--accent-blue);">${_escHtml(o.id)} →</td>
       <td>${_escHtml(o.cli || '—')}</td>
+      <td>${c.tipo ? `<span class="cst-pill" style="${_CTR_TIPO_ST[c.tipo]}">${_CTR_TIPO[c.tipo]}</span><div class="cst-nota" style="font-weight:600;color:var(--text-mid);">${_escHtml(_ctrEjTexto(c))}</div>` : '—'}</td>
       <td><span class="cst-pill" style="${estSt}">${_escHtml(o.estado)}</span></td>
-      <td>${_cDdMm(o.desde)} → ${_cDdMm(o.hasta)}<div class="cst-nota">${o.meses.map(m => _CST_MES[Number(m.slice(5)) - 1] + ' ' + m.slice(0, 4)).join(' · ')}</div></td>
-      <td><span class="cst-pill" style="${_cSemaforo(o.dias, o.planDias)}">${o.dias}${o.planDias ? ' / ' + o.planDias : ' · sin plazo'}</span></td>
-      <td><span class="cst-pill" style="${_cSemaforo(o.dp, o.plan)}">${o.dp}${o.plan ? ' / ' + o.plan : ' · sin plazo'}</span></td>
-      <td class="cst-costo"><span class="cst-costo-v">${_cMoney(c.tot)}</span>
-        <div class="cst-hover"><div><span>Mano de obra propia</span><b>${_cMoney(c.mo)}</b></div><div><span>Contratistas (OC)</span><b>${_cMoney(c.oc)}</b></div><div class="cst-hover-t"><span>Costo total</span><b>${_cMoney(c.tot)}</b></div></div></td>
+      <td>${_cDdMm(o.desde)} → ${_cDdMm(o.hasta)}<div class="cst-nota">${_cstMesesTxt(o.meses)}</div></td>
+      <td><span class="cst-pill" style="${_cSemaforo(o.dias, o.planDias)}"${o.planDias ? '' : ' title="Sin plazo cargado"'}>${o.dias}${o.planDias ? ' / ' + o.planDias : ''}</span></td>
+      <td><span class="cst-pill" style="${_cSemaforo(o.dp, o.plan)}"${o.plan ? '' : ' title="Sin plazo cargado"'}>${o.dp}${o.plan ? ' / ' + o.plan : ''}</span></td>
+      <td class="cst-costo"><span class="cst-costo-v">${_cMoney(c.tot)}</span>${c.est ? '<div><span class="cst-est">incluye estimado</span></div>' : ''}
+        <div class="cst-hover"><div><span>Mano de obra propia</span><b>${_cMoney(c.mo)}</b></div><div><span>Contratistas (OC emitidas)</span><b>${_cMoney(c.oc)}</b></div>${c.ctr.filter(x => x.est).map(x => `<div class="cst-hover-est"><span>${_escHtml(x.nombre)} · estimado</span><b>${_cMoney(x.est)}</b></div><div class="cst-hover-nota">${_ctrEstTexto(x, c)}</div>`).join('')}<div class="cst-hover-t"><span>Costo total</span><b>${_cMoney(c.tot)}</b></div></div></td>
       <td>${c.sinPO ? '<span class="cst-nota">Sin PO</span>' : _cMoney(c.po)}</td>
-      <td style="font-weight:700;font-size:14px;color:${c.sinPO ? 'var(--text-light)' : c.margen < 0 ? '#b42318' : '#047857'};">${c.sinPO ? '—' : _cMoney(c.margen)}</td>
+      <td style="font-weight:700;font-size:14px;color:${c.sinPO ? 'var(--text-light)' : c.margen < 0 ? '#b42318' : '#047857'};">${c.sinPO ? '—' : _cMoney(c.margen)}${!c.sinPO && c.est ? '<div class="cst-nota" style="color:#8a4b06;font-weight:600;">provisorio</div>' : ''}</td>
       <td>${pct === null ? '—' : `<span class="cst-pill" style="${_cMargenPctStyle(pct)}">${_cPct(pct)}</span>`}</td>
     </tr>`;
   }).join('');
