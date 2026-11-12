@@ -5850,7 +5850,7 @@ function mesActualStr() {
    a propósito: con new Date() mostraría la hora del usuario, no la de emisión.
    Se pinta en el pie del sidebar (#sidebar-version).
    ═══════════════════════════════════════════════════════ */
-const APP_VERSION = 'V 121126 1145';
+const APP_VERSION = 'V 121126 1215';
 
 // ═══════════════════════════════════════════════════════
 //  CAPA API
@@ -20308,10 +20308,12 @@ function costoCargar(forzar) {
         valorDia: n(g(r, 'VALOR DÍA')), he: n(g(r, '$ HE')), liq: g(r, 'LIQUIDACIÓN USADA')
       };
       map.set(fecha + '|' + emp, o);
-      if (!porEmp[emp]) porEmp[emp] = { pago: o.pago };
+      if (!porEmp[emp]) porEmp[emp] = { pago: o.pago, vd: [] };
+      if (o.valorDia > 0) porEmp[emp].vd.push([fecha, o.valorDia, o.liq]);   // #161 — referencia de día normal
       const a = g(r, 'ACTUALIZADO'); if (a > act) act = a;
       if (fecha > hasta) hasta = fecha;
     });
+    Object.values(porEmp).forEach(p => p.vd.sort((a, b) => a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
     _costo.map = map; _costo.porEmp = porEmp; _costo.cargadoAt = Date.now();
     _costo.actualizado = act; _costo.hasta = hasta; _costo.error = '';
   }).catch(err => {
@@ -20385,9 +20387,27 @@ function _ctrDeSitio(sitioId) {
   return { lista: [...porC.values()].sort((a, b) => a.nombre.localeCompare(b.nombre)), dpTot: asig.length, dpProp };
 }
 
+/* #161 — Valor de un día normal de un empleado para una fecha: el de su
+   último día con valor (≤ fecha) y, si no hay, el primero posterior. */
+function _costoVdRef(equiv, fecha) {
+  const vd = ((_costo.porEmp || {})[equiv] || {}).vd || [];
+  let ref = null;
+  for (const x of vd) { if (x[0] <= fecha) ref = x; else { if (!ref) ref = x; break; } }
+  return ref ? { v: ref[1], liq: ref[2] || '' } : null;
+}
+
 /* Costo de UN empleado UN día, ya multiplicado por su parte del día. */
 function _costoItem(fecha, e, parte) {
-  const r = _costo.map ? _costo.map.get(fecha + '|' + e.equiv) : null;
+  let r = _costo.map ? _costo.map.get(fecha + '|' + e.equiv) : null;
+  /* #161 — MENSUALES (no cobran horas extra) en sábado, domingo o feriado:
+     el sistema de Empleados no genera fila (o la genera con valor día 0), pero
+     si estuvo asignado a una obra ese día cuenta como un DÍA NORMAL de trabajo,
+     con su valor día de referencia. */
+  const pagoEmp = r ? r.pago : ((_costo.porEmp[e.equiv] || {}).pago || '');
+  if (pagoEmp === 'mensual' && (!r || (r.estado === 'presente' && !r.valorDia))) {
+    const ref = _costoVdRef(e.equiv, fecha);
+    if (ref) r = Object.assign({ fecha, emp: e.equiv, pago: 'mensual', tipo: 'no laborable', estado: 'presente', vh: 0, liq: ref.liq }, r || {}, { valorDia: ref.v, h50: 0, h100: 0, he: 0, noLab: true });
+  }
   const it = { fecha, empId: e.id, nombre: e.nombre || e.id, parte, base: 0, he50: 0, he100: 0, h50: 0, h100: 0, ctrl: '', estado: r ? r.estado : '', tipo: r ? r.tipo : '', liq: r ? r.liq : '', pago: r ? r.pago : ((_costo.porEmp[e.equiv] || {}).pago || '') };
   if (!r) {
     if (!_costo.porEmp[e.equiv]) it.ctrl = 'Sin datos en el sistema de empleados';
